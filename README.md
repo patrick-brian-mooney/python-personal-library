@@ -1,7 +1,7 @@
 Patrick's personal Python library
 =================================
 
-v1: 7 October 2015
+v1.1: 28 December 2015
 
 This is a collection of utilities that I myself frequently use in my Python programs; many of my other scripts import from it. There's no claim made that this is the best way to do things, but merely that I myself do things this way. Your needs may differ. As a Pythonista, you may prefer to code your own solutions to these problems. Go for it. I won't stop you. On the other hand, if you're using one of my other scripts to do things, it may be that the easiest way to get the functionality needed by that script would simply be to import one of these files.
 
