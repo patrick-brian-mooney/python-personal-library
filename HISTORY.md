@@ -15,6 +15,15 @@ v1.1: 28 December 2015
 * Added `genClassCalendar.py`, a small script to generate vEvent markup for my syllabus every quarter.
 * Added `postprocess-photos.py`, a script to automate processing for photos after I offload them from my camera.
 
+9 January 2016
+--------------
+Primarily, changes to postprocess-photos.py:
+      * first, renames photos in EXIF date order, keeping track of old and new names.
+      * writes a .csv file for this mapping.
+      * rewrites the enfuse bash scripts to use the new names.
+* Also, minor changes to genClassCalendar.py; this corrects problems with date formatting for hEvent 1.0 microformat.
+
+
 FUTURE PLANS
 ============
 * Abstractify the logger interface in `patrick_logger.py`.
