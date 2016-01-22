@@ -27,6 +27,8 @@ Primarily, changes to postprocess-photos.py:
 ---------------
 Reworking existing projects to abstract out some social media-handling code to a new unit in the library, social_media.py.
   * The necessary authentication constants will be kept in yet another unit, which is of course ignored by the GitHub repo.
+  * Currently, this handles Tumblr text posts, though it will be expanded eventually.
+  * As of this date, this affects the following projects: AutoLovecraft; UlyssesRedux; Irish Lit Discourses (but not Irish Lit Tweets: no Twitter yet).
 
 
 FUTURE PLANS
