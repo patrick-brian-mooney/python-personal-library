@@ -23,6 +23,11 @@ Primarily, changes to postprocess-photos.py:
       * rewrites the enfuse bash scripts to use the new names.
 * Also, minor changes to genClassCalendar.py; this corrects problems with date formatting for hEvent 1.0 microformat.
 
+21 January 2016
+---------------
+Reworking existing projects to abstract out some social media-handling code to a new unit in the library, social_media.py.
+  * The necessary authentication constants will be kept in yet another unit, which is of course ignored by the GitHub repo.
+
 
 FUTURE PLANS
 ============
