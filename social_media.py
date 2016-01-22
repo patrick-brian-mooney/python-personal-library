@@ -7,9 +7,18 @@ in the GitHub repo that contains this unit, because, well, those are my private
 authentication constants."""
 
 from tumblpy import Tumblpy
+import tweepy
 
 def tumblr_text_post(the_client, the_tags, the_title, the_content):
     tumblog_url = the_client.post('user/info')
     tumblog_url = tumblog_url['user']['blogs'][0]['url']
     the_status = the_client.post('post', blog_url=tumblog_url, params={'type': 'text', 'tags': the_tags, 'title': the_title, 'body': the_content})
     return the_status
+
+def post_tweet(the_client, the_tweet):
+        auth = tweepy.OAuthHandler(the_client['consumer_key'], the_client['consumer_secret'])
+        auth.set_access_token(the_client['access_token'], the_client['access_token_secret'])
+        api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+        status = api.update_status(status=the_tweet)
+        return status
+        
