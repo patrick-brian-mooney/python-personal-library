@@ -30,6 +30,9 @@ Reworking existing projects to abstract out some social media-handling code to a
   * Currently, this handles Tumblr text posts, though it will be expanded eventually.
   * As of this date, this affects the following projects: AutoLovecraft; UlyssesRedux; Irish Lit Discourses (but not Irish Lit Tweets: no Twitter yet).
 
+24 January 2016
+---------------
+Reworked `postprocess_photos.py` to make it a series of functions rather than one long script; this makes life easier for me to pick back up if the script runs partially but fails for some reason (it is, after all, still being developed). Some utility routines have been added to support undoing the renaming of the photos.
 
 FUTURE PLANS
 ============
