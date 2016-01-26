@@ -37,11 +37,12 @@ import subprocess
 import os
 import glob
 import shutil
+import csv
 
 import exifread     # https://github.com/ianare/exif-py; sudo pip3 install exifread
 
 rewrite_scripts_for_TIFF_output = False     # I think I'll abandon this normally, but keep the logic in the script in case I change my mind.
-file_name_mappings = {}.copy()              # Maps original names to new names.
+file_name_mappings = {}.copy()              # Dictionary that maps original names to new names.
 
 def print_usage():
     "Display a usage message."
@@ -117,6 +118,20 @@ def rename_photos():
         print('\n') # If an error occurs, end the status line that's waiting to be ended before letting the error propagate.
         raise
     print(' ... done.\n\n')
+
+def read_filename_mappings():
+    """Read file_names.csv back into memory. Do this before restoring original file names"""
+    global file_name_mappings
+    with open('file_names.csv') as infile:
+        reader = csv.reader(infile)
+        file_name_mappings = {rows[0]:rows[1] for rows in reader}
+
+def restore_file_names():
+    """Restore original file names, based on the file_names.csv file, which is assumed to be comprehensive and intact"""
+    for original_name in file_name_mappings:
+        if os.path.exists(file_name_mappings[original_name]):
+            print('Renaming "%s" to "%s".' % (file_name_mappings[original_name], original_name))
+            os.rename(file_name_mappings[original_name], original_name)
 
 def rotate_photos():
     """Auto-rotate all photos using exiftran."""
