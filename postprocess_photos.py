@@ -49,7 +49,7 @@ def print_usage():
     print(__doc__)
 
 def empty_thumbnails():
-    "Create an empty . thumbnails directory and make it writable for no one."
+    "Create an empty .thumbnails directory and make it writable for no one."
     print("Keeping directory's .thumbnails subdirectory empty ... ", end='')
     try:
         if os.path.exists('.thumbnails'):
@@ -68,7 +68,10 @@ def empty_thumbnails():
 def rename_photos():
     """First, auto-rename files.
 
-    Start by reading the date and time from each image. Keep a list: [dateTime, file_name].
+    Start by reading the date and time from each image.
+    
+    Keeps a list as file_list: [dateTime, file_name], then converts it into another
+    list, file_name_mappings: [originalName, newName]. 
     """
     print('Renaming photos (based on EXIF data, where possible) ... ', end='')
     try:
@@ -120,14 +123,16 @@ def rename_photos():
     print(' ... done.\n\n')
 
 def read_filename_mappings():
-    """Read file_names.csv back into memory. Do this before restoring original file names"""
+    """Read file_names.csv back into memory. Do this before restoring original
+    file names"""
     global file_name_mappings
     with open('file_names.csv') as infile:
         reader = csv.reader(infile)
         file_name_mappings = {rows[0]:rows[1] for rows in reader}
 
 def restore_file_names():
-    """Restore original file names, based on the file_names.csv file, which is assumed to be comprehensive and intact"""
+    """Restore original file names, based on the file_names.csv file, which is
+    assumed to be comprehensive and intact"""
     for original_name in file_name_mappings:
         if os.path.exists(file_name_mappings[original_name]):
             print('Renaming "%s" to "%s".' % (file_name_mappings[original_name], original_name))
@@ -141,10 +146,13 @@ def rotate_photos():
 def process_shell_scripts():
     """Next, process any shell scripts created by MagicLantern.
 
-    Currently, we only process HDR_????.SH scripts, which call enfuse. They MAY (well ... should) call align_image_stack first, but that
-    depends on whether I remembered to choose 'align + enfuse" in Magic Lantern. Currently, up to two changes are made: old file names are replaced
-    with their new file name equivalents, and (optionally) output is made TIFF instead of JPEG.
-    This part of the script is currently heavily dependent on the structure of these Magic Lantern (firmware version1.0.2-ml-v2.3) scripts.
+    Currently, we only process HDR_????.SH scripts, which call enfuse. They MAY 
+    (well ... should) call align_image_stack first, but that depends on whether I
+    remembered to choose 'align + enfuse" in Magic Lantern. Currently, up to two
+    changes are made: old file names are replaced with their new file name
+    equivalents, and (optionally) output is made TIFF instead of JPEG. This part of
+    the script is currently heavily dependent on the structure of these Magic
+    Lantern scripts (currently, they're produced by firmware version1.0.2-ml-v2.3).
     """
 
     print('\nRewriting enfuse HDR scripts ... ', end='')
@@ -154,7 +162,7 @@ def process_shell_scripts():
             with open(which_script, 'r') as the_script:
                 script_lines = the_script.readlines()
                 if script_lines[4].startswith('align_image_stack'):         # It's an align-first script, with 8 lines, 5 non-blank.
-                    new_script = script_lines[0:4]                          # preserve the opening; we're only altering the call to enfuse & the line before it
+                    new_script = script_lines[0:4]                          # preserve the original opening
                     align_line_tokens = script_lines[4].split()
                     align_line = ' '.join(align_line_tokens[:4]) + ' '
                     align_line = align_line + ' '.join([file_name_mappings[which_file] if which_file in
@@ -162,18 +170,24 @@ def process_shell_scripts():
                                                         align_line_tokens[4:]]) + '\n'
                     new_script.append(align_line)
                     enfuse_line = script_lines[5]
-                    if rewrite_scripts_for_TIFF_output:
-                        output_position = enfuse_line.find('--output')          # find the location in the line of the --output parameter
-                        output_extension_position = enfuse_line.find('.JPG', output_position)
-                        enfuse_line = enfuse_line[:output_extension_position] + '.TIFF' + enfuse_line[output_extension_position + 4:] + '\n'
+                    output_position = enfuse_line.find('--output')          # find the location in the line of the --output parameter
+                    output_extension_position = enfuse_line.find('.JPG', output_position)
+                    enfuse_line = enfuse_line[:output_extension_position] + '.TIFF' + enfuse_line[output_extension_position + 4:] + '\n'
                     new_script.append(enfuse_line)
+                    # OK, now convert the resulting TIFF to HQ JPEG and copy in EXIF metadata
+                    HDR_filename = enfuse_line[output_position + len('--output='):][:8]
+                    new_script.append('convert %s.TIFF -quality 95 %s.JPG\n' % (HDR_filename, HDR_filename))
+                    new_script.append('rm %s.TIFF\n' % HDR_filename)
+                    new_script.append('exiftool -tagsfromfile %s %s.JPG\n' % (file_name_mappings[align_line_tokens[4]], HDR_filename))
+                    new_script.append('rm %s.JPG_original\n' % HDR_filename)
+                    # write the end of the old script onto the end of the new one
                     for the_line in script_lines[6:]: new_script.append(the_line)
                 else:                                                       # It's a just-call-enfuse script, with 6 lines, 3 non-blank.
                     new_script = script_lines[:-1]                          # preserve the opening of the script as-is; we're only altering the last line.
-                    last_line_tokens = script_lines[-1].split()
+                    last_line_tokens = script_lines[-1].split()             # FIXME: incorporate logic from branch above here to produce better final output.
                     last_line = ' '.join(last_line_tokens[:3]) + ' '
                     last_line = last_line + ' '.join([file_name_mappings[which_file] for which_file in last_line_tokens[3:]]) + '\n'
-                    if rewrite_scripts_for_TIFF_output:
+                    if rewrite_scripts_for_TIFF_output:     # TODO: merge this logic with the new TIFF-to-JPEG-and-copy-EXIF logic above
                         output_position = last_line.find('--output')            # find the location in the line of the --output parameter
                         output_extension_position = last_line.find('.JPG', output_position)     # Find the first occurrence of '.JPG' after '--output'
                         last_line = last_line[:output_extension_position] + '.TIFF ' + last_line[output_extension_position + 4:]
@@ -191,6 +205,7 @@ def run_shell_scripts():
     """Run the shell scripts."""
     print("\nRunning enfuse scripts ...\n\n")
     for which_script in glob.glob('HDR*SH'):
+        print('\n\nRunning script: %s' % which_script)
         subprocess.call('./' + which_script)
     print("\n\n ... done.")
 
