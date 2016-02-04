@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Creates vcalendar HTML for my syllabus every quarter. Coughs up output to stdout.
 
 Here is a sample of the HTML generated:

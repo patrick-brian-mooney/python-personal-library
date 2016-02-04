@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 
 The postprocess-photos.py script performs the kind of postprocessing work that

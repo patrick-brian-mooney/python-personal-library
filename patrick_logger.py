@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """patrick_logger.py is a simple multi-verbosity-level logger for when
 the standard library module is way more than needed. Several of my
 scripts depend on this module.
