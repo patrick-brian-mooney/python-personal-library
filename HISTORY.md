@@ -38,6 +38,11 @@ Reworked `postprocess_photos.py` to make it a series of functions rather than on
 ---------------
 `postprocess_photos.py` now rewrites ML's enfuse scripts so as to work through an intermedia TIFF instead of producing a JPEG directly; this means that the quality of the resulting JPEG can be controled. It now also copies EXIF info from the first photo in the sequence, which should be the unshifted one.
 
+3 February 2016
+---------------
+* Add encoding declarations to all files.
+* Add `split_file_on_delimiter.py` to the repo.
+
 FUTURE PLANS
 ============
 * Abstractify the logger interface in `patrick_logger.py`.
