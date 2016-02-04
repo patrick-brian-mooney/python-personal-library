@@ -43,6 +43,11 @@ Reworked `postprocess_photos.py` to make it a series of functions rather than on
 * Add encoding declarations to all files.
 * Add `split_file_on_delimiter.py` to the repo.
 
+4 Feburary 2016
+---------------
+* Added `poetry_to_prose.py` to the repo.
+  * it just removes line breaks that don't occur with sentence-ending punctuation, overwriting the old file in the process.
+
 FUTURE PLANS
 ============
 * Abstractify the logger interface in `patrick_logger.py`.
