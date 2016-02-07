@@ -48,6 +48,10 @@ Reworked `postprocess_photos.py` to make it a series of functions rather than on
 * Added `poetry_to_prose.py` to the repo.
   * it just removes line breaks that don't occur with sentence-ending punctuation, overwriting the old file in the process.
 
+6 February 2016
+---------------
+Added `introspection.py`, which will eventually contain routines to support that.
+
 FUTURE PLANS
 ============
 * Abstractify the logger interface in `patrick_logger.py`.
