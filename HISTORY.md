@@ -52,6 +52,12 @@ Reworked `postprocess_photos.py` to make it a series of functions rather than on
 ---------------
 Added `introspection.py`, which will eventually contain routines to support that.
 
+12 February 2016
+----------------
+* Added `searcher.py`, which has (currently) one list-the-files-in-the-directory function.
+* Added `site_survey.py`, which I am currently writing; it produces "[geographical surveys](http://patrickbrianmooney.nfshost.com/~patrick/feeds/geographical-surveys/index.html)" of my site.
+
+
 FUTURE PLANS
 ============
 * Abstractify the logger interface in `patrick_logger.py`.
