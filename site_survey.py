@@ -81,5 +81,7 @@ if __name__ == "__main__":
     local_files = searcher.get_files_list(local_website_root, skip_strings_list)
     remote_files = [ the_item.replace(local_website_root, remote_website_root) for the_item in local_files ]
     
-    """IA_archive(remote_files)"""
     produce_feed(remote_files)
+    IA_archive(remote_files)
+    
+    print("\n\n\nWE'RE DONE! Don't forget to update the site survey web page and survey list feed.")
