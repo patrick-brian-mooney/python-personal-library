@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Unit providing simple interfaces for social media accounts I use.
 
-Import another unit, social_media_auth.py, that contains the necessary
+I import another unit, social_media_auth.py, that contains the necessary
 authentication constants. social_media_auth.py is not, of course, contained
 in the GitHub repo that contains this unit, because, well, those are my private
 authentication constants."""
@@ -25,7 +25,7 @@ def tumblr_text_post(the_client, the_tags, the_title, the_content):
     return the_status
 
 
-# Format for Twitter clients is:
+# Format for Twitter clients is a dictionary:
 # a_client = {
 #    'consumer_key'        : 'a string',
 #    'consumer_secret'     : 'a string',
