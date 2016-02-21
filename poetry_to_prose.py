@@ -1,30 +1,32 @@
 #!/usr/bin/env python3
-"""A quick hack: it takes the file and removes line breaks that don't match up with
-sentence-ending punctuation. Usage:
+"""Removes line endings from lines that don't end with sentence-terminating punctuation."""
 
-    ./poetry_to_prose.py FILENAME
-"""
 
-debugging = False
+debugging = True
 
 import sys, os
 
-if __name__ == "__main__":
-    the_filename = sys.argv[1]
+def main(the_filename):
+
+    if debugging: print('\n\nProcessing %s ...' % the_filename)
+
     with open(the_filename) as the_file:
         the_text = the_file.readlines()
     
-    which_line = 0
-    while which_line < len(the_text):
-        if debugging: print("DEBUG: We're on line number %d; total length of text is now %d" % (which_line, len(the_text)))
-        if the_text[which_line].strip() != '':
-            while the_text[which_line].strip()[-1] not in '.!?':
-                next_line = the_text.pop(which_line + 1)
-                try:
-                    the_text[which_line] = "%s %s" % (the_text[which_line].strip(), next_line)
-                except IndexError:
-                    pass    # If we've reached this point and there is no next line, we have a badly formed line ending by conventional standards, but oh well. 
-        which_line += 1
+    output_file = [][:]
+    for which_line in the_text:
+        if len(output_file) == 0:
+            output_file.append(which_line.strip() + '\n')
+        else:
+            if len(which_line.strip()) == 0:
+                output_file.append('\n')
+            elif len(output_file[-1].strip()) > 0 and output_file[-1].strip()[-1] in '.!?':
+                output_file.append(which_line.strip() + '\n')
+            else:
+                output_file[-1] = output_file[-1].strip() + ' ' + which_line.strip() + '\n'
 
     with open(the_filename, 'w') as the_file:
-        the_file.writelines(the_text)
+        the_file.writelines(output_file)
+
+if __name__ == "__main__":
+    main(sys.argv[1])

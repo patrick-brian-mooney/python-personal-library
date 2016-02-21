@@ -7,7 +7,7 @@ import requests, time, datetime, uuid, html, bz2, subprocess
 import searcher         # https://github.com/patrick-brian-mooney/personal-library/blob/master/searcher.py
 
 local_website_root = '/website-root'
-description_file = 'site_survey_description.txt'
+description_file = '/home/patrick/Documents/programming/python-library/site_survey_description.txt'
 survey_directory = '/~patrick/feeds/geographical-surveys/'
 
 remote_website_root = 'http://patrickbrianmooney.nfshost.com'
@@ -21,6 +21,7 @@ def tz_offset():
 def IA_archive(files_list):
     """Get the Internet Archive to save all of the files in FILES_LIST."""
     for which_page in files_list:                                   # Request a URL that causes the Internet Archive to archive the page in question
+        print('INFO: archiving %s' % which_page)
         req = requests.get(IA_save_prefix + which_page)
         for the_item in req.iter_content(chunk_size=100000): pass   # read the file to make the IArchive archive it.
         time.sleep(3)
