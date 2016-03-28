@@ -57,6 +57,18 @@ Added `introspection.py`, which will eventually contain routines to support that
 * Added `searcher.py`, which has (currently) one list-the-files-in-the-directory function.
 * Added `site_survey.py`, which I am currently writing; it produces "[geographical surveys](http://patrickbrianmooney.nfshost.com/~patrick/feeds/geographical-surveys/index.html)" of my site.
 
+13 February 2016
+----------------
+`site_survey.py` is robust enough that it produced a survey.
+
+20 February 2016
+----------------
+`poetry_to_prose.py` is more robust: it no longer modifies the list of lines in place, but produces another list as it works.
+
+27 March 2016
+-------------
+Logic updated in `postprocess_photos` to create an `HDR_components` subdirectory, then have the scripts that are rewritten move ... well, the HDR components ... to that subdirectory. The script is now more self-documenting, too. And there are `spring_forward()` and `fall_back()` routines that are never run when the script itself is run from the shell; I bet you can guess why I've needed these recently.
+
 
 FUTURE PLANS
 ============
