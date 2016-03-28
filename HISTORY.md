@@ -67,7 +67,7 @@ Added `introspection.py`, which will eventually contain routines to support that
 
 27 March 2016
 -------------
-Logic updated in `postprocess_photos` to create an `HDR_components` subdirectory, then have the scripts that are rewritten move ... well, the HDR components ... to that subdirectory. The script is now more self-documenting, too. And there are `spring_forward()` and `fall_back()` routines that are never run when the script itself is run from the shell; I bet you can guess why I've needed these recently.
+Logic updated in `postprocess_photos` to create an `HDR_components` subdirectory, then have the scripts that are rewritten move ... well, the HDR components ... to that subdirectory. The script is now more self-documenting, too. And there are `spring_forward()` and `fall_back()` routines that are never run when the script itself is run from the shell; I bet you can guess why I've needed these recently. There is also now a `--pythonhelp` command-line option recognized that spits out a bit of info about using the script as a Python 3 module.
 
 
 FUTURE PLANS

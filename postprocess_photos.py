@@ -66,25 +66,14 @@ programs:
 Remember that Ubuntu is not Debian and package names may be different. Synaptic
 is your friend if you're having trouble finding things.
 
-This script can also be imported as a Python module (it requires Python 3); you
-might plausibly do something like this in a Python interpreter:
-    
-    import postprocess_photos as pp
-    help(pp)                        # to see the documentation for the script 
-    pp.read_filename_mappings()     # to read in the existing file_names.csv
-    pp.process_shell_scripts()
+This script can also be imported as a Python module (it requires Python 3); try
+typing ./postprocess_photos.py --pythonhelp in a terminal for more.
 
-This would read the existing filename mappings back into memory and rewrite the
-shell scripts in the directory; this might be useful, for instance, if the
-previous run of the script had been interrupted before this could be done. Note
-that, for most things the module can do, it needs to have a set of filename
-mappings in memory; this can be done by calling read_filename_mappings() to
-read an existing file_names.csv into memory, if that was created by a previous
-call to rename_photos(); if this hasn't been done yet, call rename_photos to
-rename the photos and build the mappings.
 
-This program comes with ABSOLUTELY NO WARRANTY. Use at your own risk. It is
-free software, and you are welcome to redistribute it under certain conditions,
+This program comes with ABSOLUTELY NO WARRANTY. Use at your own risk.
+
+postprocess_photos.py is copyright 2015-16 by Patrick Mooney. It is free
+software, and you are welcome to redistribute it under certain conditions,
 according to the GNU general public license, either version 3 or (at your own
 option) any later version. See the file LICENSE.md for details.
 """
@@ -100,6 +89,55 @@ import exifread     # https://github.com/ianare/exif-py; sudo pip3 install exifr
 
 rewrite_scripts_for_TIFF_output = False     # I think I'll abandon this normally, but keep the logic in the script in case I change my mind.
 file_name_mappings = {}.copy()              # Dictionary that maps original names to new names.
+
+def python_help():
+    python_doc = """
+    
+    If you want to use postprocess_photos.py as a Python module, you might plausibly
+    do something like this in a Python 3 shell:
+
+        import postprocess_photos as pp
+        help(pp)                        # to see the documentation for the script 
+        pp.read_filename_mappings()     # to read in the existing file_names.csv
+        pp.process_shell_scripts()
+
+    This would read the existing filename mappings back into memory and rewrite the
+    shell scripts in the directory; this might be useful, for instance, if the
+    previous run of the script had been interrupted before this could be done. Note
+    that, for many things the module can do, it needs to have a set of filename
+    mappings in memory; this can be done by calling read_filename_mappings() to
+    read an existing file_names.csv into memory, if that was created by a previous
+    call to rename_photos(); if this hasn't been done yet, call rename_photos() to
+    rename the photos and build the mappings.
+    
+    There are some utility functions available that are never called by the script
+    when it is merely invoked from the shell; they are available to be called by you
+    from the Python shell once the module has been imported, though. These are
+    currently:
+        
+        spring_forward()
+        fall_back()
+        read_filename_mappings()
+        restore_file_names()
+        
+    Try running
+
+        help(PROCEDURE_NAME)
+    
+    from the Python interpreter for more info on these; e.g., if you imported
+    the module with
+
+        import postprocess_photos as pp
+
+    (as in the example above), you might try
+    
+        help(pp.fall_back). 
+    
+    You can also try help(pp) or help(postprocess_photos) for complete docs. 
+
+    """
+    print(python_doc)
+
 
 def print_usage():
     "Display a usage message."
@@ -333,10 +371,14 @@ def run_shell_scripts():
 # OK, let's go
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        print_usage()
         if sys.argv[1] == '--help' or sys.argv[1] == '-h':
+            print_usage()
+            sys.exit(0)
+        elif sys.argv[1] == '--pythonhelp':
+            python_help()
             sys.exit(0)
         else:               # There should be no command-line arguments other than --help or -h
+            print_usage()
             sys.exit(1)
 
     if input('\nDo you want to postprocess the directory %s?  ' % os.getcwd())[0].lower() != 'y':
