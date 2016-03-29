@@ -69,6 +69,12 @@ Added `introspection.py`, which will eventually contain routines to support that
 -------------
 Logic updated in `postprocess_photos` to create an `HDR_components` subdirectory, then have the scripts that are rewritten move ... well, the HDR components ... to that subdirectory. The script is now more self-documenting, too. And there are `spring_forward()` and `fall_back()` routines that are never run when the script itself is run from the shell; I bet you can guess why I've needed these recently. There is also now a `--pythonhelp` command-line option recognized that spits out a bit of info about using the script as a Python 3 module.
 
+29 March 2016
+-------------
+Added `create_HDR_scripts.py` to the library, because a series of stupid mistakes cause me to accidentally erase all of the HDR scripts, and their backups, for the first folder (`/home/patrick/Photos/2016-03-15/`) of photos from my recent vacation, as I edited and tested a new version of the `postprocess_photos.py` script. `postprocess_photos.py` now imports this script as a module and uses it to create the HDR scripts from basic info in either the enfuse or align+enfuse scripts. `postprocess_photos.py` now also offers to hang around at the end of its run, running any executable scripts it finds. I find this helpful in the case of the recent script deletions to have it do so, then set `create_HDR_scripts.py` as an action in GQView, and using it to create scripts that will automatically by run by the watchful process.
+
+`create_HDR_scripts.py` can be imported as a Python module, which exposes some additional functionality. 
+
 
 FUTURE PLANS
 ============

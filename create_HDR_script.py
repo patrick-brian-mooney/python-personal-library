@@ -20,14 +20,14 @@ import sys
 import glob
 import os
 
-total_number_of_files = 5   # Total number of input files that are referenced in the generated enfuse script
+total_number_of_files = 5   # Total number of input files that are referenced by default in the generated enfuse script
 
 def print_usage(exit_value=0):
     """Print a usage message."""
     print(__doc__)
     sys.exit(exit_value)
 
-def create_script_from_file_list(HDR_input_files):
+def create_script_from_file_list(HDR_input_files, file_to_move=None, file_to_delete=None):
     """This procedure creates an enfuse HDR script from a list of files that compose it."""
     output_file = os.path.splitext(HDR_input_files[0])[0].strip() + "_HDR.TIFF"
     output_TIFF_base = os.path.splitext(output_file)[0].strip().replace('-','').replace('_','')
@@ -61,15 +61,32 @@ mv %s HDR_components/
         script_file.write(''.join(the_script))
     
     os.chmod(script_file_name, os.stat(script_file_name).st_mode | 0o111)    # or, in Bash language, "chmod a+x SCRIPT_FILE_NAME"
+    
+    if file_to_move:
+        try:
+            if not os.path.exists('old_scripts/'):
+                os.mkdirs('old_scripts')
+            shutil.move(file_to_move, 'old_scripts/')
+        except:
+            print('ERROR: unable to move the old script %s' % file_to_move)
+    if file_to_delete:
+        try:
+            os.remove(file_to_delete)
+        except:
+            print('ERROR: unable to delete the old script %s' % file_to_delete)
 
 
-def create_script_from_first_file(first_file, num_files=total_number_of_files):
+
+def create_script_from_first_file(first_file, num_files=total_number_of_files, file_to_delete=None):
     """This script creates an enfuse HDR script from the first file on the list and,
     optionally, the number of files that sequentially follow the first file that
     should be input files for the enfuse operation.
     
     To adjust the default number of files to use as inputs to the enfuse operation,
     change the value of the total_number_of_files constant, above.
+    
+    FILE_TO_DELETE specifies the name of a file (e.g., an old script, for instance)
+    to delete if the creation of the new script is successful.
     """
     oldpath = os.getcwd()
     newdir, first_file = os.path.split(first_file)
@@ -80,8 +97,8 @@ def create_script_from_first_file(first_file, num_files=total_number_of_files):
     selected_file_position = files_in_directory.index(first_file)
     HDR_input_files = files_in_directory[selected_file_position : selected_file_position + num_files]
     
-    create_script_from_file_list(HDR_input_files)
-        
+    create_script_from_file_list(HDR_input_files, file_to_delete=file_to_delete)
+            
     os.chdir(oldpath)
 
 if __name__ == "__main__":
