@@ -351,7 +351,7 @@ def hang_around():
     create_HDR_script.py).
     """
     if input("Want me to hang around and run scripts that show up? (Say NO if unsure.) --|  ").strip().lower()[0] == "y":
-        print('OK, hit ctrl-C when finished.\n')
+        print('\n\nOK, hit ctrl-C when finished.\n')
         while True:
             print('Looking for executable shell scripts at %s...' % (datetime.datetime.now().isoformat()))
             file_list = [which_script for which_script in glob.glob("*SH") if os.access(which_script, os.X_OK)]
@@ -359,7 +359,8 @@ def hang_around():
                 print('Found script %s.' % file_list[0])
                 subprocess.call('./' + file_list[0])
                 os.system('chmod a-x -R %s' % file_list[0])
-            time.sleep(30)
+            else:
+                time.sleep(30)
 
 # OK, let's go
 if __name__ == "__main__":
