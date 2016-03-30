@@ -65,7 +65,7 @@ mv %s HDR_components/
     if file_to_move:
         try:
             if not os.path.exists('old_scripts/'):
-                os.mkdirs('old_scripts')
+                os.mkdir('old_scripts')
             shutil.move(file_to_move, 'old_scripts/')
         except:
             print('ERROR: unable to move the old script %s' % file_to_move)
@@ -74,7 +74,6 @@ mv %s HDR_components/
             os.remove(file_to_delete)
         except:
             print('ERROR: unable to delete the old script %s' % file_to_delete)
-
 
 
 def create_script_from_first_file(first_file, num_files=total_number_of_files, file_to_delete=None):
