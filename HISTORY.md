@@ -76,10 +76,14 @@ Added `create_HDR_scripts.py` to the library, because a series of stupid mistake
 `create_HDR_scripts.py` can be imported as a Python module, which exposes some additional functionality. 
 
 
+17 April
+--------
+Updating with minor changes to `create_HDR_script.py` and `postprocess_photos.py`, both of which now support new script `HDR_from_all.py`, a quick hack that just creates an enfuse script for all photos in the current directory, then runs it. `genClassCalendar.py` was updated for spring quarter, and `poetry_to_prose.py` now avoids crashes that used to happen occasionally based on miscounting. 
+
 FUTURE PLANS
 ============
 * Abstractify the logger interface in `patrick_logger.py`.
-* Do pure Python EXIF-based image roatation in `postprocess-photos.py`.
+* Do pure Python EXIF-based image rotation in `postprocess-photos.py`.
 
 KNOWN BUGS
 ==========

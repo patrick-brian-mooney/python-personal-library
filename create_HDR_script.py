@@ -60,15 +60,16 @@ mv %s HDR_components/
     with open(script_file_name, mode='w') as script_file:
         script_file.write(''.join(the_script))
     
-    os.chmod(script_file_name, os.stat(script_file_name).st_mode | 0o111)    # or, in Bash language, "chmod a+x SCRIPT_FILE_NAME"
+    os.chmod(script_file_name, os.stat(script_file_name).st_mode | 0o111)    # or, in Bash, "chmod a+x SCRIPT_FILE_NAME"
     
     if file_to_move:
         try:
             if not os.path.exists('old_scripts/'):
                 os.mkdir('old_scripts')
-            shutil.move(file_to_move, 'old_scripts/')
-        except:
+            shutil.move(file_to_move, os.path.join(os.getcwd(), 'old_scripts/'))
+        except Exception as e:
             print('ERROR: unable to move the old script %s' % file_to_move)
+            print('    The system said "%s".' % str(e))
     if file_to_delete:
         try:
             os.remove(file_to_delete)

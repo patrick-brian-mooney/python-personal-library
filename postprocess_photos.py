@@ -83,6 +83,7 @@ import shutil
 import csv
 import datetime
 import time
+import shutil
 
 import exifread                     # https://github.com/ianare/exif-py; sudo pip3 install exifread
 

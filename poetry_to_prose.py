@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
-"""Removes line endings from lines that don't end with sentence-terminating punctuation."""
+"""Removes line endings from lines that don't end with sentence-terminating punctuation.
+
+Usage:
+    
+    ./poetry_to_prose.py FILENAME
+
+This program is copyright 2016 by Patrick Mooney. It is licensed under the GPL,
+either version 3 or (at your option) any later version. See the file LICENSE.md
+for a copy of this license.
+
+
+"""
 
 
 debugging = True
