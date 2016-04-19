@@ -45,18 +45,26 @@ the_files_list = ' '.join(the_files)
 project_file = the_files[0] + ".pto"
 if the_files:
     the_script = """#!/usr/bin/env bash
-    pto_gen -o %s %s
-    """ % (project_file, the_files_list)
+# This script written by Patrick Mooney's create_HDR_script.py script, see
+#     https://github.com/patrick-brian-mooney/personal-library/blob/master/create_panorama_script.py
+pto_gen -o %s %s
+""" % (project_file, the_files_list)
     
     the_script = the_script + """
-    cpfind --multirow --celeste -o %s %s
-    cpclean --output=%s %s
-    linefind -o %s %s
-    autooptimiser -a -l -s -m o %s %s
-    pano_modify --canvas=AUTO --crop=AUTO -o %s %s
-    PTBatcherGUI -b %s
-    """ % tuple([project_file] * 11)
+cpfind --multirow --celeste -o %s %s
+cpclean --output=%s %s
+linefind -o %s %s
+autooptimiser -a -l -s -m o %s %s
+pano_modify --canvas=AUTO --crop=AUTO -o %s %s
+PTBatcherGUI -b %s
+""" % tuple([project_file] * 11)
     
-    pp.run_shell_scripts()
+    script_file_name = os.path.splitext(the_files[0])[0] + '.SH'
+    with open(script_file_name, mode='w') as script_file:
+        script_file.write(''.join(the_script))
+    
+    os.chmod(script_file_name, os.stat(script_file_name).st_mode | 0o111)    # or, in Bash, "chmod a+x SCRIPT_FILE_NAME"
+    
+    # pp.run_shell_scripts()
 else:
     raise IndexError('You must call HDR_from_all.py in a folder with at least one *jpg or *JPG file;\n   current working directory is %s' % os.getcwd())
