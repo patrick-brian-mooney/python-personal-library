@@ -23,7 +23,8 @@ you would involve:
     * runs CPClean with default parameters;
     * automatically optimizes control points, finds a suitable projection,
       and does photometric optimization;
-    * automatically calculates ostensibly optimal canvas and crop sizes;
+    * automatically calculates ostensibly optimal canvas and crop sizes; and
+    * queues the panorama to be stitched in PTBatchGUI.
     
       
      
