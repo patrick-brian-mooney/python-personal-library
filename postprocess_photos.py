@@ -64,8 +64,9 @@ Remember that Ubuntu is not Debian and package names may be different. Synaptic
 is your friend if you're having trouble finding things.
 
 This script can also be imported as a Python module (it requires Python 3); try
-typing ./postprocess_photos.py --pythonhelp in a terminal for more.
-
+typing
+    ./postprocess_photos.py --pythonhelp
+in a terminal for more.
 
 This program comes with ABSOLUTELY NO WARRANTY. Use at your own risk.
 
@@ -75,15 +76,7 @@ according to the GNU general public license, either version 3 or (at your own
 option) any later version. See the file LICENSE.md for details.
 """
 
-import sys
-import subprocess
-import os
-import glob
-import shutil
-import csv
-import datetime
-import time
-import shutil
+import sys, subprocess, os, glob, shutil, csv, datetime, time, shutil
 
 import exifread                     # https://github.com/ianare/exif-py; sudo pip3 install exifread
 
@@ -91,7 +84,6 @@ import create_HDR_script as hdr     # https://github.com/patrick-brian-mooney/pe
 
 resume_previous_run = False
 
-rewrite_scripts_for_TIFF_output = False     # I think I'll abandon this normally, but keep the logic in the script in case I change my mind.
 file_name_mappings = {}.copy()              # Dictionary that maps original names to new names.
 
 def python_help():
@@ -119,10 +111,10 @@ def python_help():
     from the Python shell once the module has been imported, though. These are
     currently:
 
-        spring_forward()
-        fall_back()
-        read_filename_mappings()
-        restore_file_names()
+        spring_forward():           if you forgot about DST before taking photos
+        fall_back():                if you forgot about DST before photographing
+        read_filename_mappings():   if you need to reload these to resume 
+        restore_file_names():       if you need to undo the auto-renaming
 
     Try running
 

@@ -78,7 +78,9 @@ Added `create_HDR_scripts.py` to the library, because a series of stupid mistake
 
 17 April
 --------
-Updating with minor changes to `create_HDR_script.py` and `postprocess_photos.py`, both of which now support new script `HDR_from_all.py`, a quick hack that just creates an enfuse script for all photos in the current directory, then runs it. `genClassCalendar.py` was updated for spring quarter, and `poetry_to_prose.py` now avoids crashes that used to happen occasionally based on miscounting. 
+Updating with minor changes to `create_HDR_script.py` and `postprocess_photos.py`, both of which now support new script `HDR_from_all.py`, a quick hack that just creates an enfuse script for all photos in the current directory, then runs it. `genClassCalendar.py` was updated for spring quarter, and `poetry_to_prose.py` now avoids crashes that used to happen occasionally based on miscounting.
+
+Also, there's now a `create_panorama_script.py` script, which does just what you'd think. It still needs a lot of testing before I'll be happy about it, but it's a step toward automating this rather time-consuming task.
 
 FUTURE PLANS
 ============
