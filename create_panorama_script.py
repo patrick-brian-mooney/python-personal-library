@@ -67,4 +67,4 @@ PTBatcherGUI -b %s
     
     # pp.run_shell_scripts()
 else:
-    raise IndexError('You must call create_panorama_script.py in a folder with at least one *jpg or *JPG file;\n   current working directory is %s' % os.getcwd())
+    raise IndexError('You must call create_panorama_script.py in a folder with at least one .jpg or .JPG file;\n   current working directory is %s' % os.getcwd())
