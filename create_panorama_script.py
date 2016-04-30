@@ -11,27 +11,25 @@ it automates my own most common panorama stitching process. It leaves behind a
 .pto file that can be modified by hand, though.
 
 A short (i.e., non-comprehensive) list of choices the output script makes for
-you would involve:
+you would include:
     * using CPFind as the control point detector;
     * continuously overwriting the same project file instead of leaving
       multiple project files behind to allow for problem tracing;
     * the assumption that the input images are taken with a rectilinear lens;
-    * runs Celeste;
-    * runs CPFind's version of Celeste instead of Celeste standalone;
-    * uses the --multirow match detection algorithm, which is generally good
+    * running Celeste;
+    * running CPFind's version of Celeste instead of Celeste standalone;
+    * using the --multirow match detection algorithm, which is generally good
       but not perfect for all possible scenarios;
-    * runs CPClean with default parameters;
-    * automatically optimizes control points, finds a suitable projection,
-      and does photometric optimization;
+    * running CPClean with default parameters;
+    * automatically optimizing control points, finding a suitable projection,
+      and doing photometric optimization;
     * automatically calculates ostensibly optimal canvas and crop sizes; and
     * queues the panorama to be stitched in PTBatchGUI.
-    
-      
-     
+
 
 This program comes with ABSOLUTELY NO WARRANTY. Use at your own risk.
 
-postprocess_photos.py is copyright 2015-16 by Patrick Mooney. It is free
+create_panorama_script.py is copyright 2016 by Patrick Mooney. It is free
 software, and you are welcome to redistribute it under certain conditions,
 according to the GNU general public license, either version 3 or (at your own
 option) any later version. See the file LICENSE.md for details.
@@ -53,14 +51,14 @@ pto_gen -o %s %s
     
     the_script = the_script + """
 cpfind --multirow --celeste -o %s %s
-cpclean --output=%s %s
+cpclean -o %s %s
 linefind -o %s %s
 autooptimiser -a -l -s -m o %s %s
 pano_modify --canvas=AUTO --crop=AUTO -o %s %s
-PTBatcherGUI -b %s
+PTBatcherGUI -b %s &    # Let the script go into the background once we've passed off control to a GUI application.
 """ % tuple([project_file] * 11)
     
-    script_file_name = os.path.splitext(the_files[0])[0] + '.SH'
+    script_file_name = os.path.splitext(the_files[0])[0] + '-pano.SH'
     with open(script_file_name, mode='w') as script_file:
         script_file.write(''.join(the_script))
     

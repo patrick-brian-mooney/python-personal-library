@@ -21,6 +21,7 @@ import glob
 import os
 
 total_number_of_files = 5   # Total number of input files that are referenced by default in the auto-generated enfuse script
+debugging = False           # Be chatty about what's going on.
 
 def print_usage(exit_value=0):
     """Print a usage message."""
@@ -93,10 +94,17 @@ def create_script_from_first_file(first_file, num_files=total_number_of_files, f
     if newdir: 
         os.chdir(newdir)
     
+    if debugging:
+        print('creating script starting with file %s.' % first_file)
+        print('     current directory is %s.' % os.getcwd())
+
     files_in_directory = sorted(glob.glob('*jpg') + glob.glob('*JPG'))
-    selected_file_position = files_in_directory.index(first_file)
+    selected_file_position = files_in_directory.index(os.path.split(first_file)[1])
     HDR_input_files = files_in_directory[selected_file_position : selected_file_position + num_files]
     
+    if debugging:
+        print('     files in use are: %s' % ' '.join(HDR_input_files))
+
     create_script_from_file_list(HDR_input_files, file_to_delete=file_to_delete)
             
     os.chdir(oldpath)
