@@ -21,7 +21,7 @@ import glob
 import os
 
 total_number_of_files = 5   # Total number of input files that are referenced by default in the auto-generated enfuse script
-debugging = False           # Be chatty about what's going on.
+debugging = False           # Be chatty about what's going on?
 
 def print_usage(exit_value=0):
     """Print a usage message."""
