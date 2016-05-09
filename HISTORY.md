@@ -96,7 +96,8 @@ There's a generic module now, `scripts_runner.py`, containing procedures that se
 
 8 May 2016
 ----------
-`postprocess_photos.py` now indicates that it's renaming even before the renaming operation is complete. 
+* `postprocess_photos.py` now indicates that it's renaming even before the renaming operation is complete.
+* `postprocess_photos.py` now takes a more broadly applicable guess at a filename for photos without any EXIF info. 
 
 
 FUTURE PLANS

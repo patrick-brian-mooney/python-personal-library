@@ -204,8 +204,9 @@ def rename_photos():
             except KeyError:
                 try:
                     dt = tags['Image DateTime'].values
-                except KeyError:            # Sigh. Not all of my image-generating devices generate EXIF info in all circumstances. Base date on filename.
-                    dt = which_image[1 + which_image.find('_'):]    # works for pix from my phone cam: just strip off leading "IMG_"
+                except KeyError:            # Sigh. Not all of my image-generating devices generate EXIF info in all circumstances. Guess date based on file name.
+                    dt = str([char for char in which_image if char.isdigit()])  # At this point, just take a guess.
+            dt = dt.ljust(20)   # Even if it's just gibberish, make sure it's long enough gibberish
             datetime_string = '%s-%s-%s_%s_%s_%s.jpg' % (dt[0:4], dt[5:7], dt[8:10], dt[11:13], dt[14:16], dt[17:19])
             file_list.append([datetime_string, which_image])
             f.close()
@@ -215,7 +216,7 @@ def rename_photos():
         file_list.sort(key=lambda item: item[1])
         file_list.sort(key=lambda item: item[0])
 
-        # Finally, actually rename the files, keeping a dictionary mapping the original to the new names.
+        # Finally, actually rename the files, keeping a dictionary that maps the original to the new names.
         try:
             while len(file_list) > 0:
                 which_file = file_list.pop(0)
