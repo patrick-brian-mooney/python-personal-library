@@ -37,7 +37,7 @@ option) any later version. See the file LICENSE.md for details.
 
 import os, glob, subprocess
 
-import postprocess_photos as pp # https://github.com/patrick-brian-mooney/personal-library/blob/master/postprocess_photos.py
+import postprocess_photos as pp     # https://github.com/patrick-brian-mooney/personal-library/blob/master/postprocess_photos.py
 
 the_files = sorted(glob.glob('*JPG') + glob.glob('*jpg'))
 the_files_list = ' '.join(the_files)
@@ -53,7 +53,7 @@ pto_gen -o %s %s
 cpfind --multirow --celeste -o %s %s
 cpclean -o %s %s
 linefind -o %s %s
-autooptimiser -a -l -s -m o %s %s
+autooptimiser -a -l -s -m -o %s %s
 pano_modify --canvas=AUTO --crop=AUTO -o %s %s
 PTBatcherGUI -b %s &    # Let the script go into the background once we've passed off control to a GUI application.
 """ % tuple([project_file] * 11)

@@ -86,6 +86,19 @@ Also, there's now a `create_panorama_script.py` script, which does just what you
 -------------
 `create_panorama_script.py` now creates scripts that end in `-pano.SH`, which should help to prevent them from overwriting existing HDR scripts.
 
+6 May 2016
+----------
+Rewrote some of the logic in `postprocess_photos.py`: now the "do you want me to hang around?" prompt is part of the main loop, rather than the procedure hang_around(). Also, run_shell_scripts() no longer prints that it's running enfuse scripts; instead, it prints that it's running scripts in a particular directory.
+
+7 May 2016
+----------
+There's a generic module now, `scripts_runner.py`, containing procedures that search for scripts. Currently, it has one procedure that walks through a specified directory, running an executable *SH files it finds.
+
+8 May 2016
+----------
+`postprocess_photos.py` now indicates that it's renaming even before the renaming operation is complete. 
+
+
 FUTURE PLANS
 ============
 * Abstractify the logger interface in `patrick_logger.py`.
