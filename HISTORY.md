@@ -6,7 +6,7 @@ Current version is v1.2, 29 September 2015
 
 v1: 7 October 2015
 ------------------
-Only contains the file "patrick_logger.py", a simple logging application.
+Only contains the file "patrick_logger.py", a simple logging module.
 
 v1.1: 28 December 2015
 ----------------------
@@ -97,7 +97,15 @@ There's a generic module now, `scripts_runner.py`, containing procedures that se
 8 May 2016
 ----------
 * `postprocess_photos.py` now indicates that it's renaming even before the renaming operation is complete.
-* `postprocess_photos.py` now takes a more broadly applicable guess at a filename for photos without any EXIF info. 
+* `postprocess_photos.py` now takes a more broadly applicable guess at a time-based filename for photos without any EXIF info. 
+
+8 July 2016
+-----------
+Added `defuseBOM.py`, which removes the BOM from UTF-8 files if it exists (and seems to tolerate BOMless UTF-8, too).
+
+21 July 2016
+------------
+Expanded `introspection.py` so that it now has a routine `class_methods_in_module`, which is handy for Zombie Apocalypse.
 
 
 FUTURE PLANS

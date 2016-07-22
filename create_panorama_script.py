@@ -15,16 +15,27 @@ you would include:
     * using CPFind as the control point detector;
     * continuously overwriting the same project file instead of leaving
       multiple project files behind to allow for problem tracing;
-    * the assumption that the input images are taken with a rectilinear lens;
+    * treating the first file (according to standard lexicographic sort by
+      filename) as the reference (or "anchor") image for the purposes of both
+      position and exposure, which often winds up not being the best choice;
+    * assuming that the input images are taken with a rectilinear lens;
     * running Celeste;
     * running CPFind's version of Celeste instead of Celeste standalone;
-    * using the --multirow match detection algorithm, which is generally good
-      but not perfect for all possible scenarios;
+    * using the --multirow match detection algorithm, which is generally
+      pretty good, but which is not perfect for all possible scenarios, and
+      which does unnecessary work in single-row panoramas, sometimes causing
+      problems on its own;
     * running CPClean with default parameters;
-    * automatically optimizing control points, finding a suitable projection,
-      and doing photometric optimization;
-    * automatically calculates ostensibly optimal canvas and crop sizes; and
-    * queues the panorama to be stitched in PTBatchGUI.
+    * automatically optimizing control points, which is almost certainly a
+      good idea in most cases;
+    * trying to find a suitable projection type, which is often basically
+      successful but rarely makes the absolute best possible choice;  
+    * doing photometric optimization, which wastes time if the shots were
+      exposed manually;
+    * trying to find vertical control points, which is often successful and
+      frequently a good idea, though the process can go astray 
+    * automatically calculating ostensibly optimal canvas and crop sizes; and
+    * queuing the panorama to be stitched using PTBatchGUI.
 
 
 This program comes with ABSOLUTELY NO WARRANTY. Use at your own risk.

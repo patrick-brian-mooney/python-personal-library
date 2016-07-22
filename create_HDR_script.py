@@ -19,6 +19,7 @@ option) any later version. See the file LICENSE.md for details.
 import sys
 import glob
 import os
+import shutil
 
 total_number_of_files = 5   # Total number of input files that are referenced by default in the auto-generated enfuse script
 debugging = False           # Be chatty about what's going on?

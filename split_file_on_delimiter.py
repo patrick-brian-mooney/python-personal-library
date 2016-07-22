@@ -11,7 +11,7 @@ splits the file FILENAME into FILENAME-0001, FILENAME-0002, etc. on the
 specified delimiter, producing them in the same directory as FILENAME. FILENAME
 still exists after this script runs.
 
-Copyright © 2016–present by Patrick Mooney. 
+Copyright © 2016 by Patrick Mooney. 
 
 This script is licensed under the GNU GPL, either v3 or, at your option, any
 later version. See the file LICENSE.md for a copy of this license. You are

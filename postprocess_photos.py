@@ -80,7 +80,7 @@ according to the GNU general public license, either version 3 or (at your own
 option) any later version. See the file LICENSE.md for details.
 """
 
-import sys, subprocess, os, glob, shutil, csv, datetime, time, shutil
+import sys, subprocess, os, glob, shutil, csv, datetime, time
 
 import exifread                     # https://github.com/ianare/exif-py; sudo pip3 install exifread
 
@@ -133,7 +133,8 @@ def python_help():
 
         help(pp.fall_back)
 
-    You can also try help(pp) or help(postprocess_photos) for complete docs.
+    You can also try help(pp) or help(postprocess_photos) for complete docs, or 
+    dir(pp) or dir(postprocess_photos) to inspect the module.
 
     """
     print(python_doc)
@@ -303,11 +304,12 @@ def process_shell_scripts():
                     # version 1.0.2-ml-v2.3, which currently looks like this:
                     #
                     #    align_image_stack -m -a OUTPUT_PREFIX INFILE1.JPG INFILE2.JPG [...]
+                    
                     # The number of infiles depends, of course, on settings that were in effect when the sequence was taken.
                     #
                     # So, the align_line, when tokenized, is, by array index:
                     #   [0] executable name
-                    #   [1] -m, "optimize field of view for all images except for the first.
+                    #   [1] -m, a switch meaning "optimize field of view for all images except for the first."
                     #   [2 and 3] -a OUTPUT_PREFIX specifies the prefix for all of the output files.
                     #   [4 to end] the names of the input files.
                     HDR_input_files = [file_name_mappings[which_file] if which_file in file_name_mappings
@@ -336,15 +338,14 @@ def run_shell_scripts():
     try:
         os.mkdir('HDR_components')
         print("\nHDR_components/ directory created.")
-    except FileExistsError:
-        pass
+    except FileExistsError: pass                                            # target directory already exists? Cool!
     print("Running executable scripts in %s ..." % os.getcwd())
     file_list = sorted([which_script for which_script in glob.glob("*SH") if os.access(which_script, os.X_OK)])
     for which_script in file_list:
         print('\n\n    Running script: %s' % which_script)
         subprocess.call('./' + which_script)
         os.system('chmod a-x -R %s' % which_script)
-    print("\n\n ... done.")
+    print("\n\n ... done running scripts.")
 
 def hang_around():
     """Offers to hang around, monitoring for executable shell scripts in the
@@ -361,7 +362,7 @@ def hang_around():
     """
     while True:
         print('Looking for executable shell scripts at %s...' % (datetime.datetime.now().isoformat()))
-        file_list = [which_script for which_script in glob.glob("*SH") if os.access(which_script, os.X_OK)]
+        file_list = [which_script for which_script in glob.glob("*SH") if os.access(which_script, os.X_OK, effective_ids=True)]
         if len(file_list) > 0:
             print('Found %d script(s); executing ...' % len(file_list))
             run_shell_scripts()
