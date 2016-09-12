@@ -1,3 +1,21 @@
-      <p>This website currently consists of 1 WordPress blog, a self-hosted installation (it's currently at v4.4.2). At the moment, this blog contains 1432 files and 158 directories, though I haven't dug into it to see more specifically what they are. I keep meaning to do that; it just hasn't happened.</p>
-      <p>Aside from that blog, the rest of the site consists of 420 hand-coded (X)HTML files (316, over 75%, are in the <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/ta/"><code>ta/</code></a> directory); 98 directories; 11 CSS stylesheets; 50 graphics files; 11 XML files (including several feeds, a Bing site authorization file (ugh), and <a rel="me" href="http://patrickbrianmooney.nfshost.com/sitemap.xml">a sitemap</a> for the site); 6 plain-text files (more likely to be intended for robots than humans); 1 GEDCOM file and 1 ZIP file (both related to <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/greek-myth/greek-genealogy.html">the Greek Mythic genealogy project</a>); 2 Resource Description Framework files (<a href="http://patrickbrianmooney.nfshost.com/~patrick/presentations/w10/harvey/reading-notes/harvey-citation.rdf">a Zotero citation</a> for my Winter 2010 class <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/presentations/w10/harvey/">presentation</a> on David Harvey's <cite class="book-title">The Condition of Postmodernity</cite>, and <a rel="me" href="http://patrickbrianmooney.nfshost.com/foaf.rdf">my FOAF description</a>); 1 BibTex file (<a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/presentations/w10/harvey/reading-notes/harvey-citation.bib">an alternate representation of my notes on <cite class="book-title">The Condition of Postmodernity</cite> in that format); 1 <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/nav.js">JavaScript file</a>, perennially planned to be phased out in favor of PHP (if I ever learn PHP); 3 <code>bash</code> scripts, none of which runs on the server (all described in some document beneath <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/projects/"><code>projects/</code>); 5 CGI scripts written in Python (both related to <a rel="http://patrickbrianmooney.nfshost.com/~patrick/projects/sarah-palin">the Sarah Palin Quotes Quiz</a>; and who knows what else that I've forgotten to include here.</p>
+      <p>This website currently consists of:
+      <ul>
+        <li>One <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/blogs/NorCheeringCrowds/">WordPress blog</a>, a self-hosted installation (it's currently at v4.4.2). At the moment, this blog contains 1432 files and 158 directories, though I haven't dug into it to see more specifically what they are. I keep meaning to do that; it just hasn't happened.</li>
+        <li>One <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/blogs/XPB/">Jekyll blog</a> (currently produced by Jekyll 3.1.6), which currently consists of 150 HTML and XML files, and 2 CSS files.</li>
+      <p>Aside from the blogs, the rest of the site consists of 693 other files:</p>
+	  <ul>
+        <li>480 hand-coded (X)HTML files (394, over 80%, are in the <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/ta/"><code>ta/</code></a> directory) </li>
+        <li>9 XML files</li>
+        <li>21 CSS files</li>
+        <li>2 JavaScript files</li>
+        <li>1 BIBTex and 1 RDF file</li>
+        <li>63 PNG images, 9 JPEG images, 2 GIF images, 1 .ico image</li>
+        <li>13 PDF files</li>
+        <li>5 CGI scripts</li>
+        <li>3 shell scripts</li>
+        <li>68 bzip2 archives</li>
+        <li>9 other plain text files</li>
+        <li>2 genealogical databases</li>
+      </ul>
+	  <p>The above statistics all refer exclusively to the /~patrick subfolder. There are 111 directories in the entier filesystem.
       <p>A complete auto-generated sitemap for the site at this moment is included as part of this Atom feed entry's metadata. Note that some files reported there are <q>virtual</q> files, i.e. do not actually exist in that location but are hosted elsewhere.</p>

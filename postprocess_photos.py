@@ -6,7 +6,7 @@ The postprocess-photos.py script performs the kind of postprocessing work that
 needs to happen when I move photos to my hard drive. It processes an entire
 directory at a time; just invoke it by typing
 
-    postprocess-photos.py
+    ./postprocess-photos.py
 
 in the directory that needs to be processed.
 
@@ -117,7 +117,7 @@ def python_help():
 
         spring_forward():           if you forgot about DST before taking photos
         fall_back():                if you forgot about DST before photographing
-        read_filename_mappings():   if you need to reload these to resume 
+        read_filename_mappings():   if you need to reload these to resume
         restore_file_names():       if you need to undo the auto-renaming
 
     Try running
@@ -133,7 +133,7 @@ def python_help():
 
         help(pp.fall_back)
 
-    You can also try help(pp) or help(postprocess_photos) for complete docs, or 
+    You can also try help(pp) or help(postprocess_photos) for complete docs, or
     dir(pp) or dir(postprocess_photos) to inspect the module.
 
     """
@@ -304,7 +304,7 @@ def process_shell_scripts():
                     # version 1.0.2-ml-v2.3, which currently looks like this:
                     #
                     #    align_image_stack -m -a OUTPUT_PREFIX INFILE1.JPG INFILE2.JPG [...]
-                    
+
                     # The number of infiles depends, of course, on settings that were in effect when the sequence was taken.
                     #
                     # So, the align_line, when tokenized, is, by array index:
@@ -354,7 +354,7 @@ def hang_around():
     script can be left running while the files in the directory are manually
     examined and new shell scripts are created (perhaps by running
     create_HDR_script.py). Note that this will have to be interrupted with Ctrl+C;
-    it will otherwise just run forever, waiting. 
+    it will otherwise just run forever, waiting.
 
     This routine DOES NOT REQUIRE that filename mappings have been read into
     memory; it just runs all the executable shell scripts in the current
