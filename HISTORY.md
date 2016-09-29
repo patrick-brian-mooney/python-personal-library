@@ -108,6 +108,12 @@ Added `defuseBOM.py`, which removes the BOM from UTF-8 files if it exists (and s
 Expanded `introspection.py` so that it now has a routine `class_methods_in_module`, which is handy for Zombie Apocalypse.
 
 
+28 September 2016
+------------------
+* `create_panorama_script.py` now calls `hugin_executor` instead of `PTBatcherGUI`, to save memory.
+  * and it comments out the line that calls hugin_executor, because I'm currently generating a lot of new scripts.
+
+
 FUTURE PLANS
 ============
 * Abstractify the logger interface in `patrick_logger.py`.
