@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""This quick hack makes bash script that uses the PTTools to stitch a panorama
-from all photos in the current directory. Then it runs that script. It assumes
-that all of the photos are JPGs in the current directory, that all of the JPGs
-in the current directory are photos for the project, and that there are no
-other .SH files in the current directory.
-
-The output script written by this script makes a lot of assumptions; basically,
-it automates my own most common panorama stitching process. It leaves behind a
-.pto file that can be modified by hand, though.
+"""This quick hack writes a bash script that uses the PTTools to stitch a
+panorama from all photos in the current directory. It assumes that all of the
+photos are JPGs in the current directory, and that all of the JPGs in the
+current directory are photos for the panorama. The output scripts written by
+this script also make a lot of other assumptions; basically, it automates my
+own most common panorama stitching process. It leaves behind a .pto file that
+can be modified by hand if this doesn't work, and in any case, my experience is
+that, even with the script getting many things wrong, starting off
+automatically with this script is faster overall for large projects than doing
+everything manually would be.
 
 A short (i.e., non-comprehensive) list of choices the output script makes for
 you would include:
@@ -35,7 +36,8 @@ you would include:
     * trying to find vertical control points, which is often successful and
       frequently a good idea, though the process can go astray 
     * automatically calculating ostensibly optimal canvas and crop sizes; and
-    * queuing the panorama to be stitched using PTBatchGUI.
+    * using hugin_executor as the stitching program (PTBatchGUI might also be
+      used for this purpose).
 
 
 This program comes with ABSOLUTELY NO WARRANTY. Use at your own risk.
@@ -66,7 +68,7 @@ cpclean -o %s %s
 linefind -o %s %s
 autooptimiser -a -l -s -m -o %s %s
 pano_modify --canvas=AUTO --crop=AUTO -o %s %s
-PTBatcherGUI -b %s &    # Let the script go into the background once we've passed off control to a GUI application.
+# hugin_executor -s %s                              # Uncomment to stitch the panorama immediately
 """ % tuple([project_file] * 11)
     
     script_file_name = os.path.splitext(the_files[0])[0] + '-pano.SH'
@@ -75,6 +77,6 @@ PTBatcherGUI -b %s &    # Let the script go into the background once we've passe
     
     os.chmod(script_file_name, os.stat(script_file_name).st_mode | 0o111)    # or, in Bash, "chmod a+x SCRIPT_FILE_NAME"
     
-    # pp.run_shell_scripts()
+    # pp.run_shell_scripts()    # uncomment this line to automatically run all scripts in the directory.
 else:
     raise IndexError('You must call create_panorama_script.py in a folder with at least one .jpg or .JPG file;\n   current working directory is %s' % os.getcwd())
