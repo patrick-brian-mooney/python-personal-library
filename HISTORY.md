@@ -108,10 +108,22 @@ Added `defuseBOM.py`, which removes the BOM from UTF-8 files if it exists (and s
 Expanded `introspection.py` so that it now has a routine `class_methods_in_module`, which is handy for Zombie Apocalypse.
 
 
+30 August 2016
+--------------
+* added `run_subfolder_scripts.py`, a quick hack that looks through subfolders of the current folder
+  * though not the subfolders of subfolders, etc.
+  * it then runs all executable scripts found in those subfolders, then makes them non-executable.
+
 28 September 2016
 ------------------
 * `create_panorama_script.py` now calls `hugin_executor` instead of `PTBatcherGUI`, to save memory.
   * and it comments out the line that calls hugin_executor, because I'm currently generating a lot of new scripts.
+* finally adding and committing `run_subfolder_scripts.py`, which I'd previously forgotten to do.
+
+30 September 2016
+-----------------
+Added `justrunit.py`, a quick silence-and-nohup wrapper.
+
 
 
 FUTURE PLANS
