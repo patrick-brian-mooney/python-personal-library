@@ -5,7 +5,8 @@
 I import another unit, social_media_auth.py, that contains the necessary
 authentication constants. social_media_auth.py is not, of course, contained
 in the GitHub repo that contains this unit, because, well, those are my private
-authentication constants."""
+authentication constants.
+"""
 
 from tumblpy import Tumblpy
 import tweepy

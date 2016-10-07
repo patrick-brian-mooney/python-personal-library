@@ -124,6 +124,10 @@ Expanded `introspection.py` so that it now has a routine `class_methods_in_modul
 -----------------
 Added `justrunit.py`, a quick silence-and-nohup wrapper.
 
+6 October 2016
+--------------
+* Added `tweet.py`, a quick wrapper for other functions to tweet from the command line.
+* Fixed a typo in `justrunit.py`.
 
 
 FUTURE PLANS
