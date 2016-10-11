@@ -124,7 +124,12 @@ Expanded `introspection.py` so that it now has a routine `class_methods_in_modul
 -----------------
 Added `justrunit.py`, a quick silence-and-nohup wrapper.
 
-
+11 October 2016
+---------------
+* Added `system-backup.py`, a quick sketch of what I'm doing as I prepare to reinstall a Linux distro.
+    * Needs actual testing; I've never run it yet.
+    * Need a command-line option to treat something other than the current root as the root so it can be run on a distro not currently running.
+* Adding `tweet.py`, a quick command-line interfact to tweeting behavior defined elsewhere.
 
 FUTURE PLANS
 ============
