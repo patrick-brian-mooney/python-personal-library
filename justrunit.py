@@ -12,11 +12,11 @@ Usage:
 import subprocess, sys
 
 if len(sys.argv) <= 1:
-    print(__doc__ % sys.argv[0])
+    print('\n\n' + __doc__ % sys.argv[0])
     sys.exit(2)
 
 if sys.argv[1] in ['-h', '--help']:
-    print(__doc__ & sys.argv[0])
+    print('\n\n' + __doc__ % sys.argv[0])
     sys.exit(0)
 
 subprocess.call('nohup %s &> /dev/null &' % ' '.join(sys.argv[1:]), shell=True)
