@@ -19,7 +19,7 @@ if sys.argv[1] in ['-h', '--help']:
     print('\n\n' + __doc__ % sys.argv[0])
     sys.exit(0)
 
-subprocess.call('nohup %s &> /dev/null &' % ' '.join(sys.argv[1:]), shell=True)
+subprocess.call('nohup %s > /dev/null 2>&1 &' % ' '.join(sys.argv[1:]), shell=True)
 
 
 
