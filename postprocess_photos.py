@@ -17,7 +17,9 @@ Currently, it performs the following tasks:
        renamed.csv, indicating what the original name of each renamed file was.
        Files are renamed to an expression that encodes the date and time when
        they were taken, based on the EXIF info or existing filename.
-    3. Keeps track of the original and new names in doing so.
+    3. Keeps track of the original and new names in doing so, and creates a 
+       record of the mapping between old and new names in a file it calls
+       file_names.csv.
     4. Auto-rotates all photos in the current directory by calling exiftran.
     5. If any .SH files are found in the directory being processed, it assumes
        they are Bash scripts that call enfuse, possibly preceded by a call to
@@ -206,9 +208,10 @@ def rename_photos():
                 try:
                     dt = tags['Image DateTime'].values
                 except KeyError:            # Sigh. Not all of my image-generating devices generate EXIF info in all circumstances. Guess date based on file name.
-                    dt = str([char for char in which_image if char.isdigit()])  # At this point, just take a guess.
-            dt = dt.ljust(20)   # Even if it's just gibberish, make sure it's long enough gibberish
-            datetime_string = '%s-%s-%s_%s_%s_%s.jpg' % (dt[0:4], dt[5:7], dt[8:10], dt[11:13], dt[14:16], dt[17:19])
+                    dt = which_image    # At this point, just guess based on filename.
+            dt = ''.join([char for char in which_image if char.isdigit()])            
+            dt = dt.ljust(14)   # Even if it's just gibberish, make sure it's long enough gibberish
+            datetime_string = '%s-%s-%s_%s_%s_%s.jpg' % (dt[0:4], dt[4:6], dt[6:8], dt[8:10], dt[10:12], dt[12:14])
             file_list.append([datetime_string, which_image])
             f.close()
 
@@ -386,10 +389,10 @@ if __name__ == "__main__":
         print('\n\nREMEMBER: this script only works on the current working directory.\n')
         sys.exit(1)
 
-    if not resume_previous_run:
+    if not resume_previous_run:     # Indent/outdent the following lines to get various things skipped when resuming.
         empty_thumbnails()
         rename_photos()
-        rotate_photos()                 # Indent/outdent to get various things skipped when resuming.
+        rotate_photos()
     process_shell_scripts()
     run_shell_scripts()
     if input("Want me to hang around and run scripts that show up? (Say NO if unsure.) --|  ").strip().lower()[0] == "y":

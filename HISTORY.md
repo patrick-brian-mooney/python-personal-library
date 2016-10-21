@@ -122,7 +122,7 @@ Expanded `introspection.py` so that it now has a routine `class_methods_in_modul
 
 30 September 2016
 -----------------
-Added `justrunit.py`, a quick silence-and-nohup wrapper.
+Added `justrunit.py`, a quick silence-and-`nohup` wrapper.
 
 
 6 October 2016
@@ -139,6 +139,13 @@ Added `justrunit.py`, a quick silence-and-nohup wrapper.
 14 October 2016
 ---------------
 * Changed `justrunit.py` so it no longer uses `&>` for redirection, which is a `bash`-only convenience synonym.
+
+20 October 2016
+---------------
+* Fixed (hopefully) a longstanding, low-priority bug in `postprocess_photos.py`.
+  * It emerged with photos with no EXIF info, and resulted in gibberishy names.
+  * Photos with no EXIF info and whose filenames are also not datetime stamps still have gibberishy-looking names.
+    * Really, though, what can you do? If the metadata doesn't exist anywhere, it can't be used, can it?
 
 
 FUTURE PLANS
