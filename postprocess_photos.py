@@ -17,7 +17,7 @@ Currently, it performs the following tasks:
        renamed.csv, indicating what the original name of each renamed file was.
        Files are renamed to an expression that encodes the date and time when
        they were taken, based on the EXIF info or existing filename.
-    3. Keeps track of the original and new names in doing so, and creates a 
+    3. Keeps track of the original and new names in doing so, and creates a
        record of the mapping between old and new names in a file it calls
        file_names.csv.
     4. Auto-rotates all photos in the current directory by calling exiftran.
@@ -89,6 +89,7 @@ import exifread                     # https://github.com/ianare/exif-py; sudo pi
 import create_HDR_script as hdr     # https://github.com/patrick-brian-mooney/personal-library/
 
 resume_previous_run = False
+debugging = False
 
 file_name_mappings = {}.copy()              # Dictionary that maps original names to new names.
 
@@ -209,7 +210,7 @@ def rename_photos():
                     dt = tags['Image DateTime'].values
                 except KeyError:            # Sigh. Not all of my image-generating devices generate EXIF info in all circumstances. Guess date based on file name.
                     dt = which_image    # At this point, just guess based on filename.
-            dt = ''.join([char for char in which_image if char.isdigit()])            
+            dt = ''.join([char for char in dt if char.isdigit()])
             dt = dt.ljust(14)   # Even if it's just gibberish, make sure it's long enough gibberish
             datetime_string = '%s-%s-%s_%s_%s_%s.jpg' % (dt[0:4], dt[4:6], dt[6:8], dt[8:10], dt[10:12], dt[12:14])
             file_list.append([datetime_string, which_image])

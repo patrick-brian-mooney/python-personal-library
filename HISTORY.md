@@ -147,6 +147,11 @@ Added `justrunit.py`, a quick silence-and-`nohup` wrapper.
   * Photos with no EXIF info and whose filenames are also not datetime stamps still have gibberishy-looking names.
     * Really, though, what can you do? If the metadata doesn't exist anywhere, it can't be used, can it?
 
+25 October 2016
+---------------
+* Fixed a new problem introduced in `postprocess_photos.py` by the 20 Oct fix.
+* `tweet.py` now checks, itself, whether tweets are more than 140 characters before trying to post them.
+
 
 FUTURE PLANS
 ============
