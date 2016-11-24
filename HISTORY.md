@@ -151,7 +151,12 @@ Added `justrunit.py`, a quick silence-and-`nohup` wrapper.
 ---------------
 * Fixed a new problem introduced in `postprocess_photos.py` by the 20 Oct fix.
 * `tweet.py` now checks, itself, whether tweets are more than 140 characters before trying to post them.
+  * It does not take URL shortening, however into account.
 
+23 November 2016
+----------------
+* A new module, `text_handling.py`, has been created. It's intended to collect some text-handling utilities.
+  * Currently, it just has a `print_indented()` function, which breaks lines and keeps padding at the beginning and end of each line.
 
 FUTURE PLANS
 ============
