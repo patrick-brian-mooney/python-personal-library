@@ -73,7 +73,7 @@ Logic updated in `postprocess_photos` to create an `HDR_components` subdirectory
 -------------
 Added `create_HDR_scripts.py` to the library, because a series of stupid mistakes cause me to accidentally erase all of the HDR scripts, and their backups, for the first folder (`/home/patrick/Photos/2016-03-15/`) of photos from my recent vacation, as I edited and tested a new version of the `postprocess_photos.py` script. `postprocess_photos.py` now imports this script as a module and uses it to create the HDR scripts from basic info in either the enfuse or align+enfuse scripts. `postprocess_photos.py` now also offers to hang around at the end of its run, running any executable scripts it finds. I find this helpful in the case of the recent script deletions to have it do so, then set `create_HDR_scripts.py` as an action in GQView, and using it to create scripts that will automatically by run by the watchful process.
 
-`create_HDR_scripts.py` can be imported as a Python module, which exposes some additional functionality. 
+`create_HDR_scripts.py` can be imported as a Python module, which exposes some additional functionality.
 
 
 17 April 2016
@@ -97,7 +97,7 @@ There's a generic module now, `scripts_runner.py`, containing procedures that se
 8 May 2016
 ----------
 * `postprocess_photos.py` now indicates that it's renaming even before the renaming operation is complete.
-* `postprocess_photos.py` now takes a more broadly applicable guess at a time-based filename for photos without any EXIF info. 
+* `postprocess_photos.py` now takes a more broadly applicable guess at a time-based filename for photos without any EXIF info.
 
 8 July 2016
 -----------
@@ -158,6 +158,22 @@ Added `justrunit.py`, a quick silence-and-`nohup` wrapper.
 * A new module, `text_handling.py`, has been created. It's intended to collect some text-handling utilities.
   * Currently, it just has a `print_indented()` function, which breaks lines and keeps padding at the beginning and end of each line.
 
+24 November 2016
+----------------
+* `text_handling.py` now has some new routines:
+  * `terminal_width()`
+  * `print_wrapped()`
+  * `get_key()`
+
+5 December 2016
+---------------
+* `text_handling.py` has now abstracted the "split text into separate wrapped lines" routine off.
+  * It's now in `_get_indented_lines()`, which just wraps `textwrap.wrap()` with preferred prefs.
+* Rewrote `patrick_logger.py` so that it instantiates a (newly written) `Logger` object.
+  * The original interface (the function `log_it()` and the variable `verbosity_level`) is still there.
+  * The `Logger` is now wrapping lines (by default, to the width of the process's terminal).
+    * This also applies to the default interface.
+
 FUTURE PLANS
 ============
 * Abstractify the logger interface in `patrick_logger.py`.
@@ -165,4 +181,4 @@ FUTURE PLANS
 
 KNOWN BUGS
 ==========
-* No bugs known at the moment.
+* No known bugs listed at the moment.
