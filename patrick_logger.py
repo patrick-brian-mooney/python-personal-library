@@ -39,7 +39,7 @@ class Logger(object):
         if verbosity_level >= 6: # set verbosity to at least 6 to get this message output in the debug log
             print("\nDEBUGGING: function log_it() called", file=self.output_destination)
         if verbosity_level >= minimum_level:
-            print('\n'.join(text_handling._get_indented_lines(message)), file=self.output_destination)
+            print('\n'.join(text_handling._get_wrapped_lines(message)), file=self.output_destination)
 
 the_logger = Logger()
 
