@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""This is a script to find capitalized words in the middle of sentences that are not proper nouns (or approved other
-capitalized words). It also makes some attempt to detect other capitalization problems. It goes through a text,
-sentence by sentence, asking the user whether they should be capitalized. If not, it converts them to lowercase. When it
-has finished, it writes the modified text back to the same file, i.e. it modifies the input file in-place. It is
-primarily intended to check the output of my poetry_to_prose.py script.
+"""check_capitalization.py, by Patrick Mooney
+
+This is a script to find capitalized words in the middle of sentences that
+are not proper nouns (or approved other capitalized words). It also makes some
+attempt to detect other capitalization problems. It goes through a text,
+sentence by sentence, asking the user whether they should be capitalized. If
+not, it converts them to lowercase. When it has finished, it writes the
+modified text back to the same file, i.e. it modifies the input file in-place.
+It is primarily intended to check the output of my poetry_to_prose.py script
+and was originally developed in order to facilitate the processing of a
+complete edition of Shakespeare for my automated text blog Ulysses Redux.
 
 Usage:
 
@@ -12,10 +18,14 @@ Usage:
 
 Options:
 
-  -l WORDLIST       [ NOT YET IMPLEMENTED ]     [ #FIXME ]
-  --list WORDLIST   [ NOT YET IMPLEMENTED ]     [ #FIXME ]
+  -l WORDLIST, --list WORDLIST
       Specify an additional list of words that are allowed to be capitalized
       without asking.
+
+  -i FILE, --input FILE
+      Specify the file to check. You may only process one file at a time with
+      this script. If you do not specify a file, the script will ask you what
+      you want it to process.
 
   -h, --help
       Print this help message, then quit.
@@ -29,8 +39,7 @@ Options:
       verbosity level up and down as the command line is processed, but really,
       what are you doing with your life?
 
-  -i FILE, --input FILE
-      You MUST use one of these options to specify the file to check.
+The most recent version of this script is available at:
 
 
 This program is licensed under the GPL v3 or, at your option, any later
@@ -39,22 +48,24 @@ version. See the file LICENSE.md for a copy of this licence.
 
 
 import sys, os, string, getopt, pprint
+from collections import OrderedDict
 
 import nltk
 
-import text_handling, patrick_logger       # https://github.com/patrick-brian-mooney/python-personal-library/
+import text_handling, patrick_logger, multi_choice_menu     # https://github.com/patrick-brian-mooney/python-personal-library/
 
+
+patrick_logger.verbosity_level = 1
 
 allowed_capitalized_words = [ "i", "i'll",      # these need to be represented in lowercase so the comparison works!
                               "i'd" ]
 
 filename = '/UlyssesRedux/corpora/current-run/01/The Merchant Of Venice.txt'                                           # Fill this in with a filename when debugging in PyCharm
-always_capitalize_list_filename = '/home/patrick/Documents/programming/python-library/always_capitalize_list'                    # Fill this in with a filename to auto-load any one list
+always_capitalize_list_filename = '/home/patrick/Documents/programming/python-library/always_capitalize_list'   # Or leave empty not to use a global list.
 
-patrick_logger.verbosity_level = 3
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
-always_capitalize_list = [][:]
+always_capitalize_list, original_always_capitalize_list = [][:], [][:]
 always_capitalize_sentence_beginnings = True    # Usually, it's helpful to set this to True if NLTK is doing a good job of finding the beginnings of sentences.
 
 
@@ -101,22 +112,18 @@ def check_word_capitalization(tagged_sentence, word_number, allow_always_correct
             context_sentence = "%s%s" % (context_sentence, w) if w in string.punctuation else "%s %s" % (context_sentence, w)
 
         verb = "is" if the_word[0].isupper() else "is not"
-        question = '\nPOSSIBLE ERROR DETECTED: the word "%s" %s capitalized. Is this wrong?' % (comparative_form(the_word),verb)
+        question = '\nPOSSIBLE ERROR DETECTED: the word "%s" %s capitalized. Is this wrong?\n' % (comparative_form(the_word), verb)
         text_handling.print_indented(question, 2)
         text_handling.print_indented('CONTEXT:\t%s\n' % context_sentence, 2)
 
-        prompt = 'Do you want this word to be %s [Y]; or left as-is [N]' % ( "decapitalized" if the_word[0].isupper() else "capitalized" )
-        legal_options = ['y', 'n']
+        the_menu = OrderedDict([
+                                ('Y', ("Decapitalize" if the_word[0].isupper() else "Capitalize") + " this word"),
+                                ('N', 'Leave this word as-is')
+                                ])
         if allow_always_correct:
-            prompt = prompt + '; or should this word ALWAYS be capitalized [A]'
-            legal_options += ['a']
-        prompt = prompt + '?'
-        text_handling.print_indented(prompt)
-
-        choice = 'not a legal option'
-        while choice not in legal_options:
-            choice = comparative_form(input('    '))
-        if 'a' in legal_options and choice == 'a':
+            the_menu['A'] = "Always capitalize this word"
+        choice = comparative_form(multi_choice_menu.menu_choice(the_menu, "What would you like to do?"))
+        if choice == 'a':
             always_capitalize_list += [ comparative_form(the_word) ]
             choice = "n" if the_word[0].isupper() else "y"
         return choice.lower() == 'y'
@@ -165,7 +172,7 @@ def print_usage(exit_code=0):
 
 
 def process_command_line():
-    """Read the command-line options and set global variables appropriately.
+    """Read the command-line options. Set global variables appropriately.
 
     Returns a tuple: (filename of opened file, filename of always-capitalize list).
     Either or both may be None if the command line does not contain these options;
@@ -224,9 +231,11 @@ def save_files(the_lines, the_filename, the_always_capitalize_list, the_always_c
     """
     global original_always_capitalize_list
 
-    choice = 'not a legal value'
-    while choice not in ['y', 'n']:
-        choice = input('Overwrite file "%s" with modified text? [Y/N] ' % os.path.split(filename)[1]).strip()
+    the_menu = OrderedDict([
+                            ('Y', "Overwrite the old data"),
+                            ('N', 'Cancel and lose the changes')
+                            ])
+    choice = comparative_form(multi_choice_menu.menu_choice(the_menu, 'Overwrite file "%s" with modified text?' % os.path.split(filename)[1]))
     if choice == 'y':
         with open(the_filename, 'w') as f:
             f.writelines(the_lines)
@@ -234,12 +243,10 @@ def save_files(the_lines, the_filename, the_always_capitalize_list, the_always_c
     the_always_capitalize_list.sort()
     if the_always_capitalize_list != original_always_capitalize_list:
         print('\n\n')
-        choice = 'not a legal value'
-        while choice not in ['y', 'n']:
-            choice = input('List of always-capitalize words "%s" modified. Save new list? [Y/N] ' % os.path.split(the_always_capitalize_list_filename)[1]).strip()
+        choice = comparative_form(multi_choice_menu.menu_choice(the_menu, 'List of always-capitalize words "%s" modified. Save new list?' %
+                                                                os.path.split(the_always_capitalize_list_filename)[1]))
         if choice == 'y':
-            if not the_always_capitalize_list_filename:
-                the_always_capitalize_list_filename = sfp.do_open_dialog()
+            the_always_capitalize_list_filename = the_always_capitalize_list_filename or sfp.do_open_dialog()
             with open(the_always_capitalize_list_filename, 'w') as f:
                 f.writelines([ comparative_form(line) + '\n' for line in the_always_capitalize_list ])
 

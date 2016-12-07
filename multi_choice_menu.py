@@ -52,7 +52,7 @@ def menu_choice(choice_menu, prompt):
     # Now, get the user's choice
     choice = 'not a legal option'
     legal_options = [ l.lower() for l in choice_menu ]
-    patrick_logger.log_it("INFO: multi_choice_menu.py: Legal options for this menu are %s" % legal_options)
+    patrick_logger.log_it("INFO: multi_choice_menu.py: Legal options for this menu are %s" % legal_options, 2)
     tried_yet = False
     while choice.lower() not in legal_options:
         if tried_yet:           # If the user has got it wrong at least once.
@@ -65,9 +65,11 @@ def menu_choice(choice_menu, prompt):
 if __name__ == "__main__":
     patrick_logger.verbosity_level = 3
     print("INFO: Terminal width is %d.\n" % text_handling.terminal_width())
+    response = "N"
     the_menu = OrderedDict([
-                            ('A', 'always capitalize, since capitalization, it is perfectly clear, has ever been the champion of civilization, yea, through all the dark ages.'),
-                            ('Y', 'yes'),
-                            ('N', 'never')
+                            ('Y', 'Yes, I do'),
+                            ('N', 'No, not yet')
                             ])
-    print("\nYou chose '%s'." % menu_choice(the_menu, "Well, what say you?"))
+    while response.lower() == "n":
+        choice = menu_choice(the_menu, "You do understand that this is not a program itself, but rather a utility for other programs to use, don't you?")
+        print("\nYou chose '%s'." % choice)
