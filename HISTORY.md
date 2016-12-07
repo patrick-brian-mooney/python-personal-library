@@ -169,15 +169,25 @@ Added `justrunit.py`, a quick silence-and-`nohup` wrapper.
 ---------------
 * `text_handling.py` has now abstracted the "split text into separate wrapped lines" routine off.
   * It's now in `_get_indented_lines()`, which just wraps `textwrap.wrap()` with preferred prefs.
+  * Other changes in `text_handling.py`:
+    * `strip_non_alphanumeric()` does what it sounds like it should. It's a quick convenience filter.
 * Rewrote `patrick_logger.py` so that it instantiates a (newly written) `Logger` object.
   * The original interface (the function `log_it()` and the variable `verbosity_level`) is still there.
   * The `Logger` is now wrapping lines (by default, to the width of the process's terminal).
     * This also applies to the default interface.
+* There is now a `simple_standard_file.py` that provides quick Open and Save location prompting.
+  * Could be handled a little more elegantly, I guess, but it's something.
+
+6 December 2016
+---------------
+* New file `check_capitalization.py` is now moderately successful and has been added to repo.
+  * Plenty of tweaks still needed. It's still pretty basic.
+  * It's primarily intended to help preprocess input texts for Ulysses Redux.
+
 
 FUTURE PLANS
 ============
-* Abstractify the logger interface in `patrick_logger.py`.
-* Do pure Python EXIF-based image rotation in `postprocess-photos.py`.
+* Continue seeing what I need to do and writing code to do it.
 
 KNOWN BUGS
 ==========

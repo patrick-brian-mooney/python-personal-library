@@ -6,9 +6,19 @@
 import sys, textwrap, shutil
 
 
+def strip_non_alphanumeric(w, also_allow_spacing=False):
+    """Returns a string containing only the alphanumeric characters from string W. """
+    if also_allow_spacing:
+        return "".join(ch for ch in w if ch.isalpha() or ch.isnumeric() or ch.isspace())
+    else:
+        return "".join(ch for ch in w if ch.isalpha() or ch.isnumeric())
+
 def capitalize(w):
     """Capitalize the first letter of the string passed in as W. Leave the case of the
     rest of the string unchanged. Account for possible degenerate cases.
+
+    #FIXME: Only works if the first character in the string is the one that should be
+    capitalized.
     """
     if len(w) == 0:
         return w
@@ -25,12 +35,12 @@ def terminal_width(default=80):
     if terminal_width == -1: terminal_width = default
     return terminal_width
 
-def _get_indented_lines(indent_width=0):
+def _get_indented_lines(paragraph, indent_width=0):
     return textwrap.wrap(paragraph, width=terminal_width() - 2*indent_width, replace_whitespace=False, expand_tabs=False, drop_whitespace=False)
 
 def print_indented(paragraph, each_side=4):
     """Print a paragraph with spacing on each side."""
-    lines = _get_indented_lines(each_side)
+    lines = _get_indented_lines(paragraph, each_side)
     for l in lines:
         l = ' ' * each_side + l.strip()
         print(l)

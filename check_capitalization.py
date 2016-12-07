@@ -1,0 +1,303 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""This is a script to find capitalized words in the middle of sentences that are not proper nouns (or approved other
+capitalized words). It also makes some attempt to detect other capitalization problems. It goes through a text,
+sentence by sentence, asking the user whether they should be capitalized. If not, it converts them to lowercase. When it
+has finished, it writes the modified text back to the same file, i.e. it modifies the input file in-place. It is
+primarily intended to check the output of my poetry_to_prose.py script.
+
+Usage:
+
+    check_capitalization.py [options] -i FILE
+
+Options:
+
+  -l WORDLIST       [ NOT YET IMPLEMENTED ]     [ #FIXME ]
+  --list WORDLIST   [ NOT YET IMPLEMENTED ]     [ #FIXME ]
+      Specify an additional list of words that are allowed to be capitalized
+      without asking.
+
+  -h, --help
+      Print this help message, then quit.
+
+  -v, --verbose
+      Increase the verbosity of the script, i.e. get more output. Can be
+      specified multiple times to make the script more and more verbose.
+
+  -q, --quiet
+      Decrease the verbosity of the script. You can mix -v and -q, bumping the
+      verbosity level up and down as the command line is processed, but really,
+      what are you doing with your life?
+
+  -i FILE, --input FILE
+      You MUST use one of these options to specify the file to check.
+
+
+This program is licensed under the GPL v3 or, at your option, any later
+version. See the file LICENSE.md for a copy of this licence.
+"""
+
+
+import sys, os, string, getopt, pprint
+
+import nltk
+
+import text_handling, patrick_logger       # https://github.com/patrick-brian-mooney/python-personal-library/
+
+
+allowed_capitalized_words = [ "i", "i'll",      # these need to be represented in lowercase so the comparison works!
+                              "i'd" ]
+
+filename = '/UlyssesRedux/corpora/current-run/01/The Merchant Of Venice.txt'                                           # Fill this in with a filename when debugging in PyCharm
+always_capitalize_list_filename = '/home/patrick/Documents/programming/python-library/always_capitalize_list'                    # Fill this in with a filename to auto-load any one list
+
+patrick_logger.verbosity_level = 3
+tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+
+always_capitalize_list = [][:]
+always_capitalize_sentence_beginnings = True    # Usually, it's helpful to set this to True if NLTK is doing a good job of finding the beginnings of sentences.
+
+
+def comparative_form(w):
+    """A quick convenience function to just return a standardized form of a word for
+    the purpose of comparing words for equality. It's lowercase, alphanumeric
+    only, and strips out some (but not necessarily all) whitespace.
+    """
+    return text_handling.strip_non_alphanumeric(w.strip(), also_allow_spacing=True).strip().lower()
+
+
+def reassemble_sentence(sentence_list):
+    """Given a tagged sentence -- a list of tuples of the form
+    [(word, POS), (word, POS) ... ] -- reassemble it into a string much like the
+    original sentence (though possibly with spacing altered).
+    """
+    ret = ''
+    for w, _ in sentence_list:
+        ret = "%s%s" % (ret, w) if w in string.punctuation else "%s %s" % (ret, w)      # Add space, except before punctuation
+    return ret
+
+
+def check_word_capitalization(tagged_sentence, word_number, allow_always_correct=False):
+    """Give the user a choice of whether to correct the capitalization of the
+    word or not to correct the capitalization of the word.
+
+    Returns True if the capitalization NEEDS TO BE ALTERED; False if capitalization IS ALREADY CORRECT.
+    This routine modifies the global list always_capitalize_list.
+    """
+    global always_capitalize_list
+
+    the_word = tagged_sentence[word_number][0]
+    if comparative_form(the_word) in always_capitalize_list:
+        return True
+
+    else:
+        # First, reassemble the sentence, except capitalize the entire word whose capitalization is in question
+        context_sentence = ''
+        count = 0
+        for w, _ in tagged_sentence:
+            if count == word_number:
+                w = w.upper()
+            count += 1
+            context_sentence = "%s%s" % (context_sentence, w) if w in string.punctuation else "%s %s" % (context_sentence, w)
+
+        verb = "is" if the_word[0].isupper() else "is not"
+        question = '\nPOSSIBLE ERROR DETECTED: the word "%s" %s capitalized. Is this wrong?' % (comparative_form(the_word),verb)
+        text_handling.print_indented(question, 2)
+        text_handling.print_indented('CONTEXT:\t%s\n' % context_sentence, 2)
+
+        prompt = 'Do you want this word to be %s [Y]; or left as-is [N]' % ( "decapitalized" if the_word[0].isupper() else "capitalized" )
+        legal_options = ['y', 'n']
+        if allow_always_correct:
+            prompt = prompt + '; or should this word ALWAYS be capitalized [A]'
+            legal_options += ['a']
+        prompt = prompt + '?'
+        text_handling.print_indented(prompt)
+
+        choice = 'not a legal option'
+        while choice not in legal_options:
+            choice = comparative_form(input('    '))
+        if 'a' in legal_options and choice == 'a':
+            always_capitalize_list += [ comparative_form(the_word) ]
+            choice = "n" if the_word[0].isupper() else "y"
+        return choice.lower() == 'y'
+
+def correct_sentence_capitalization(s):
+    """Return a corrected version of the sentence that was passed in.
+    This is where the real work actually happens.
+    """
+    count = 0
+    tagged_sent = nltk.tag.pos_tag(s.split())   # This is now a list of tuples: [(word, POS), (word, POS) ...]
+    for word, pos in tagged_sent:               # POS = "part of speech." Go through the list of tuples, word by word
+        count += 1                              # In English language counting order, which word in the sentence is this?
+
+        # OK, let's check for various capitalization problems.
+        # First: check for problems that are independent of whether they occur in the first word of a sentence.
+        if not word[0].isupper() and word.lower() in always_capitalize_list:
+            # Check: uncapitalized word we know should always be capitalized?
+            patrick_logger.log_it('DEBUGGING: found non-capitalized word "%s" on the always-capitalize list' % comparative_form(word), 2)
+            tagged_sent[count-1] = (text_handling.capitalize(tagged_sent[count-1][0]), pos)
+
+        # Next, check for problems related to the first word of a sentence.
+        if count == 1:                                  # Beginning of sentence has special handling.
+            if not word[0].isupper():                   # Check: should first word of sentence be capitalized?
+                patrick_logger.log_it('DEBUGGING: found non-capitalized word "%s" at the beginning of a sentence' % comparative_form(word), 2)
+                if always_capitalize_sentence_beginnings or check_word_capitalization(tagged_sent, count-1):
+                    # If we capitalize it, set the indicated item in the list of tuples to a tuple that capitalizes the word
+                    # in question and maintains the POS tagging for further checking. The rather ugly expression below is of
+                    # course necessary because tuples are immutable.
+                    tagged_sent[count-1] = (text_handling.capitalize(tagged_sent[count-1][0]), pos)
+
+        # Now, check for problems that can happen only outside the first word of a sentence.
+        else:                                           # Checks for words other than the first word of the sentence
+            # First: is there an unexplained capitalized word beyond the first word of the sentence?
+            if word[0].isupper() and (pos.upper() not in [ 'NNP' ]) and (comparative_form(word) not in allowed_capitalized_words):
+                patrick_logger.log_it('DEBUGGING: the word "%s" may be inappropriately capitalized' % comparative_form(word), 2)
+                # Capitalized, but not a proper noun?
+                if check_word_capitalization(tagged_sent, count-1, allow_always_correct=True):
+                    tagged_sent[count-1] = (tagged_sent[count-1][0].lower(), pos)
+
+    return reassemble_sentence(tagged_sent).strip()
+
+
+def print_usage(exit_code=0):
+    print("\n\n" + __doc__)
+    sys.exit(exit_code)
+
+
+def process_command_line():
+    """Read the command-line options and set global variables appropriately.
+
+    Returns a tuple: (filename of opened file, filename of always-capitalize list).
+    Either or both may be None if the command line does not contain these options;
+    they can be hardcoded above, below the docstring.
+    """
+    the_filename, the_always_capitalize_list_filename = None, None
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'l:i:h', ['help', 'input='])
+        patrick_logger.log_it('INFO: options returned from getopt.getopt() are: %s' % pprint.pformat(opts), 2)
+    except getopt.GetoptError:
+        patrick_logger.log_it('ERROR: Bad command-line arguments; exiting to shell', 0)
+        print_usage(2)
+    patrick_logger.log_it('INFO: detected number of command-line arguments is %d' % len(sys.argv), 2)
+    for opt, args in opts:
+        patrick_logger.log_it('Processing option %s' % opt, 2)
+        if opt in ('-h', '--help'):
+            patrick_logger.log_it('INFO: %s invoked, printing usage message' % opt)
+            print_usage()
+        elif opt in ('-i', '--input'):
+            patrick_logger.log_it('INFO: %s invoked; file "%s" will be processed' % (opt, args))
+            the_filename = args
+        elif opt in ('-v', '--verbose'):
+            patrick_logger.verbosity_level += 1
+            patrick_logger.log_it('INFO: %s invoked. Raising verbosity level to %d.' % (opt, patrick_logger.verbosity_level))
+        elif opt in ('-q', '--quiet'):
+            patrick_logger.log_it('INFO: %s invoked. Decreasing verbosity level to %d' % (opt, patrick_logger.verbosity_level-1))
+            patrick_logger.verbosity_level -= 1
+        elif opt in ('-l', '--list'):
+            patrick_logger.log_it('INFO: %s invoked; always-capitalize file "%s" will be used' % (opt, args))
+            the_always_capitalize_list_filename = args
+        else:
+            patrick_logger.log_it('ERROR: unimplemented switch %s used. Exiting ...' % opt, -1)
+            sys.exit(3)
+
+    patrick_logger.log_it('INFO: Done parsing command line. patrick_logger.verbosity_level after parsing command line is  %d ' % patrick_logger.verbosity_level, 1)
+    return the_filename, the_always_capitalize_list_filename
+
+
+def save_files(the_lines, the_filename, the_always_capitalize_list, the_always_capitalize_list_filename):
+    """Give the user the option to save the modified-in-place verified text (stored
+    in global variable THE_LINES), plus, if modified, the list of words to always
+    skip.
+
+    Parameters:
+          the_lines                             List of lines to be written back to the original file.
+          the_filename                          Path/name of the original file to be overwritten.
+          the_always_capitalize_list            List of words always to capitalize.
+          the_always_capitalize_list_filename   Location of always-capitalize list.
+
+
+    Returns a tuple:
+        ( the [possibly modified] THE_ALWAYS_CAPITALIZE_LIST,
+          the [possibly modified] THE_ALWAYS_CAPITALIZE_LIST_FILENAME,
+        )
+    """
+    global original_always_capitalize_list
+
+    choice = 'not a legal value'
+    while choice not in ['y', 'n']:
+        choice = input('Overwrite file "%s" with modified text? [Y/N] ' % os.path.split(filename)[1]).strip()
+    if choice == 'y':
+        with open(the_filename, 'w') as f:
+            f.writelines(the_lines)
+
+    the_always_capitalize_list.sort()
+    if the_always_capitalize_list != original_always_capitalize_list:
+        print('\n\n')
+        choice = 'not a legal value'
+        while choice not in ['y', 'n']:
+            choice = input('List of always-capitalize words "%s" modified. Save new list? [Y/N] ' % os.path.split(the_always_capitalize_list_filename)[1]).strip()
+        if choice == 'y':
+            if not the_always_capitalize_list_filename:
+                the_always_capitalize_list_filename = sfp.do_open_dialog()
+            with open(the_always_capitalize_list_filename, 'w') as f:
+                f.writelines([ comparative_form(line) + '\n' for line in the_always_capitalize_list ])
+
+    return the_always_capitalize_list, the_always_capitalize_list_filename
+
+
+def process_file(filename):
+    """Loads the specified file and verifies it, producing a list of verified lines.
+    It returns this list, which is a list of lines that SHOULD BE written back to
+    disk.
+
+    This routine DOES NOT SAVE the file back to disk; use save_files() for that.
+    """
+    print("Opening: %s ..." % os.path.split(filename)[1], end=" ")
+
+    with open(filename, 'r') as f:
+        the_lines = f.readlines()
+
+    print("successfully read %d lines. Processing..." % len(the_lines))
+
+    for (count, which_line) in zip(range(len(the_lines)), the_lines):   # Go through the text, paragraph by paragraph.
+        if patrick_logger.verbosity_level > 0:
+            patrick_logger.log_it("\nProcessing line %d" % (count + 1), 1)
+            patrick_logger.log_it('THE ORIGINAL LINE IS:\t%s' % which_line, 1)
+            patrick_logger.log_it('', 1)
+
+        which_line = which_line.strip()                                 # Note that this is one source of changes of some lines from one valid form to another
+        sentences = [].copy()                                           # Build a list of corrected sentences to re-assemble when done.
+        for sentence in tokenizer.tokenize(which_line):                 # Go through the paragraph, sentence by sentence.
+            sentence = correct_sentence_capitalization(sentence)
+            sentences += [ sentence ]                                   # Add corrected sentence to the list of sentences in this paragraph
+        corrected_line = ' '.join(sentences) + '\n'                     # Note that we're not (necessarily) preserving original spacing here.
+
+        patrick_logger.log_it('\nTHE CORRECTED LINE IS:\t%s' % corrected_line)
+
+        the_lines[count] = corrected_line
+
+    return the_lines
+
+
+
+if __name__ == "__main__":
+    opts = process_command_line()
+    filename, always_capitalize_list_filename = filename or opts[0], always_capitalize_list_filename or opts[1]
+
+    if always_capitalize_list_filename:     # If an auto-capitalize list was specified, load it
+        with open(always_capitalize_list_filename, 'r') as skipfile:
+            always_capitalize_list = sorted([ comparative_form(line) for line in skipfile.readlines() ])
+
+    original_always_capitalize_list = always_capitalize_list.copy()     # Make a shallow copy of whatever we start with.
+
+    if not filename:
+        filename = simple_standard_file.do_open_dialog()
+
+    the_lines = process_file(filename)
+
+    print('\n\n\nEntire file processed.')
+
+    always_capitalize_list, always_capitalize_list_filename = save_files(the_lines,filename, always_capitalize_list, always_capitalize_list_filename)
+
+    print("All done!\n\n")
