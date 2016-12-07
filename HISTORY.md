@@ -184,6 +184,10 @@ Added `justrunit.py`, a quick silence-and-`nohup` wrapper.
   * Plenty of tweaks still needed. It's still pretty basic.
   * It's primarily intended to help preprocess input texts for Ulysses Redux.
 
+7 December 2016
+---------------
+* Added `multi_choice_menu.py`, a module with a function that prints a menu asking the user to make a choice.
+  * It's being worked into `check_capitalization.py`, but that's not yet done. (at 14:36)
 
 FUTURE PLANS
 ============

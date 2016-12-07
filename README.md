@@ -7,4 +7,4 @@ This is a collection of utilities that I myself frequently use in my Python prog
 
 These scripts are copyright © 2015 by Patrick Mooney they are licensed under the GPL v3 or, at your option, any later version. See the file LICENSE.md for a copy of this licence. No warranty or guarantee of functionality is represented here, though I'm glad if these scripts are helpful to you and would love to hear if you have thoughts or feedback.
 
-Version history, known bugs, and future plans are listed in the HISTORY.md file.
+Version history, known bugs, and future plans are listed in the [HISTORY.md](https://github.com/patrick-brian-mooney/python-personal-library/blob/master/HISTORY.md) file.
