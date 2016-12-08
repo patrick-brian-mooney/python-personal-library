@@ -50,7 +50,7 @@ def do_open_dialog(**kwargs):
         tkinter.Tk().withdraw()     # No root window
         filename = tkinter.filedialog.askopenfilename(**kwargs)
     except:         # If all else fails, ask the user to type it.
-        filename = su.get_input('What file would you like to open? ')
+        filename = input('What file would you like to open? ')
     patrick_logger.log_it('    Selected file is %s' % filename, 2)
     return filename
 

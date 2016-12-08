@@ -52,7 +52,7 @@ from collections import OrderedDict
 
 import nltk
 
-import text_handling, patrick_logger, multi_choice_menu     # https://github.com/patrick-brian-mooney/python-personal-library/
+import text_handling, patrick_logger, multi_choice_menu, simple_standard_file   # https://github.com/patrick-brian-mooney/python-personal-library/
 
 
 patrick_logger.verbosity_level = 1
@@ -60,13 +60,14 @@ patrick_logger.verbosity_level = 1
 allowed_capitalized_words = [ "i", "i'll",      # these need to be represented in lowercase so the comparison works!
                               "i'd" ]
 
-filename = '/UlyssesRedux/corpora/current-run/01/The Merchant Of Venice.txt'                                           # Fill this in with a filename when debugging in PyCharm
-always_capitalize_list_filename = '/home/patrick/Documents/programming/python-library/always_capitalize_list'   # Or leave empty not to use a global list.
+filename = ''                                                   # Fill this in with a filename to validate that file
+always_capitalize_list_filename = 'always_capitalize_list'      # Or leave empty not to use a global list.
 
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
 always_capitalize_list, original_always_capitalize_list = [][:], [][:]
 always_capitalize_sentence_beginnings = True    # Usually, it's helpful to set this to True if NLTK is doing a good job of finding the beginnings of sentences.
+
 
 
 def comparative_form(w):
@@ -88,6 +89,47 @@ def reassemble_sentence(sentence_list):
     return ret
 
 
+def save_files(the_lines, the_filename, the_always_capitalize_list, the_always_capitalize_list_filename):
+    """Give the user the option to save the modified-in-place verified text (stored
+    in global variable THE_LINES), plus, if modified, the list of words to always
+    skip.
+
+    Parameters:
+          the_lines                             List of lines to be written back to the original file.
+          the_filename                          Path/name of the original file to be overwritten.
+          the_always_capitalize_list            List of words always to capitalize.
+          the_always_capitalize_list_filename   Location of always-capitalize list.
+
+
+    Returns a tuple:
+        ( the [possibly modified] THE_ALWAYS_CAPITALIZE_LIST,
+          the [possibly modified] THE_ALWAYS_CAPITALIZE_LIST_FILENAME,
+        )
+    """
+    global original_always_capitalize_list
+
+    the_menu = OrderedDict([
+                            ('Y', "Overwrite the old data"),
+                            ('N', 'Cancel and lose the changes')
+                            ])
+    choice = comparative_form(multi_choice_menu.menu_choice(the_menu, 'Overwrite file "%s" with modified text?' % os.path.split(filename)[1]))
+    if choice == 'y':
+        with open(the_filename, 'w') as f:
+            f.writelines(the_lines)
+
+    the_always_capitalize_list.sort()
+    if the_always_capitalize_list != original_always_capitalize_list:
+        print('\n\n')
+        choice = comparative_form(multi_choice_menu.menu_choice(the_menu, 'List of always-capitalize words "%s" modified. Save new list?' %
+                                                                os.path.split(the_always_capitalize_list_filename)[1]))
+        if choice == 'y':
+            the_always_capitalize_list_filename = the_always_capitalize_list_filename or sfp.do_open_dialog()
+            with open(the_always_capitalize_list_filename, 'w') as f:
+                f.writelines([ comparative_form(line) + '\n' for line in the_always_capitalize_list ])
+
+    return the_always_capitalize_list, the_always_capitalize_list_filename
+
+
 def check_word_capitalization(tagged_sentence, word_number, allow_always_correct=False):
     """Give the user a choice of whether to correct the capitalization of the
     word or not to correct the capitalization of the word.
@@ -95,7 +137,7 @@ def check_word_capitalization(tagged_sentence, word_number, allow_always_correct
     Returns True if the capitalization NEEDS TO BE ALTERED; False if capitalization IS ALREADY CORRECT.
     This routine modifies the global list always_capitalize_list.
     """
-    global always_capitalize_list
+    global the_lines, filename, always_capitalize_list, always_capitalize_list_filename # In case we abort and save.
 
     the_word = tagged_sentence[word_number][0]
     if comparative_form(the_word) in always_capitalize_list:
@@ -111,22 +153,31 @@ def check_word_capitalization(tagged_sentence, word_number, allow_always_correct
             count += 1
             context_sentence = "%s%s" % (context_sentence, w) if w in string.punctuation else "%s %s" % (context_sentence, w)
 
+        print()
         verb = "is" if the_word[0].isupper() else "is not"
-        question = '\nPOSSIBLE ERROR DETECTED: the word "%s" %s capitalized. Is this wrong?\n' % (comparative_form(the_word), verb)
+        question = 'POSSIBLE ERROR DETECTED: the word "%s" %s capitalized. Is this wrong?' % (comparative_form(the_word), verb)
         text_handling.print_indented(question, 2)
-        text_handling.print_indented('CONTEXT:\t%s\n' % context_sentence, 2)
+        print()
+        text_handling.print_indented('CONTEXT: %s\n' % context_sentence, 2)
 
-        the_menu = OrderedDict([
-                                ('Y', ("Decapitalize" if the_word[0].isupper() else "Capitalize") + " this word"),
-                                ('N', 'Leave this word as-is')
-                                ])
+        the_menu = OrderedDict([])
+        the_menu['Y'] = ("Decapitalize" if the_word[0].isupper() else "Capitalize") + " this word"
+        the_menu['N'] = 'Leave this word as-is'
         if allow_always_correct:
             the_menu['A'] = "Always capitalize this word"
+        the_menu['Q'] = 'Quit, with option to save changes'
+
         choice = comparative_form(multi_choice_menu.menu_choice(the_menu, "What would you like to do?"))
         if choice == 'a':
             always_capitalize_list += [ comparative_form(the_word) ]
             choice = "n" if the_word[0].isupper() else "y"
+        elif choice == 'q':
+            save_files(the_lines, filename, always_capitalize_list, always_capitalize_list_filename)
+            print('\nQuitting ...')
+            sys.exit(0)
+
         return choice.lower() == 'y'
+
 
 def correct_sentence_capitalization(s):
     """Return a corrected version of the sentence that was passed in.
@@ -212,47 +263,6 @@ def process_command_line():
     return the_filename, the_always_capitalize_list_filename
 
 
-def save_files(the_lines, the_filename, the_always_capitalize_list, the_always_capitalize_list_filename):
-    """Give the user the option to save the modified-in-place verified text (stored
-    in global variable THE_LINES), plus, if modified, the list of words to always
-    skip.
-
-    Parameters:
-          the_lines                             List of lines to be written back to the original file.
-          the_filename                          Path/name of the original file to be overwritten.
-          the_always_capitalize_list            List of words always to capitalize.
-          the_always_capitalize_list_filename   Location of always-capitalize list.
-
-
-    Returns a tuple:
-        ( the [possibly modified] THE_ALWAYS_CAPITALIZE_LIST,
-          the [possibly modified] THE_ALWAYS_CAPITALIZE_LIST_FILENAME,
-        )
-    """
-    global original_always_capitalize_list
-
-    the_menu = OrderedDict([
-                            ('Y', "Overwrite the old data"),
-                            ('N', 'Cancel and lose the changes')
-                            ])
-    choice = comparative_form(multi_choice_menu.menu_choice(the_menu, 'Overwrite file "%s" with modified text?' % os.path.split(filename)[1]))
-    if choice == 'y':
-        with open(the_filename, 'w') as f:
-            f.writelines(the_lines)
-
-    the_always_capitalize_list.sort()
-    if the_always_capitalize_list != original_always_capitalize_list:
-        print('\n\n')
-        choice = comparative_form(multi_choice_menu.menu_choice(the_menu, 'List of always-capitalize words "%s" modified. Save new list?' %
-                                                                os.path.split(the_always_capitalize_list_filename)[1]))
-        if choice == 'y':
-            the_always_capitalize_list_filename = the_always_capitalize_list_filename or sfp.do_open_dialog()
-            with open(the_always_capitalize_list_filename, 'w') as f:
-                f.writelines([ comparative_form(line) + '\n' for line in the_always_capitalize_list ])
-
-    return the_always_capitalize_list, the_always_capitalize_list_filename
-
-
 def process_file(filename):
     """Loads the specified file and verifies it, producing a list of verified lines.
     It returns this list, which is a list of lines that SHOULD BE written back to
@@ -292,14 +302,17 @@ if __name__ == "__main__":
     opts = process_command_line()
     filename, always_capitalize_list_filename = filename or opts[0], always_capitalize_list_filename or opts[1]
 
-    if always_capitalize_list_filename:     # If an auto-capitalize list was specified, load it
-        with open(always_capitalize_list_filename, 'r') as skipfile:
-            always_capitalize_list = sorted([ comparative_form(line) for line in skipfile.readlines() ])
+    try:
+        if always_capitalize_list_filename:     # If an auto-capitalize list was specified, load it
+            with open(always_capitalize_list_filename, 'r') as skipfile:
+                always_capitalize_list = sorted([ comparative_form(line) for line in skipfile.readlines() ])
+    except:
+        patrick_logger.log_it("WARNING: unable to open always-capitalize file %s" % always_capitalize_list_filename, 0)
+        patrick_logger.log_it("    ... proceeding with empty list", 0)
 
     original_always_capitalize_list = always_capitalize_list.copy()     # Make a shallow copy of whatever we start with.
 
-    if not filename:
-        filename = simple_standard_file.do_open_dialog()
+    filename = filename or simple_standard_file.do_open_dialog()
 
     the_lines = process_file(filename)
 

@@ -35,6 +35,7 @@ def menu_choice(choice_menu, prompt):
     options_column_width = text_handling.terminal_width() - (menu_column_width + spacing_column_width + 1)
 
     # OK, let's print this menu.
+    print()
     for option, text in choice_menu.items():
         current_line = '[ %s ]%s%s' % (option, ' ' * (max_menu_item_width - len(option)), ' ' * spacing_column_width)
         text_lines = text_handling._get_wrapped_lines(text, enclosing_width=options_column_width)
