@@ -72,5 +72,5 @@ if __name__ == "__main__":
                             ('N', 'No, not yet')
                             ])
     while response.lower() == "n":
-        choice = menu_choice(the_menu, "You do understand that this is not a program itself, but rather a utility for other programs to use, don't you?")
-        print("\nYou chose '%s'." % choice)
+        response = menu_choice(the_menu, "You do understand that this is not a program itself, but rather a utility for other programs to use, don't you?")
+        print("\nYou chose '%s'." % response)

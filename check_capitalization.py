@@ -55,18 +55,18 @@ import nltk
 import text_handling, patrick_logger, multi_choice_menu, simple_standard_file   # https://github.com/patrick-brian-mooney/python-personal-library/
 
 
+always_capitalize_sentence_beginnings = True    # Usually, it's helpful to set this to True if NLTK is doing a good job of finding the beginnings of sentences.
 patrick_logger.verbosity_level = 1
-
-allowed_capitalized_words = [ "i", "i'll",      # these need to be represented in lowercase so the comparison works!
-                              "i'd" ]
 
 filename = ''                                                   # Fill this in with a filename to validate that file
 always_capitalize_list_filename = 'always_capitalize_list'      # Or leave empty not to use a global list.
-
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
 always_capitalize_list, original_always_capitalize_list = [][:], [][:]
-always_capitalize_sentence_beginnings = True    # Usually, it's helpful to set this to True if NLTK is doing a good job of finding the beginnings of sentences.
+the_lines = [][:]
+
+allowed_capitalized_words = ( "i", "i'll",      # these need to be represented in lowercase so the comparison works!
+                              "i'll", "i'd", "i'm" )
 
 
 
@@ -259,7 +259,7 @@ def process_command_line():
             patrick_logger.log_it('ERROR: unimplemented switch %s used. Exiting ...' % opt, -1)
             sys.exit(3)
 
-    patrick_logger.log_it('INFO: Done parsing command line. patrick_logger.verbosity_level after parsing command line is  %d ' % patrick_logger.verbosity_level, 1)
+    patrick_logger.log_it('INFO: Done parsing command line. patrick_logger.verbosity_level after parsing command line is  %d.' % patrick_logger.verbosity_level, 1)
     return the_filename, the_always_capitalize_list_filename
 
 
