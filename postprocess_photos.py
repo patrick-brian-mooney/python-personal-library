@@ -208,16 +208,17 @@ def rename_photos():
             except KeyError:
                 try:
                     dt = tags['Image DateTime'].values
-                except KeyError:            # Sigh. Not all of my image-generating devices generate EXIF info in all circumstances. Guess date based on file name.
-                    dt = which_image    # At this point, just guess based on filename.
+                except KeyError:            # Sigh. Not all of my image-generating devices generate EXIF info in all circumstances.
+                    dt = which_image        # At this point, just guess based on filename.
             dt = ''.join([char for char in dt if char.isdigit()])
             dt = dt.ljust(14)   # Even if it's just gibberish, make sure it's long enough gibberish
             datetime_string = '%s-%s-%s_%s_%s_%s.jpg' % (dt[0:4], dt[4:6], dt[6:8], dt[8:10], dt[10:12], dt[12:14])
             file_list.append([datetime_string, which_image])
             f.close()
 
-        # OK, now sort that list (twice). First, sort by original filename (globbing filenames does not preserve this). Then, sort again by datetime string.
-        # Since Python sorts are stable, the second sort will preserve the order of the first when values for the sort-by key for the second sort are identical.
+        # OK, now sort that list (twice). First, sort by original filename (globbing filenames does not preserve this). Then, sort again by
+        # datetime string. Since Python sorts are stable, the second sort will preserve the order of the first when values for the sort-by
+        # key for the second sort are identical.
         file_list.sort(key=lambda item: item[1])
         file_list.sort(key=lambda item: item[0])
 

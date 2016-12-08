@@ -189,6 +189,7 @@ Added `justrunit.py`, a quick silence-and-`nohup` wrapper.
 * Added `multi_choice_menu.py`, a module with a function that prints a menu asking the user to make a choice.
   * It's being worked into `check_capitalization.py`, but that's not yet done. (at 14:36)
   * OK, it seems to be done. (15:23)
+  * Additional tweaks.
 
 FUTURE PLANS
 ============
@@ -196,4 +197,4 @@ FUTURE PLANS
 
 KNOWN BUGS
 ==========
-* No known bugs listed at the moment.
+* No known bugs listed at the moment. However, check individual module files to be sure that I haven't just failed to list something here.

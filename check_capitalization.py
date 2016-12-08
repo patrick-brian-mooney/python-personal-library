@@ -59,23 +59,28 @@ always_capitalize_sentence_beginnings = True    # Usually, it's helpful to set t
 patrick_logger.verbosity_level = 1
 
 filename = ''                                                   # Fill this in with a filename to validate that file
-always_capitalize_list_filename = 'always_capitalize_list'      # Or leave empty not to use a global list.
+always_capitalize_list_filename = '/python-library/always_capitalize_list'  # Or leave empty not to use a global list.
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
 always_capitalize_list, original_always_capitalize_list = [][:], [][:]
 the_lines = [][:]
 
 allowed_capitalized_words = ( "i", "i'll",      # these need to be represented in lowercase so the comparison works!
-                              "i'll", "i'd", "i'm" )
+                              "i’ll", "i'd", "i’d", "i'm", "i’m", "i've", "i’ve" )
 
 
 
 def comparative_form(w):
     """A quick convenience function to just return a standardized form of a word for
-    the purpose of comparing words for equality. It's lowercase, alphanumeric
-    only, and strips out some (but not necessarily all) whitespace.
+    the purpose of comparing words for equality. It's lowercase, strips out leading
+    and trailing punctuation, and strips out some (but not necessarily all)
+    whitespace.
     """
-    return text_handling.strip_non_alphanumeric(w.strip(), also_allow_spacing=True).strip().lower()
+    return w.strip().strip(''.join(list(set(string.punctuation) - set(["'"])))).strip()..strip(''.join(list(set(string.punctuation) - set(["'"])))).lower()
+    # That is to say: strip whitespace from both ends, then strip leading and
+    # trailing elements of string.punctuation except for the apostrophe, then
+    # strip whitespace from both ends again, then strip the same set of
+    # punctuation, then lowercase it.
 
 
 def reassemble_sentence(sentence_list):
@@ -155,7 +160,7 @@ def check_word_capitalization(tagged_sentence, word_number, allow_always_correct
 
         print()
         verb = "is" if the_word[0].isupper() else "is not"
-        question = 'POSSIBLE ERROR DETECTED: the word "%s" %s capitalized. Is this wrong?' % (comparative_form(the_word), verb)
+        question = 'POSSIBLE ERROR DETECTED: the word "%s" %s capitalized. Is this wrong?' % (the_word, verb)
         text_handling.print_indented(question, 2)
         print()
         text_handling.print_indented('CONTEXT: %s\n' % context_sentence, 2)
