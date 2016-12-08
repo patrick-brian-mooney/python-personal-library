@@ -190,6 +190,7 @@ Added `justrunit.py`, a quick silence-and-`nohup` wrapper.
   * It's being worked into `check_capitalization.py`, but that's not yet done. (at 14:36)
   * OK, it seems to be done. (15:23)
   * Additional tweaks.
+* Very small changes to small bits of logic in `postprocess_photos.py`.
 
 FUTURE PLANS
 ============
