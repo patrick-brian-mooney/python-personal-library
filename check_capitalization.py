@@ -57,17 +57,23 @@ import text_handling, patrick_logger, multi_choice_menu, simple_standard_file   
 
 always_capitalize_sentence_beginnings = True    # Usually, it's helpful to set this to True if NLTK is doing a good job of finding the beginnings of sentences.
 patrick_logger.verbosity_level = 1
-
-filename = ''                                                   # Fill this in with a filename to validate that file
 always_capitalize_list_filename = '/python-library/always_capitalize_list'  # Or leave empty not to use a global list.
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
+
+filename = ''                                                   # Fill this in with a filename to validate that file
 always_capitalize_list, original_always_capitalize_list = [][:], [][:]
 the_lines = [][:]
 
+
 allowed_capitalized_words = ( "i", "i'll",      # these need to be represented in lowercase so the comparison works!
                               "i’ll", "i'd", "i’d", "i'm", "i’m", "i've", "i’ve" )
+punc = ''.join(list(set(string.punctuation) - set(["'"]) | set(['—'])))
 
+
+
+def puncstrip(w):
+    return w.strip(punc)
 
 
 def comparative_form(w):
@@ -76,11 +82,11 @@ def comparative_form(w):
     and trailing punctuation, and strips out some (but not necessarily all)
     whitespace.
     """
-    return w.strip().strip(''.join(list(set(string.punctuation) - set(["'"])))).strip()..strip(''.join(list(set(string.punctuation) - set(["'"])))).lower()
+    return puncstrip(puncstrip(w.strip()).strip()).lower()
     # That is to say: strip whitespace from both ends, then strip leading and
-    # trailing elements of string.punctuation except for the apostrophe, then
-    # strip whitespace from both ends again, then strip the same set of
-    # punctuation, then lowercase it.
+    # trailing elements of string.punctuation except for the apostrophe, plus
+    # additional other stuff, then strip whitespace from both ends again, then
+    # strip the same set of punctuation, then lowercase the result.
 
 
 def reassemble_sentence(sentence_list):
@@ -90,7 +96,7 @@ def reassemble_sentence(sentence_list):
     """
     ret = ''
     for w, _ in sentence_list:
-        ret = "%s%s" % (ret, w) if w in string.punctuation else "%s %s" % (ret, w)      # Add space, except before punctuation
+        ret = "%s%s" % (ret, w) if w in punc else "%s %s" % (ret, w)      # Add space, except before punctuation
     return ret
 
 
@@ -113,7 +119,7 @@ def save_files(the_lines, the_filename, the_always_capitalize_list, the_always_c
     """
     global original_always_capitalize_list
 
-    the_menu = OrderedDict([
+    the_menu = OrderedDict([                                    # Use this same menu for both questions
                             ('Y', "Overwrite the old data"),
                             ('N', 'Cancel and lose the changes')
                             ])
@@ -130,7 +136,7 @@ def save_files(the_lines, the_filename, the_always_capitalize_list, the_always_c
         if choice == 'y':
             the_always_capitalize_list_filename = the_always_capitalize_list_filename or sfp.do_open_dialog()
             with open(the_always_capitalize_list_filename, 'w') as f:
-                f.writelines([ comparative_form(line) + '\n' for line in the_always_capitalize_list ])
+                f.writelines(sorted(list(set([ comparative_form(line) + '\n' for line in the_always_capitalize_list ]))))
 
     return the_always_capitalize_list, the_always_capitalize_list_filename
 
@@ -142,12 +148,11 @@ def check_word_capitalization(tagged_sentence, word_number, allow_always_correct
     Returns True if the capitalization NEEDS TO BE ALTERED; False if capitalization IS ALREADY CORRECT.
     This routine modifies the global list always_capitalize_list.
     """
-    global the_lines, filename, always_capitalize_list, always_capitalize_list_filename # In case we abort and save.
+    global the_lines, filename, always_capitalize_list, always_capitalize_list_filename     # In case we abort and save.
 
     the_word = tagged_sentence[word_number][0]
     if comparative_form(the_word) in always_capitalize_list:
         return True
-
     else:
         # First, reassemble the sentence, except capitalize the entire word whose capitalization is in question
         context_sentence = ''
@@ -156,11 +161,11 @@ def check_word_capitalization(tagged_sentence, word_number, allow_always_correct
             if count == word_number:
                 w = w.upper()
             count += 1
-            context_sentence = "%s%s" % (context_sentence, w) if w in string.punctuation else "%s %s" % (context_sentence, w)
+            context_sentence = "%s%s" % (context_sentence, w) if w in punc else "%s %s" % (context_sentence, w)
 
         print()
         verb = "is" if the_word[0].isupper() else "is not"
-        question = 'POSSIBLE ERROR DETECTED: the word "%s" %s capitalized. Is this wrong?' % (the_word, verb)
+        question = 'POSSIBLE ERROR DETECTED: the word "%s" %s capitalized. Is this wrong?' % (puncstrip(the_word), verb)
         text_handling.print_indented(question, 2)
         print()
         text_handling.print_indented('CONTEXT: %s\n' % context_sentence, 2)
@@ -181,7 +186,8 @@ def check_word_capitalization(tagged_sentence, word_number, allow_always_correct
             print('\nQuitting ...')
             sys.exit(0)
 
-        return choice.lower() == 'y'
+        ret = choice.lower() == 'y'
+        return ret
 
 
 def correct_sentence_capitalization(s):
@@ -195,7 +201,7 @@ def correct_sentence_capitalization(s):
 
         # OK, let's check for various capitalization problems.
         # First: check for problems that are independent of whether they occur in the first word of a sentence.
-        if not word[0].isupper() and word.lower() in always_capitalize_list:
+        if comparative_form(word) in always_capitalize_list and not word[0].isupper():
             # Check: uncapitalized word we know should always be capitalized?
             patrick_logger.log_it('DEBUGGING: found non-capitalized word "%s" on the always-capitalize list' % comparative_form(word), 2)
             tagged_sent[count-1] = (text_handling.capitalize(tagged_sent[count-1][0]), pos)
@@ -273,7 +279,7 @@ def process_file(filename):
     It returns this list, which is a list of lines that SHOULD BE written back to
     disk.
 
-    This routine DOES NOT SAVE the file back to disk; use save_files() for that.
+    This routine DOES NOT SAVE the file back to disk; save_files() does that.
     """
     print("Opening: %s ..." % os.path.split(filename)[1], end=" ")
 
@@ -310,7 +316,7 @@ if __name__ == "__main__":
     try:
         if always_capitalize_list_filename:     # If an auto-capitalize list was specified, load it
             with open(always_capitalize_list_filename, 'r') as skipfile:
-                always_capitalize_list = sorted([ comparative_form(line) for line in skipfile.readlines() ])
+                always_capitalize_list = sorted(list(set([ comparative_form(line) for line in skipfile.readlines() ])))
     except:
         patrick_logger.log_it("WARNING: unable to open always-capitalize file %s" % always_capitalize_list_filename, 0)
         patrick_logger.log_it("    ... proceeding with empty list", 0)
