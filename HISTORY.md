@@ -192,6 +192,14 @@ Added `justrunit.py`, a quick silence-and-`nohup` wrapper.
   * Additional tweaks.
 * Very small changes to small bits of logic in `postprocess_photos.py`.
 
+8 December 2016
+---------------
+* `check_capitalization.py` has hit a stability point, where it approximately performs predictably.
+  * There's still plenty of false negatives, though.
+    * Still, it's currently verified all 38 Shakespeare plays that are currently being used by *Ulysses Redux*.
+  * Next improvement: work on less clumsy *capitalization* and *capitalization detection* algorithms.
+  * Next under-the-hood, substantial improvement: compare capitalization of sentence with capitalization of a truecased version.
+
 FUTURE PLANS
 ============
 * Continue seeing what I need to do and writing code to do it.

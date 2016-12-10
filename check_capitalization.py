@@ -20,12 +20,14 @@ Options:
 
   -l WORDLIST, --list WORDLIST
       Specify an additional list of words that are allowed to be capitalized
-      without asking.
+      without asking. If changes are made, check_capitalization.py will offer
+      to overwrite the original file. Don't edit this file during a run of the
+      program; if you do, your changes will be overwritten.
 
   -i FILE, --input FILE
       Specify the file to check. You may only process one file at a time with
-      this script. If you do not specify a file, the script will ask you what
-      you want it to process.
+      this script. If you do not specify a file, the script will ask you which
+      file you want it to process.
 
   -h, --help
       Print this help message, then quit.
@@ -38,6 +40,9 @@ Options:
       Decrease the verbosity of the script. You can mix -v and -q, bumping the
       verbosity level up and down as the command line is processed, but really,
       what are you doing with your life?
+
+This script requires that NLTK be installed, because it relies on NLTK for a
+lot of the work it does. See http://www.nltk.org/.
 
 The most recent version of this script is available at:
 
