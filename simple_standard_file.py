@@ -6,6 +6,7 @@ question in the best way available and to degrade gracefully if the services
 it's trying to use prove not to be available.
 
 
+simple-standard-file.py is part of Patrick Mooney's personal Python library.
 This program is licensed under the GPL v3 or, at your option, any later
 version. See the file LICENSE.md for a copy of this licence.
 """
@@ -44,14 +45,18 @@ def do_open_dialog(**kwargs):
     Adapted from more complex code in Zombie Apocalypse.
     """
     patrick_logger.log_it("DEBUGGING: simple_standard_file.do_open_dialog() called", 2)
-    try:            # Otherwise, use TKinter if possible
+    try:            # Use TKinter if possible
         import tkinter
         import tkinter.filedialog
         tkinter.Tk().withdraw()     # No root window
         filename = tkinter.filedialog.askopenfilename(**kwargs)
     except:         # If all else fails, ask the user to type it.
         filename = input('What file would you like to open? ')
-    patrick_logger.log_it('    Selected file is %s' % filename, 2)
+    if filename == tuple([]):
+        patrick_logger.log_it('    INFO: simple_standard_file: do_open_dialog() cancelled', 2)
+        filename = None
+    else:
+        patrick_logger.log_it('    INFO: simple_standard_file: Selected file is "%s"' % filename, 2)
     return filename
 
 if __name__ == "__main__":

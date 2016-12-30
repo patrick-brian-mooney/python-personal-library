@@ -48,7 +48,7 @@ That's it. That's all it does. Current limitations include:
     * It doesn't do anything with non-JPEG images. No PNG, TIFF, BMP, RAW, etc.
     * It only operates on the current working directory.
     * It doesn't process any Magic Lantern scripts other than the enfuse/
-      enfuse+align scripts.
+      enfuse+align scripts. (ARE there others?)
     * It doesn't add the -d or -i (or -x, -y, or -z; or -C) options to the
       align line in the script, but maybe it should.
 

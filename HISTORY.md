@@ -18,10 +18,10 @@ v1.1: 28 December 2015
 9 January 2016
 --------------
 Primarily, changes to postprocess-photos.py:
-      * first, renames photos in EXIF date order, keeping track of old and new names.
-      * writes a .csv file for this mapping.
-      * rewrites the enfuse bash scripts to use the new names.
-* Also, minor changes to genClassCalendar.py; this corrects problems with date formatting for hEvent 1.0 microformat.
+  * first, renames photos in EXIF date order, keeping track of old and new names.
+  * writes a `.csv` file for this mapping.
+  * rewrites the `enfuse` bash scripts to use the new names.
+* Also, minor changes to `genClassCalendar.py`; this corrects problems with date formatting for hEvent 1.0 microformat.
 
 21 January 2016
 ---------------
@@ -122,7 +122,7 @@ Expanded `introspection.py` so that it now has a routine `class_methods_in_modul
 
 30 September 2016
 -----------------
-Added `justrunit.py`, a quick silence-and-`nohup` wrapper.
+Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 
 
 6 October 2016
@@ -199,6 +199,19 @@ Added `justrunit.py`, a quick silence-and-`nohup` wrapper.
     * Still, it's currently verified all 38 Shakespeare plays that are currently being used by *Ulysses Redux*.
   * Next improvement: work on less clumsy *capitalization* and *capitalization detection* algorithms.
   * Next under-the-hood, substantial improvement: compare capitalization of sentence with capitalization of a truecased version.
+
+9 December 2016
+---------------
+* `text_handling.py` how has two private functions, `_find_first_alphanumeric()` and `_find_last_alphanumeric()`.
+  * Both are intended to help with capitalization functions, which I'll talk about in the next bullet point.
+* `text_handling.py` now has two new public functions, `capitalize()` and `is_capitalized()`.
+  * `check_capitalization.py` now relies on these functions.
+
+29 December 2016
+----------------
+* `text_handling.py` now has a new function, `strip_leading_and_trailing_punctuation()`. It does just what it sounds like it does.
+
+
 
 FUTURE PLANS
 ============

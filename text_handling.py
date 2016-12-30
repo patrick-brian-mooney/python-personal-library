@@ -3,15 +3,68 @@
 """A collection of text-handling utilities."""
 
 
+
 import sys, textwrap, shutil
 
 
+def begins_with_apostrophe(w):
+    """Determines whether the word begins with an apostrophe.
+
+    :param w: a word. (Or any string, really.)
+    :return: True if the string W begins with an apostrophe, or False otherwise.
+    """
+    if len(w.strip()):
+        return w.strip()[0] in ( "'", "’")
+    return False    # If it's effectively zero-length, it doesn't begin with an apostrophe.
+
+
 def strip_non_alphanumeric(w, also_allow_spacing=False):
-    """Returns a string containing only the alphanumeric characters from string W. """
+    """Returns a string containing only the alphanumeric characters from string W and,
+    if also_allow_spacing is True, whitespace characters.
+    """
     if also_allow_spacing:
         return "".join(ch for ch in w if ch.isalpha() or ch.isnumeric() or ch.isspace())
     else:
         return "".join(ch for ch in w if ch.isalpha() or ch.isnumeric())
+
+
+def _find_first_alphanumeric(w):
+    """Returns the index of the first position in the string that is alphanumeric.
+     If there are no alphanumeric characters in the string, returns -1
+    """
+    for i, c in enumerate(w):
+        if c.isalpha() or c.isnumeric():
+            return i
+    return -1
+
+
+def _find_last_alphanumeric(w):
+    """Returns the index of the first position in the string that is alphanumeric.
+     If there are no alphanumeric characters in the string, returns -1
+    """
+    for i, c in list(reversed(list(enumerate(w)))):
+        if c.isalpha() or c.isnumeric():
+            return i
+    return -1
+
+
+def strip_leading_and_trailing_punctuation(w):
+    """Strips leading and trailing punctuation from the string W. Returns the
+    filtered string.
+    """
+    return w[ _find_first_alphanumeric(w) : 1 + _find_last_alphanumeric(w) ]
+
+
+def is_capitalized(w):
+    """Returns True is the word W is capitalized, False if it is not. "Capitalized"
+    in this context means that the string's first alphanumeric character
+    satisfies str.isupper()'s criteria for being uppercase.
+
+    Probably, this is somewhat better that just testing w[0].isupper(), because it
+    ignores leading punctuation.
+    """
+    return w[_find_first_alphanumeric(w)].isupper()
+
 
 def capitalize(w):
     """Capitalize the first letter of the string passed in as W. Leave the case of the
@@ -25,7 +78,11 @@ def capitalize(w):
     elif len(w) == 1:
         return w.upper()
     else:
-        return w[0].upper() + w[1:]
+        first = _find_first_alphanumeric(w)
+        if first == -1:
+            return w
+        else:
+            return w[:first] + w[first].upper() + w[1 + first:]
 
 def terminal_width(default=80):
     """Do the best job possible of figuring out the width of the current terminal. Fall back on a default width if it
@@ -78,5 +135,5 @@ def getkey():
             return input('')
 
 if __name__ == "__main__":
-    print_indented("ERROR: text_handling.py is a collection of utilities for other programs to use. It's not itself a program you can run from the command line.")
+    print_wrapped("ERROR: text_handling.py is a collection of utilities for other programs to use. It's not itself a program you can run from the command line.")
     sys.exit(1)
