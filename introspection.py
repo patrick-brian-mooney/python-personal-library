@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Routines for object examination."""
 
+
 import pprint
 import inspect
+import pickle
+
 
 def dump(obj):
     """Just dump a string representation of all object attributes
@@ -13,6 +16,14 @@ def dump(obj):
     for attr in dir(obj):
         object_representation[attr] = getattr(obj, attr)
     pprint.pprint(object_representation)
+
+def unpickle_and_dump(the_file):
+    """Like dump(), but unpickles the contents of a file, then dumps what comes out.
+    """
+    with open(the_file, 'rb') as f:
+        data = pickle.load(f)
+    dump(data)
+    pprint.pprint(data)
 
 def object_size_estimate(obj):
     pass

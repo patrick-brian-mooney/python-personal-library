@@ -211,7 +211,13 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 ----------------
 * `text_handling.py` now has a new function, `strip_leading_and_trailing_punctuation()`. It does just what it sounds like it does.
 
+1 January 2017
+--------------
+* added `unpickle_and_dump()` to `introspection.py`.
 
+2 January 2017
+--------------
+* `print_indented()` and `print_wrapped()` in `text_handling.py` now deal appropriately with embedded newlines.
 
 FUTURE PLANS
 ============

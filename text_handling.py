@@ -104,6 +104,10 @@ def _get_wrapped_lines(paragraph, indent_width=0, enclosing_width=-1):
 def print_indented(paragraph, each_side=4):
     """Print a paragraph with spacing on each side.
     """
+    if '\n' in paragraph:                   # If there are newlines in PARAGRAPH ...
+        for p in paragraph.split('\n'):     # ... recursively call print_indented() on each sub-paragraph
+            print_indented(p, each_side=each_side)
+        return
     lines = _get_wrapped_lines(paragraph, each_side)
     for l in lines:
         l = ' ' * each_side + l.strip()
