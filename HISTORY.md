@@ -219,6 +219,11 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 --------------
 * `print_indented()` and `print_wrapped()` in `text_handling.py` now deal appropriately with embedded newlines.
 
+9 January 2017
+--------------
+* `text_handling.py` now has a new routine, `multi_replace()`, which continuously makes replacements until the text doesn't change any more.
+
+
 FUTURE PLANS
 ============
 * Continue seeing what I need to do and writing code to do it.

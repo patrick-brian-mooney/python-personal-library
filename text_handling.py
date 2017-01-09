@@ -3,8 +3,27 @@
 """A collection of text-handling utilities."""
 
 
-
 import sys, textwrap, shutil
+
+
+def multi_replace(text, substitutions):
+    """Modify TEXT and return the modified version by repeatedly replacing strings
+    in SUBSTITUTIONS (a list of replacements, as specified below) until none of
+    the replacements produce any further change in the text.
+    
+    SUBSTITUTIONS is a list of two-item lists. Each two-item list should be of the
+    form [search_string, replace_string]. Here is a sample:
+        subs = [['teh', 'the'],
+                ['chir', 'chair'],
+                ]
+    """
+    changed = True              # Be sure to run at least once.
+    while changed:              # Repeatedly perform all substitutions until none of them change anything at all.
+        orig_text = text[:]
+        for which_replacement in substitutions:
+            text = text.replace(which_replacement[0], which_replacement[1])
+        changed = ( orig_text != text )
+    return text
 
 
 def begins_with_apostrophe(w):
