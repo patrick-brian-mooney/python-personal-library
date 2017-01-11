@@ -61,9 +61,9 @@ def modified_retweet(text, user_id, tweet_id):
     log_it("%s\n\nhttps://twitter.com/%s/status/%s" % (text, user_id, tweet_ID))
     # the_API.update_status("%s\n\nhttps://twitter.com/%s/status/%s" % (text, user_id, tweet_ID))
 
-def send_DM(text, user):
+def send_DM(the_API, text, user):
     """Send a direct message to another user. Currently, this method is only used to
     reply to DMs sent by other users. Does not currently do anything.
     """
     log_it("DM @%s: %s" % (user, text))
-    # the_API.send_direct_message(user, text)
+    the_API.send_direct_message(user=user, text=text)

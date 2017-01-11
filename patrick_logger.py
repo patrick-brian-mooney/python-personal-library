@@ -10,8 +10,6 @@ for. Nevertheless, I'd love to hear suggestions or feedback if anything occurs
 to you.
 
 http://patrickbrianmooney.nfshost.com/~patrick/
-
-v1.2, 5 December 2016.
 """
 
 
