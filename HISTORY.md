@@ -222,8 +222,11 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 9 January 2017
 --------------
 * `text_handling.py` now has a new routine, `multi_replace()`, which continuously makes replacements until the text doesn't change any more.
-  * It's imported from the TrumpTweets project, which should go live soon.
+  * It's imported from [the TrumpTweets project](https://twitter.com/false_trump), which should go live soon.
 
+10 January 2017
+---------------
+* Added `scripts_caller.py`, a stub to aid in debugging.
 
 FUTURE PLANS
 ============
