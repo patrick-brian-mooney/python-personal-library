@@ -3,7 +3,7 @@
 """A collection of text-handling utilities."""
 
 
-import sys, textwrap, shutil
+import sys, textwrap, shutil, re
 
 
 def multi_replace(text, substitutions):
@@ -17,11 +17,17 @@ def multi_replace(text, substitutions):
                 ['chir', 'chair'],
                 ]
     """
+    debugging = False
     changed = True              # Be sure to run at least once.
+    if debugging:
+        from pprint import pprint
+        print("substitutions are:")
+        pprint(substitutions)    
     while changed:              # Repeatedly perform all substitutions until none of them change anything at all.
         orig_text = text[:]
         for which_replacement in substitutions:
-            text = text.replace(which_replacement[0], which_replacement[1])
+            if debugging: print("Processing substitution pattern %s\t->\t%s" % (which_replacement[0], which_replacement[1]))
+            text = re.sub(which_replacement[0], which_replacement[1], text)
         changed = ( orig_text != text )
     return text
 

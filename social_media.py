@@ -18,8 +18,7 @@ from patrick_logger import log_it   # https://github.com/patrick-brian-mooney/py
 #    'a string',   # consumer_key
 #    'a string',   # consumer_secret
 #    'a string',   # token_key
-#    'a string'    # token_secret
-#)
+#    'a string'    # token_secret       )
 
 def tumblr_text_post(the_client, the_tags, the_title, the_content):
     tumblog_url = the_client.post('user/info')
@@ -38,12 +37,22 @@ def tumblr_text_post(the_client, the_tags, the_title, the_content):
 #    'access_token_secret' : 'a string'
 #    }
 
-def post_tweet(the_client, the_tweet):
-        auth = tweepy.OAuthHandler(the_client['consumer_key'], the_client['consumer_secret'])
-        auth.set_access_token(the_client['access_token'], the_client['access_token_secret'])
-        api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
-        status = api.update_status(status=the_tweet)
-        return status
+def get_new_twitter_API(client_credentials):
+    """Get an instance of the Tweepy API object to work with."""
+    auth = tweepy.OAuthHandler(client_credentials['consumer_key'], client_credentials['consumer_secret'])
+    auth.set_access_token(client_credentials['access_token'], client_credentials['access_token_secret'])
+    ret = tweepy.API(auth)
+    ret.wait_on_rate_limit, ret.wait_on_rate_limit_notify = True, True
+    return ret
+
+def post_tweet(the_tweet, client_credentials=None, API_instance=None):
+    """Post a tweet, THE_TWEET. If you already have a Tweepy API instance handy
+    pass that in as API_instance; otherwise, pass in a CLIENT_CREDENTIALS
+    dictionary and a throwaway API object will be created, then discarded.
+    """
+    if API_instance is None:
+        API_instance = get_new_twitter_API(client_credentials)
+    return API_instance.update_status(status=the_tweet)
 
 def post_reply_tweet(text, user_id, tweet_id):
     """Post a reply tweet. TWEET_ID is the id of the tweet that this tweet is a reply
