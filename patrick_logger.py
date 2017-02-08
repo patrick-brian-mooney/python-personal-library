@@ -15,7 +15,7 @@ http://patrickbrianmooney.nfshost.com/~patrick/
 
 import sys
 
-import text_handling
+import text_handling        # https://github.com/patrick-brian-mooney/python-personal-library/
 
 
 # Can set the starting level above zero explicitly when debugging.
