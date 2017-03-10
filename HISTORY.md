@@ -228,6 +228,10 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 ---------------
 * Added `scripts_caller.py`, a stub to aid in debugging.
 
+9 March 2017
+------------
+* Added `merge_json.py`, a utility to merge multiple JSON files.
+
 FUTURE PLANS
 ============
 * Continue seeing what I need to do and writing code to do it.
