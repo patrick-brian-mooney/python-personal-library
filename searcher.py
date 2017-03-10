@@ -23,4 +23,4 @@ def get_files_list(which_dir, skips):
 
 if __name__ == "__main__":
     from pprint import pprint
-    pprint(get_files_list('/', None))
+    pprint(get_files_list('.', None))
