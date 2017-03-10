@@ -237,6 +237,8 @@ def rename_photos():
                         index += 1          # Bump the counter and try again
                     else:
                         os.rename(which_file[1], the_name)
+                        if os.path.exists(os.path.splitext(which_file[1])[0] + '.json'):    # To support .json files included with G+ Photos.
+                            os.rename(os.path.splitext(which_file[1])[0] + '.json', os.path.splitext(the_name)[0] + '.json')
                         file_name_mappings[which_file[1]] = the_name
                         which_file = []     # Signal we're done with this item if successful
         finally:

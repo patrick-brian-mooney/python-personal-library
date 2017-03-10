@@ -51,7 +51,10 @@ def post_tweet(the_tweet, client_credentials=None, API_instance=None):
     dictionary and a throwaway API object will be created, then discarded.
     """
     if API_instance is None:
-        API_instance = get_new_twitter_API(client_credentials)
+        if client_credentials is None:
+            raise AttributeError("social_media.post_tweet requires either client credentials or an already-initialized API instance")
+        else:
+            API_instance = get_new_twitter_API(client_credentials)
     return API_instance.update_status(status=the_tweet)
 
 def post_reply_tweet(text, user_id, tweet_id):
