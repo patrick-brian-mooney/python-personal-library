@@ -232,6 +232,10 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 ------------
 * Added `merge_json.py`, a utility to merge multiple JSON files.
 
+10 March 2017
+-------------
+* Added `google_photos_to_flickr.py`, a script that will hopefully easy moving my Google photos to Flickr. 
+
 FUTURE PLANS
 ============
 * Continue seeing what I need to do and writing code to do it.
