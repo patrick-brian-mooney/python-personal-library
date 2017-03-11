@@ -120,19 +120,30 @@ def upload_photos(dir):
             images.extend(glob.glob(ext))
         for image in sorted(list(set(images))):
             patrick_logger.log_it("    INFO: about to upload image %s" % image)
-            try:                                                        # First, get any available metadata
+            try:                                                    # First, get any available metadata
                 with open(image + '.json') as json_file:
                     file_data = json.load(json_file)
                 json_data = default_data_fields.copy()
                 json_data.update(file_data)
+                if image.strip() != json_data['title'].strip():     # If the filename doesn't match what the metadata says it should be ...
+                    os.rename(image, json_data['title'].strip())    # Rename the file
+                    os.rename(image + '.json', json_data['title'].strip() + '.json')    # And its metadata file
+                    image = json_data['title'].strip()              # And track the new name instead of the old one
                 patrick_logger.log_it('    INFO: successfully read photo metadata', 3)
             except Exception:
                 json_data = default_data_fields.copy()
                 json_data.update({'title': image})
                 patrick_logger.log_it('    INFO: failed to read photo metadata; using defaults', 2)
-            json_data['tags'] = '"%s"' % folder_metadata['title']       # Yes, just the single quoted string. Dump any other tags.
-            flickr.upload(filename=image, title=json_data['title'], description=json_data['description'], tags=json_data['tags'])
-            patrick_logger.log_it("   INFO: successfully uploaded file", 4)
+            try:
+                json_data['tags'] = '"%s"' % folder_metadata['title']       # Yes, just the single quoted string. Dump any other tags.
+                flickr.upload(filename=image, title=json_data['title'], description=json_data['description'], tags=json_data['tags'])
+                patrick_logger.log_it("    INFO: successfully uploaded file", 4)
+                os.remove(image)
+                try:
+                    os.remove(image + '.json')
+                except NameError: pass          # If the metadata file doesn't exist, oh well.
+            except Exception as e:
+                patrick_logger.log_it("    INFO: unable to upload or delete file %s; the system said %s" % (image, e))
     except Exception as e:
         patrick_logger.log_it('ERROR: system said %s' % e)
     finally:
@@ -141,6 +152,6 @@ def upload_photos(dir):
 
 if __name__ == "__main__":
     # Get a (non-recursive) list of all subdirectories of the current directory. Ignore any non-directory files in the current directory.
-    for dir in [ d for d in glob.glob('/home/patrick/Desktop/working/to post (Flickr)/Google Albums/*') if os.path.isdir(d) ]:
+    for dir in sorted([ d for d in glob.glob('/home/patrick/Desktop/working/to post (Flickr)/Google Albums/*') if os.path.isdir(d) ]):
         preprocess_dir(dir)
         upload_photos(dir)
