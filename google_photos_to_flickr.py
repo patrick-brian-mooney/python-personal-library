@@ -16,9 +16,20 @@ This script assumes that the Google Takeout archive (or at least the subfolder
 of the archive that contains the photos) has been expanded into a folder that
 contains a series of subfolders, each of which represents what was an album on
 Google Photos. It then tries to process each of these subfolders, uploading the
-photos that it contains to new albums on Flickr. Since (in my experience)
-Google Takeout archives don't have a particularly regular structure, it tries
-to deal with this irregular data in at least a semi-robust way.
+photos that it contains to Flickr. Since (in my experience) Google Takeout
+archives don't have a particularly regular structure, it tries to deal with
+this irregular data in at least a semi-robust way.
+
+The Flickr API doesn't expose enough of Flickr's functionality in a documented
+way to allow for the script to do all of its work automatically; in particular,
+the Flickr API doesn't document a way to create new albums, despite the fact
+that they promised to do so "soon" in a forum posting over nine years ago.
+Because of this, some supervised work needs to be done: namely, the creation
+and arrangement of albums. I deal with this by making sure the script turns the
+old album name into a tag, then putting a breakpoint at the end of the album-
+uploading procedure. When the script stops running, I go to Flickr, find the
+new photos that have the tag in question, and organize them into an album by
+hand. It's not perfect, but it seems to be the best I can do for now.
 
 Google is a trademark of Google. Flickr is a trademark of Yahoo!. This script
 is copyright 2017 by Patrick Mooney; it is licensed under the GNU GPL version
