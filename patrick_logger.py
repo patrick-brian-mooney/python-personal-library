@@ -36,8 +36,9 @@ class Logger(object):
         """Clean up. More specifically: close any open files that aren't standard
         streams.
         """
-        if self.output_destination not in [sys.stdout, sys.stderr, sys.stdin]:
-            self.output_destination.close()
+        if self.output_destination and sys is not None:
+            if self.output_destination not in [sys.stdout, sys.stderr, sys.stdin]:
+                self.output_destination.close()
 
     def log_it(self, message, minimum_level=1):
         """Add a message to the log if the current verbosity_level is at least the minimum_level of the message.
