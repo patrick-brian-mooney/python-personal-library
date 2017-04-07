@@ -234,7 +234,12 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 
 10 March 2017
 -------------
-* Added `google_photos_to_flickr.py`, a script that will hopefully easy moving my Google photos to Flickr. 
+* Added `google_photos_to_flickr.py`, a script that will hopefully ease moving my Google photos to Flickr.
+
+7 April 2017
+------------
+* Added `convert_to_NFC.py`, a script to convert text to Unicode Text Normalization Form C.
+  * Which is the w3c's perferred text normalization form for HTML5.
 
 FUTURE PLANS
 ============
