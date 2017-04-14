@@ -241,6 +241,10 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 * Added `convert_to_NFC.py`, a script to convert text to Unicode Text Normalization Form C.
   * Which is the w3c's perferred text normalization form for HTML5.
 
+13 April 2017
+-------------
+* Added `HTML_escape.py`, a quick hack to get HTML-escaped text with entities.
+
 FUTURE PLANS
 ============
 * Continue seeing what I need to do and writing code to do it.
