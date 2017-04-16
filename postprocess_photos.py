@@ -14,9 +14,9 @@ Currently, it performs the following tasks:
     1. Empties out the folder's .thumbnails directory if it has files, creates
        it if it doesn't exist, and locks it down by making it non-writable.
     2. Auto-renames all photos in the current directory, then writes a file,
-       renamed.csv, indicating what the original name of each renamed file was.
-       Files are renamed to an expression that encodes the date and time when
-       they were taken, based on the EXIF info or existing filename.
+       file_names.csv, indicating what the original name of each renamed file
+       was. Files are renamed so that their new names encode the date and time
+       when they were taken, based on the EXIF info or existing filename.
     3. Keeps track of the original and new names in doing so, and creates a
        record of the mapping between old and new names in a file it calls
        file_names.csv.
@@ -32,7 +32,7 @@ Currently, it performs the following tasks:
        Tasks accomplished by this script-rewriting operation are:
 
            * Replacing the original names of the files in the script with their
-             new names, as determined in the first step, above.
+             new names, as determined in the second step, above.
            * Extending the script by adding lines causing the script to take
              the TIFF output of the enfuse operation and re-encode it to HQ
              JPEG, then copying the EXIF metadata from the base (non-shifted)
@@ -76,7 +76,7 @@ in a terminal for more.
 
 This program comes with ABSOLUTELY NO WARRANTY. Use at your own risk.
 
-postprocess_photos.py is copyright 2015-16 by Patrick Mooney. It is free
+postprocess_photos.py is copyright 2015-17 by Patrick Mooney. It is free
 software, and you are welcome to redistribute it under certain conditions,
 according to the GNU general public license, either version 3 or (at your own
 option) any later version. See the file LICENSE.md for details.
@@ -244,8 +244,10 @@ def rename_photos():
         finally:
             # write the list to disk
             with open('file_names.csv', 'w') as file_names:
-                file_names.write('original name, new name\n')
-                file_names.writelines(['%s,%s\n' % (original_name, file_name_mappings[original_name]) for original_name in file_name_mappings])
+                writer = csv.writer(file_names)
+                writer.writerow(['original name', 'new name'])
+                rows = [[name, file_name_mappings[name]] for name in file_name_mappings]
+                writer.writerows(rows)
     except:
         print('\n') # If an error occurs, end the status line that's waiting to be ended before letting the error propagate.
         raise
@@ -378,6 +380,7 @@ def hang_around():
 
 # OK, let's go
 if __name__ == "__main__":
+    os.chdir('/home/patrick/Photos/2017-04-15')
     if len(sys.argv) > 1:
         if sys.argv[1] == '--help' or sys.argv[1] == '-h':
             print_usage()

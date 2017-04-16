@@ -245,6 +245,11 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 -------------
 * Added `HTML_escape.py`, a quick hack to get HTML-escaped text with entities.
 
+15 April 2017
+-------------
+* Updated `postprocess_photos.py` so that it correctly writes `file_names.csv` even if the original photo names contain a comma ... which is a problem now that I have an iPhone.
+  * Hooray for the Python's `csv` module, which I should have been using consistently already.
+
 FUTURE PLANS
 ============
 * Continue seeing what I need to do and writing code to do it.
