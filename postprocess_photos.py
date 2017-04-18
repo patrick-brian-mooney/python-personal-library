@@ -380,7 +380,6 @@ def hang_around():
 
 # OK, let's go
 if __name__ == "__main__":
-    os.chdir('/home/patrick/Photos/2017-04-15')
     if len(sys.argv) > 1:
         if sys.argv[1] == '--help' or sys.argv[1] == '-h':
             print_usage()

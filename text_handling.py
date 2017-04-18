@@ -75,7 +75,8 @@ def _find_last_alphanumeric(w):
 
 def strip_leading_and_trailing_punctuation(w):
     """Strips leading and trailing punctuation from the string W. Returns the
-    filtered string.
+    filtered string. (Definition: here, "punctuation" includes whitespace and
+    all other non-alphanumeric text.)
     """
     return w[ _find_first_alphanumeric(w) : 1 + _find_last_alphanumeric(w) ]
 
@@ -94,11 +95,8 @@ def is_capitalized(w):
 def capitalize(w):
     """Capitalize the first letter of the string passed in as W. Leave the case of the
     rest of the string unchanged. Account for possible degenerate cases.
-
-    #FIXME: Only works if the first character in the string is the one that should be
-    capitalized.
     """
-    if len(w) == 0:
+    if not w:
         return w
     elif len(w) == 1:
         return w.upper()

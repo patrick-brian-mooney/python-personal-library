@@ -250,10 +250,14 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 * Updated `postprocess_photos.py` so that it correctly writes `file_names.csv` even if the original photo names contain a comma ... which is a problem now that I have an iPhone.
   * Hooray for the Python's `csv` module, which I should have been using consistently already.
 
+18 April 2017
+-------------
+* Minor tweaks in `text_handling.py`, mostly punctuation.
+
 FUTURE PLANS
 ============
 * Continue seeing what I need to do and writing code to do it.
 
 KNOWN BUGS
 ==========
-* No known bugs listed at the moment. However, check individual module files to be sure that I haven't just failed to list something here.
+* No known bugs listed at the moment. However, check individual module files to be sure that I haven't just forgotten to list something here.
