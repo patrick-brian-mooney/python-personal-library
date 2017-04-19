@@ -253,6 +253,8 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 18 April 2017
 -------------
 * Minor tweaks in `text_handling.py`, mostly punctuation.
+* Created a `dump_str()` method in `introspection.py` to return the string printed by `dump()` instead of just printing it.
+  * Of course, `dump()` is now just a convenience wrapper for `dump_str()`
 
 FUTURE PLANS
 ============

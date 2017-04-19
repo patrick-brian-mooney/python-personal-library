@@ -7,25 +7,29 @@ import inspect
 import pickle
 
 
-def dump(obj):
-    """Just dump a string representation of all object attributes
+def dump_str(obj):
+    """Get a textual catalog of object attributes.
 
     Based on https://stackoverflow.com/a/192184/5562328
     """
     object_representation = {}.copy()
     for attr in dir(obj):
         object_representation[attr] = getattr(obj, attr)
-    pprint.pprint(object_representation)
+    return pprint.pformat(object_representation)
+
+def dump(obj):
+    """Just dump a string representation of all object attributes to stdout."""
+    pprint.pprint(dump_str(obj))
 
 def unpickle_and_dump(the_file):
-    """Like dump(), but unpickles the contents of a file, then dumps what comes out.
-    """
+    """Like dump(), but unpickles the contents of a file, then dumps what comes out."""
     with open(the_file, 'rb') as f:
         data = pickle.load(f)
     dump(data)
     pprint.pprint(data)
 
 def object_size_estimate(obj):
+    """Yeah, I keep meaning to actually write this. Sigh."""
     pass
 
 def class_methods_in_module(module_name, class_names=True, include_leading_underscores=False):

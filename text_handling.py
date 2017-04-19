@@ -15,7 +15,7 @@ def multi_replace(text, substitutions):
     form [search_string, replace_string]. Here is a sample:
         subs = [['teh', 'the'],
                 ['chir', 'chair'],
-                ]
+               ]
     """
     debugging = False
     changed = True              # Be sure to run at least once.
@@ -26,7 +26,7 @@ def multi_replace(text, substitutions):
     while changed:              # Repeatedly perform all substitutions until none of them change anything at all.
         orig_text = text[:]
         for which_replacement in substitutions:
-            if debugging: print("Processing substitution pattern %s\t->\t%s" % (which_replacement[0], which_replacement[1]))
+            if debugging: print("Processing substitution pattern %s    ->    %s" % (which_replacement[0], which_replacement[1]))
             text = re.sub(which_replacement[0], which_replacement[1], text)
         changed = ( orig_text != text )
     return text
@@ -122,19 +122,17 @@ def _get_wrapped_lines(paragraph, indent_width=0, enclosing_width=-1):
     """
     if enclosing_width == -1: enclosing_width = terminal_width()
     ret= textwrap.wrap(paragraph, width=enclosing_width - 2*indent_width, replace_whitespace=False, expand_tabs=False, drop_whitespace=False)
-    return [ l.lstrip() for l in ret ]
+    return [ l.rstrip() for l in ret ]
 
-def print_indented(paragraph, each_side=4):
+def print_indented(paragraph, each_side=4, extra_line_break_after_paragraph=True):
     """Print a paragraph with spacing on each side.
     """
-    if '\n' in paragraph:                   # If there are newlines in PARAGRAPH ...
-        for p in paragraph.split('\n'):     # ... recursively call print_indented() on each sub-paragraph
-            print_indented(p, each_side=each_side)
-        return
-    lines = _get_wrapped_lines(paragraph, each_side)
-    for l in lines:
-        l = ' ' * each_side + l.strip()
-        print(l)
+    paragraph = multi_replace(paragraph, [['\n\n', '\n']])
+    for p in paragraph.split('\n'):
+        lines = _get_wrapped_lines(paragraph, each_side)
+        for l in lines:
+            l = ' ' * each_side + l.strip()
+            print(l)
 
 def print_wrapped(paragraph):
     """Convenience function that wraps print_indented().
