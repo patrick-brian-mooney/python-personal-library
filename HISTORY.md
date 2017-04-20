@@ -255,6 +255,13 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 * Minor tweaks in `text_handling.py`, mostly punctuation.
 * Created a `dump_str()` method in `introspection.py` to return the string printed by `dump()` instead of just printing it.
   * Of course, `dump()` is now just a convenience wrapper for `dump_str()`
+  
+20 April 2017
+-------------
+* Altering the scripts produced by `create_HDR_script.py`.
+  * The scripts created now use `-xyzdivvv` as the arguments to `align_image_stack`.
+  * `-m` seems to cause more trouble than it fixes, and I wind up using `-xyzdiv` much of the time anyway when re-running.
+  * We'll see how this works. 
 
 FUTURE PLANS
 ============

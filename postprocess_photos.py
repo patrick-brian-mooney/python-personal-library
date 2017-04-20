@@ -94,7 +94,7 @@ debugging = False
 file_name_mappings = {}.copy()              # Dictionary that maps original names to new names.
 
 def python_help():
-    python_doc = """
+    print("""
 
     If you want to use postprocess_photos.py as a Python module, you might plausibly
     do something like this in a Python 3 shell:
@@ -139,8 +139,7 @@ def python_help():
     You can also try help(pp) or help(postprocess_photos) for complete docs, or
     dir(pp) or dir(postprocess_photos) to inspect the module.
 
-    """
-    print(python_doc)
+    """)
 
 
 def print_usage():

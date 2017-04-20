@@ -42,7 +42,7 @@ def create_script_from_file_list(HDR_input_files, file_to_move=None, file_to_del
 """ % (output_file, HDR_input_files[0], HDR_input_files[-1])
     
     the_script = the_script + """
-align_image_stack -mv -a HDR_AIS_%s %s
+align_image_stack -xyzdivvv -a HDR_AIS_%s %s
 enfuse "$@"  --output=%s HDR_AIS_%s*
 rm HDR_AIS_%s*
 """ % (output_TIFF_base, ' '.join(HDR_input_files), output_file, output_TIFF_base, output_TIFF_base)
