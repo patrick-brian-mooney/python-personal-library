@@ -3,10 +3,11 @@
 
 import sys
 
-__doc__ = """%s: Remove the BOM from BOM-containing UTF-8 files.
+__doc__ = """%s: Remove the BOM from BOM-containing UTF-8 text files. These are, almost
+without exception, produced by Microsoft products, especially under Windows. 
 
 Hey Microsoft: fuck you for deciding to produce noncompliant files instead of 
-adequately tracking metadata. Stop shitting all over the people's data to mark
+adequately tracking metadata. Stop shitting all over people's data to mark
 your turf and/or cover your mistakes. It's bad information citizenship.
 
 Usage:
@@ -18,11 +19,11 @@ Usage:
         Rewrite the specified UTF-8 files in place, removing any leading BOM.
 
 This program will not work if the input file is encoded with any encoding other
-than UTF-8. (It WILL work if the input file is UTF-8 with no BOM.) It will not
-produce output files in any format other than BOMless UTF-8. Use a program like
-iconv for more general conversions.
+than UTF-8. (It WILL work, i.e. do nothing, if the input file is UTF-8 with no
+BOM.) It will not produce output files in any format other than BOMless UTF-8.
+Use a program like iconv for more general conversions.
 
-%s is copyright © 2016 by Patrick Mooney. 
+%s is copyright © 2016-17 by Patrick Mooney. 
 
 This script is licensed under the GNU GPL, either v3 or, at your option, any
 later version. See the file LICENSE.md for a copy of this license. You are

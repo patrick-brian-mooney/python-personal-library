@@ -261,7 +261,15 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 * Altering the scripts produced by `create_HDR_script.py`.
   * The scripts created now use `-xyzdivvv` as the arguments to `align_image_stack`.
   * `-m` seems to cause more trouble than it fixes, and I wind up using `-xyzdiv` much of the time anyway when re-running.
-  * We'll see how this works. 
+  * We'll see how this works.
+  
+2 May 2017
+----------
+* Adding another parameter, `delete_originals` (default False), to `create_script_from_file_list()` in `create_HDR_script.py`.
+  * This affects the script created. Normally, the original files are moved into the subfolder `HDR_components` after the created script runs.
+  * If this parameter is True, the script instead deletes these files after a successful run.
+  * All of this is intended to support ...
+* Created a new script, `HDR_from_raw`, intended to create an automated HDR tonemapping from a single raw image. It's still pretty rough and not yet done. 
 
 FUTURE PLANS
 ============

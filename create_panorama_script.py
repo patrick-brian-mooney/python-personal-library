@@ -6,10 +6,10 @@ photos are JPGs in the current directory, and that all of the JPGs in the
 current directory are photos for the panorama. The output scripts written by
 this script also make a lot of other assumptions; basically, it automates my
 own most common panorama stitching process. It leaves behind a .pto file that
-can be modified by hand if this doesn't work, and in any case, my experience is
-that, even with the script getting many things wrong, starting off
-automatically with this script is faster overall for large projects than doing
-everything manually would be.
+can be modified by hand if the results aren't satisfactory, and in any case,
+my experience is that, even with the script getting many things wrong, starting
+off automatically with this script is faster overall for large projects than
+doing everything manually would be.
 
 A short (i.e., non-comprehensive) list of choices the output script makes for
 you would include:
@@ -42,7 +42,7 @@ you would include:
 
 This program comes with ABSOLUTELY NO WARRANTY. Use at your own risk.
 
-create_panorama_script.py is copyright 2016 by Patrick Mooney. It is free
+create_panorama_script.py is copyright 2016-17 by Patrick Mooney. It is free
 software, and you are welcome to redistribute it under certain conditions,
 according to the GNU general public license, either version 3 or (at your own
 option) any later version. See the file LICENSE.md for details.
@@ -52,7 +52,7 @@ import os, glob, subprocess
 
 import postprocess_photos as pp     # https://github.com/patrick-brian-mooney/personal-library/blob/master/postprocess_photos.py
 
-the_files = sorted(glob.glob('*JPG') + glob.glob('*jpg'))
+the_files = sorted(list(set(glob.glob('*JPG') + glob.glob('*jpg'))))
 the_files_list = ' '.join(the_files)
 project_file = the_files[0] + ".pto"
 if the_files:
