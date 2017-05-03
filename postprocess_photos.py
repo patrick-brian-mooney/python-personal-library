@@ -3,12 +3,13 @@
 """
 
 The postprocess-photos.py script performs the kind of postprocessing work that
-needs to happen when I move photos to my hard drive. It processes an entire
-directory at a time; just invoke it by typing
+needs to happen when I move photos to my hard drive from one or more of my
+cameras. It processes an entire directory at a time; just invoke it by typing
 
     ./postprocess-photos.py
 
-in the directory that needs to be processed.
+while the directory that needs to be processed is the current working
+directory.
 
 Currently, it performs the following tasks:
     1. Empties out the folder's .thumbnails directory if it has files, creates
@@ -82,16 +83,24 @@ according to the GNU general public license, either version 3 or (at your own
 option) any later version. See the file LICENSE.md for details.
 """
 
+
 import sys, subprocess, os, glob, shutil, csv, datetime, time
 
 import exifread                     # https://github.com/ianare/exif-py; sudo pip3 install exifread
 
 import create_HDR_script as hdr     # https://github.com/patrick-brian-mooney/personal-library/
+import HDR_from_raw as hfr          # https://github.com/patrick-brian-mooney/personal-library/
 
-resume_previous_run = False
 debugging = False
+raw_must_be_paired_with_JPEG = True     # Delete raw photos that don't have a pre-existing JPEG counterpart
+
+
+raw_photo_extensions = ('CR2', )        # Extensions for raw photos. My Canon only produces raw photos with a .CR2 extension.
+jpeg_extensions = ('jpg', 'JPG', 'jpeg', 'JPEG', 'jpe', 'JPE')
+
 
 file_name_mappings = {}.copy()              # Dictionary that maps original names to new names.
+
 
 def python_help():
     print("""
@@ -111,7 +120,7 @@ def python_help():
     mappings in memory; this can be done by calling read_filename_mappings() to
     read an existing file_names.csv into memory, if that was created by a previous
     call to rename_photos(); if this hasn't been done yet, call rename_photos() to
-    rename the photos and build the mappings.
+    rename the photos, build the mappings, and write the file.
 
     There are some utility functions available that are never called by the script
     when it is merely invoked from the shell; they are available to be called by you
@@ -184,6 +193,47 @@ def empty_thumbnails():
         raise
     print(' ... done.\n\n')
 
+def find_alt_version(orig_name, alternate_extensions):
+    """Check to see if there is an alternate version of this file (e.g., a raw file
+    corresponding to a JPEG). This logic depends entirely on equivalent filenames
+    with differing extensions. If so, return its name; otherwise, return None.
+
+    ALTERNATE_EXTENSIONS is a list (or tuple) of other extensions to check for.
+    This list (or tuple, or set, or ...) is checked in order, and the first file
+    found with a matching extension is considered to be the match we're looking for,
+    even if there are alternate versions. That is to say: there is no effort made to
+    choose the "best" version, except insofar as the earliest extension listed is
+    assumed to belong to the "best" file
+    """
+    for whichext in alternate_extensions:
+        altfile = os.path.splitext(orig_name)[0] + '.' + whichext
+        if os.path.exists(altfile):
+            return altfile
+    return None                 # If we didn't find one ...
+
+def list_of_raws():
+    """Get a list of all raw files in the current directory."""
+    all_raws = [][:]
+    for which_ext in raw_photo_extensions:
+        all_raws += glob.glob("*%s" % which_ext)
+    return [f for f in sorted(list(set(all_raws)))]
+
+def delete_solo_raw_files():
+    """Ensure that every raw file has a correspeonding JPEG file. I only shoot raw
+    photos in RAW+JPG mode, never raw-only, so any raw photos without
+    corresponding JPEGs indicate that the JPEG was deleted in an attempt to erase
+    "the photo." Since many quick viewers don't support raw at all, and "the photo"
+    here means "both related files," this procedure ensures that JPEGs deleted in
+    one of these quick viewers don't leave orphan raw files behind.
+
+    This feature can be turned off by setting the global variable
+    raw_must_be_paired_with_JPEG to False.
+    """
+    orphan_raws = [f for f in list_of_raws() if not find_alt_version(f, jpeg_extensions)]
+    for which_raw in orphan_raws:
+        print("Raw file '%s' has no corresponding JPEG; deleting ..." % which_raw)
+        os.remove(which_raw)
+
 def rename_photos():
     """Auto-rename files based on the time when they were taken. This routine
     DOES NOT REQUIRE that a set of filename mappings be read into memory;
@@ -201,7 +251,7 @@ def rename_photos():
         file_list = [].copy()
         for which_image in glob.glob('*jpg') + glob.glob('*JPG'):
             f = open(which_image, 'rb')
-            tags = exifread.process_file(f, details=False)    # details=False means don't parse thumbnails or other slow data we don't need.
+            tags = exifread.process_file(f, details=False)    # details=False means don't parse thumbs or other slow data we don't need.
             try:
                 dt = tags['EXIF DateTimeOriginal'].values
             except KeyError:
@@ -236,9 +286,15 @@ def rename_photos():
                         index += 1          # Bump the counter and try again
                     else:
                         os.rename(which_file[1], the_name)
+                        file_name_mappings[which_file[1]] = the_name
+                        raw_version = find_alt_version(which_file[1], raw_photo_extensions)       # Check if there's a raw version we need to keep in sync.
+                        if raw_version:
+                            new_raw = os.path.splitext(the_name)[0] + os.path.splitext(raw_version)[1]
+                            os.rename(raw_version, new_raw)
+                            file_name_mappings[raw_version] = new_raw
                         if os.path.exists(which_file[1] + '.json'):    # To support .json files included with G+ Photos.
                             os.rename(which_file[1] + '.json', os.path.splitext(the_name)[0] + '.json')
-                        file_name_mappings[which_file[1]] = the_name
+                            # Executive decision: no need to make JSON renaming undoable.
                         which_file = []     # Signal we're done with this item if successful
         finally:
             # write the list to disk
@@ -355,6 +411,11 @@ def run_shell_scripts():
         os.system('chmod a-x -R %s' % which_script)
     print("\n\n ... done running scripts.")
 
+def create_HDRs_from_raws():
+    """For every raw file, create a tonemap from it."""
+    for which_raw in list_of_raws():
+        hfr.HDR_tonemap_from_raw(which_raw)
+
 def hang_around():
     """Offers to hang around, monitoring for executable shell scripts in the
     directory and running them if they appear. This might be handy if, for
@@ -379,6 +440,7 @@ def hang_around():
 
 # OK, let's go
 if __name__ == "__main__":
+    os.chdir('/home/patrick/Photos/2017-04-23')
     if len(sys.argv) > 1:
         if sys.argv[1] == '--help' or sys.argv[1] == '-h':
             print_usage()
@@ -394,10 +456,12 @@ if __name__ == "__main__":
         print('\n\nREMEMBER: this script only works on the current working directory.\n')
         sys.exit(1)
 
-    if not resume_previous_run:     # Indent/outdent the following lines to get various things skipped when resuming.
-        empty_thumbnails()
-        rename_photos()
-        rotate_photos()
+    empty_thumbnails()
+    if raw_must_be_paired_with_JPEG:
+        delete_solo_raw_files()
+    rename_photos()
+    create_HDRs_from_raws()
+    rotate_photos()
     process_shell_scripts()
     run_shell_scripts()
     if input("Want me to hang around and run scripts that show up? (Say NO if unsure.) --|  ").strip().lower()[0] == "y":
