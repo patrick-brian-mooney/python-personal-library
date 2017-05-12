@@ -275,6 +275,7 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 -----------
 * Added `remove_prefix()` to `text_handling.py` to do what I keep wanting `lstrip()` to actually do.
   * That is, it removes a specific string from the beginning of another string, if that other string begins with that specific string.
+* `tumblr_text_post()` in `social_media.py` now returns more information. Multiple scripts depending on it have been updated.
 
 FUTURE PLANS
 ============

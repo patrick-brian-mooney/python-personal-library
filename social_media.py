@@ -21,12 +21,20 @@ from patrick_logger import log_it   # https://github.com/patrick-brian-mooney/py
 #    'a string'    # token_secret       )
 
 def tumblr_text_post(the_client, the_tags, the_title, the_content):
-    tumblog_url = the_client.post('user/info')
-    tumblog_url = tumblog_url['user']['blogs'][0]['url']
+    """Create a text post on Tumblr, using THE_CLIENT as an API object. THE_TAGS,
+    THE_TITLE, and THE_CONTENT all describe what you'd expect them to describe, and
+    they're all strings.
+    
+    Returns two dictionaries: one contains a status code, the other contains more
+    info.
+    """
+    tumblr_data = the_client.post('user/info')
+    tumblog_url = tumblr_data['user']['blogs'][0]['url']
     if tumblog_url.startswith('https://'):
         tumblog_url = 'http://' + tumblog_url[8:]
-    the_status = the_client.post('post', blog_url=tumblog_url, params={'type': 'text', 'tags': the_tags, 'title': the_title, 'body': the_content})
-    return the_status
+    the_status = the_client.post('post', blog_url=tumblog_url, 
+                                 params={'type': 'text', 'tags': the_tags, 'title': the_title, 'body': the_content})
+    return the_status, tumblr_data
 
 
 # Format for Twitter clients is a dictionary:
