@@ -271,6 +271,11 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
   * All of this is intended to support ...
 * Created a new script, `HDR_from_raw`, intended to create an automated HDR tonemapping from a single raw image. It's still pretty rough and not yet done. 
 
+11 May 2017
+-----------
+* Added `remove_prefix()` to `text_handling.py` to do what I keep wanting `lstrip()` to actually do.
+  * That is, it removes a specific string from the beginning of another string, if that other string begins with that specific string.
+
 FUTURE PLANS
 ============
 * Continue seeing what I need to do and writing code to do it.

@@ -4,9 +4,16 @@
 (re)installing a Linux distro.
 """
 
-import subprocess
+import os, shutil, subprocess
 
+initial_tar_location = '/home/patrick/'
+backup_name = "sys-backup.tar"
 working_location = '/home/patrick/.system-config-backup'
+
+try:
+    os,mkdir(working_location)
+except FileExistsError:
+    pass    # Oh well.
 
 backup_file_list = [    '/etc/anacrontab',
                         '/etc/fstab',
@@ -20,6 +27,8 @@ backup_file_list = [    '/etc/anacrontab',
                         working_location
                     ]
 
+backup_file_list = [f for f in backup_file_list if os.path.exists(f)]                   # Prune any non-existent entries in that list
+
 commands_list = [   'crontab -l > %s/patrick.cronbak' % working_location,               # export user crontab
                     'sudo crontab -l > %s/patrick.cronbak' % working_location,          # export root crontab
                     'ls -la / | grep -- "->" > %s/root-symlinks' % working_location,    # export list of symlinks at root of drive
@@ -31,4 +40,4 @@ if __name__ == "__main__":
         subprocess.call(which_command, shell=True)
 
     # OK, create the archive
-    subprocess.call('tar -cvf %s/sys-backup.tar %s' % (working_location, ' '.join(backup_file_list)), shell=True)
+    subprocess.call('tar -cvf %s/%s %s' % (initial_tar_location, backup_name,' '.join(backup_file_list)), shell=True)

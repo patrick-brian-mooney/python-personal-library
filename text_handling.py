@@ -159,6 +159,14 @@ def getkey():
         except:                     # If all else fails, fall back on this, though it may well return more than one keystroke's worth of data.
             return input('')
 
+def remove_prefix(line, prefix):
+    """Returns a version of LINE that definitely does not begin with PREFIX."""
+    if line.startswith(prefix):
+        return line[len(prefix):]
+    else:
+        return line
+
+
 if __name__ == "__main__":
     print_wrapped("ERROR: text_handling.py is a collection of utilities for other programs to use. It's not itself a program you can run from the command line.")
     sys.exit(1)

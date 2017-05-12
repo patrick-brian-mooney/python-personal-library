@@ -339,7 +339,7 @@ def rotate_photos():
     subprocess.call('exiftran -aigp *jpg *JPG', shell=True)
 
 def process_shell_scripts():
-    """Rewrite any shell scripts created by MagicLantern.
+    """Rewrite any shell scripts created by Magic Lantern.
 
     Currently, we only process HDR_????.SH scripts, which call enfuse. They MAY
     (well ... should) call align_image_stack first, but that depends on whether I
