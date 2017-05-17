@@ -277,6 +277,10 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
   * That is, it removes a specific string from the beginning of another string, if that other string begins with that specific string.
 * `tumblr_text_post()` in `social_media.py` now returns more information. Multiple scripts depending on it have been updated.
 
+16 May 2017
+-----------
+* Added `monitor-clipboard.py`, a quick hack to collect things that wind up in the X clipboard.
+
 FUTURE PLANS
 ============
 * Continue seeing what I need to do and writing code to do it.
