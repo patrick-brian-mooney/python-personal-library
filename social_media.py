@@ -9,7 +9,7 @@ authentication constants.
 """
 
 from tumblpy import Tumblpy     # [sudo] pip[3] install python-tumblpy; https://github.com/michaelhelmick/python-tumblpy
-import tweepy
+import tweepy                   # http://www.tweepy.org/
 
 from patrick_logger import log_it   # https://github.com/patrick-brian-mooney/python-personal-library/blob/master/patrick_logger.py
 

@@ -26,4 +26,4 @@ if __name__ == "__main__":
                 print(the_contents)
                 time.sleep(0.2)
     except KeyboardInterrupt:
-        print("Caught Ctrl-C, quitting ...", file=sys.stderr)
+        print("\nCaught Ctrl-C, quitting ...\n", file=sys.stderr)

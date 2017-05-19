@@ -281,6 +281,12 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 -----------
 * Added `monitor-clipboard.py`, a quick hack to collect things that wind up in the X clipboard.
 
+19 May 2017
+-----------
+* Made some modifications to `patrick_logger.py` and `text_handling.py` to help support using them from Python 2.X.
+  * My utility [https://github.com/patrick-brian-mooney/beerxml-to-hrecipe](`BeerXML-to-hRecipe`) currently uses Python 2.X.
+    * one of the `pip`-installable modules it requires only runs on the 2.X python line.
+
 FUTURE PLANS
 ============
 * Continue seeing what I need to do and writing code to do it.

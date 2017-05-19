@@ -111,7 +111,10 @@ def terminal_width(default=80):
     """Do the best job possible of figuring out the width of the current terminal. Fall back on a default width if it
     absolutely cannot be determined.
     """
-    width = shutil.get_terminal_size()[0]
+    try:
+        width = shutil.get_terminal_size()[0]
+    except Exception:
+        width = default
     if width == -1: width = default
     return width
 

@@ -15,6 +15,8 @@ http://patrickbrianmooney.nfshost.com/~patrick/
 """
 
 
+from __future__ import print_function
+
 import sys
 
 import text_handling        # https://github.com/patrick-brian-mooney/python-personal-library/
