@@ -46,7 +46,8 @@ Currently, it performs the following tasks:
              separate HDR_components folder.
 
 That's it. That's all it does. Current limitations include:
-    * It doesn't do anything with non-JPEG images. No PNG, TIFF, BMP, RAW, etc.
+    * It doesn't do anything with non-JPEG images (except known raw images). it
+      does nothing with PNG, TIFF, BMP, etc.
     * It only operates on the current working directory.
     * It doesn't process any Magic Lantern scripts other than the enfuse/
       enfuse+align scripts. (ARE there others?)
@@ -364,8 +365,8 @@ def process_shell_scripts():
             with open(which_script, 'r') as the_script:
                 script_lines = the_script.readlines()
                 if script_lines[4].startswith('align_image_stack'):         # It's an align-first script, with 8 lines, 5 non-blank.
-                    # Getting the script filenames takes some processing time here. It assumes a familiarity with the format of this line in ML firmware
-                    # version 1.0.2-ml-v2.3, which currently looks like this:
+                    # Getting the script filenames takes some processing time here. It assumes a familiarity with the format of this line
+                    # in ML firmware version 1.0.2-ml-v2.3, which currently looks like this:
                     #
                     #    align_image_stack -m -a OUTPUT_PREFIX INFILE1.JPG INFILE2.JPG [...]
 
@@ -379,15 +380,15 @@ def process_shell_scripts():
                     HDR_input_files = [file_name_mappings[which_file] if which_file in file_name_mappings
                                        else which_file
                                        for which_file in script_lines[4].split()[4:]]
-                else:                                                       # It's a just-call-enfuse script, with 6 lines, 3 non-blank.
-                    new_script = script_lines[:-1]                          # preserve the opening of the script as-is; we're only altering the last line.
-                    last_line_tokens = script_lines[-1].split()             # FIXME: incorporate logic from branch above here to produce better final output.
+                else:                                       # It's a just-call-enfuse script, with 6 lines, 3 non-blank.
+                    new_script = script_lines[:-1]          # preserve the opening of the script as-is; we're only altering the last line.
+                    last_line_tokens = script_lines[-1].split()
                     HDR_input_files = [file_name_mappings[which_file] if which_file in file_name_mappings
                                        else which_file
                                        for which_file in last_line_tokens[3:]]
             hdr.create_script_from_file_list(HDR_input_files, file_to_move=which_script)
     except:
-        print() # If an error occurs, end the line that's waiting to be ended before letting the error propagate.
+        print()     # If an error occurs, end the line that's waiting to be ended before letting the error propagate.
         raise
     print('\n ... done rewriting enfuse scripts.\n')
 
@@ -413,8 +414,11 @@ def run_shell_scripts():
 
 def create_HDRs_from_raws():
     """For every raw file, create a tonemap from it."""
-    for which_raw in list_of_raws():
-        hfr.HDR_tonemap_from_raw(which_raw)
+    the_raws = list_of_raws()
+    if the_raws:
+        print("\nCreating HDR JPEGs from %d raw files ...\n\n" % len(the_raws))
+        for which_raw in the_raws:
+            hfr.HDR_tonemap_from_raw(which_raw)    
 
 def hang_around():
     """Offers to hang around, monitoring for executable shell scripts in the

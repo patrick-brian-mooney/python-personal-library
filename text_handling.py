@@ -63,6 +63,18 @@ def _find_first_alphanumeric(w):
     return -1
 
 
+def _is_alphanumeric_char(c):
+    """Convenience function to determine if a given character C is alphanumeric.
+    """
+    return c.isalpha() or c.isnumeric()
+
+def is_alphanumeric(w):
+    """Return True if the string W has only alphanumeric characters, or False if it
+    contains anything else.
+    """
+    alpha_vers = ''.join([c for c in w if _is_alphanumeric_char(c)])
+    return w == alpha_vers
+
 def _find_last_alphanumeric(w):
     """Returns the index of the first position in the string that is alphanumeric.
      If there are no alphanumeric characters in the string, returns -1

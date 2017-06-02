@@ -36,7 +36,7 @@ def get_value_from_any_tag(filename, taglist):
             return tags[tag]
         except KeyError:
             continue
-    return None
+    return None                 # E > I, so be explicit here.
 
 def create_HDR_script(rawfile):
     """Create a series of EV-shifted versions of the raw file, then produce a script
@@ -47,7 +47,7 @@ def create_HDR_script(rawfile):
     original_ISO = get_value_from_any_tag(rawfile, ['ISO', 'AutoISO', 'BaseISO'])
     original_Ev = get_value_from_any_tag(rawfile, ['MeasuredEV', 'MeasuredEV2'])
     for shift_factor in shifts:                 # Create ISO-shifted files
-        outfile = os.path.splitext(rawfile)[0] + ("+" if shift_factor >= 0 else "") + str(shift_factor) + ".jpg"
+        outfile = os.path.splitext(rawfile)[0] + ("+" if shift_factor >= 0 else "-") + str(shift_factor) + ".jpg"
         command = 'dcraw  -c -v -w -W -b %s %s | cjpeg -quality 100 -dct float > %s' % (2 ** shift_factor, rawfile, outfile)
         subprocess.call(command, shell=True)
 

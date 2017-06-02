@@ -6,7 +6,8 @@ Usage:
     
     ./HTML_escape "some text" ["some more text"] ["another string"] [...]
 
-It can also be imported as a module by Python 3.X programs.
+It can also be imported as a module by Python 3.X programs, though why you
+would want to go to the trouble of doing so is beyond me.
 
 This script is copyright 2017 by Patrick Mooney. It is licensed under the GPL,
 either version 3 or (at your option) any later version. See the file LICENSE.md

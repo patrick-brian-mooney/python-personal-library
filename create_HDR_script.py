@@ -59,10 +59,12 @@ rm HDR_AIS_%s*
 """ % (output_TIFF_base, ' '.join(HDR_input_files), output_file, output_TIFF_base, output_TIFF_base)
 
     the_script = the_script + """
-convert %s -quality 95 %s.JPG
+convert %s -quality 98 %s.JPG
 rm %s
 exiftool -tagsfromfile %s %s.JPG
-""" % (output_file, os.path.splitext(output_file)[0], output_file, HDR_input_files[0], os.path.splitext(output_file)[0])
+""" % (output_file, os.path.splitext(output_file)[0],
+       output_file,
+       os.path.splitext(HDR_input_files[0])[0] + '.jpg', os.path.splitext(output_file)[0])
 
     the_script = the_script + """
 rm %s.JPG_original
