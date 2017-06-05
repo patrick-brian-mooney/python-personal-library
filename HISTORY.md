@@ -287,6 +287,16 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
   * My utility [https://github.com/patrick-brian-mooney/beerxml-to-hrecipe](`BeerXML-to-hRecipe`) currently uses Python 2.X.
     * one of the `pip`-installable modules it requires only runs on the 2.X python line.
 
+5 June 2017
+-----------
+Splitting off several files into a new project, `photo-processing`:
+  * `create_HDR_script.py`
+  * `create_panorama_script.py`
+  * `HDR_from_all.py`
+  * `HDR_from_raw.py`
+  * `postprocess_photos.py`
+
+
 FUTURE PLANS
 ============
 * Continue seeing what I need to do and writing code to do it.
