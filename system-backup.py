@@ -11,7 +11,7 @@ backup_name = "sys-backup.tar"
 working_location = '/home/patrick/.system-config-backup'
 
 try:
-    os,mkdir(working_location)
+    os.mkdir(working_location)
 except FileExistsError:
     pass    # Oh well.
 

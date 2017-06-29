@@ -296,6 +296,10 @@ Splitting off several files into a new project, `photo-processing`:
   * `HDR_from_raw.py`
   * `postprocess_photos.py`
 
+28 June 2017
+------------
+Added `git_committer.py`, a quick hack that periodically commits archived data to multiple GitHub projects.
+
 
 FUTURE PLANS
 ============
