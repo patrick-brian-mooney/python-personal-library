@@ -300,6 +300,19 @@ Splitting off several files into a new project, `photo-processing`:
 ------------
 Added `git_committer.py`, a quick hack that periodically commits archived data to multiple GitHub projects.
 
+10 July 2017
+------------
+`git_committer.py` modified slightly
+  * the `git commit` commands no longer use the `-a` switch
+    * ... so known, existing files (e.g., code) are not automatically committed
+    * this is intended to prevent in-progress code changes from being committed before they're ready.
+  * other minor cosmetic changes   
+
+11 Sept 2017
+------------
+* `patrick_logger.py` now supports passing in a filename to open a log file at that point.
+
+
 
 FUTURE PLANS
 ============

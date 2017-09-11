@@ -33,17 +33,17 @@ from patrick_logger import log_it
 patrick_logger.verbosity_level = 3
 
 
-task_list = {'/lovecraft': ['git add archives/',
-                            'git commit -a -m "@DATE@: archiving new stories"',
+task_list = {'/lovecraft': ['git add titles.txt archives/',
+                            'git commit -m "@DATE@: archiving new stories"',
                             'git push'],
              '/archive-junta': ['git add data/',
-                                'git commit -a -m "@DATE@: archiving new tweets"',
+                                'git commit -m "@DATE@: archiving new tweets"',
                                 'git push'],
              '/LibidoMechanica': ['git add archives/',
-                                  'git commit -a -m "@DATE@: archiving new poems"',
+                                  'git commit -m "@DATE@: archiving new poems"',
                                   'git push'],
-             '/TrumpTweets': ['git add data',
-                              'git commit -a -m "@DATE@: archiving new data"',
+             '/TrumpTweets': ['git add data/',
+                              'git commit -m "@DATE@: archiving new data"',
                               'git push']
             }
 
@@ -56,9 +56,10 @@ if __name__ == "__main__":
             os.chdir(dir)
             for act in acts:
                 try:
+                    act = act.replace('@DATE@',  datetime.datetime.now().strftime('%d %b %Y'))
                     log_it('> %s' % act, 0)
-                    subprocess.call(th.multi_replace(act, ['@DATE@',  datetime.datetime.now().strftime('%d %b %Y')]), shell=True)
+                    subprocess.call(act, shell=True)
                 except BaseException as e:
-                    log_it('ERROR: unable to run command %s because %s' % (act, e), 2)
+                    log_it('ERROR: unable to run command "%s" because %s' % (act, e), 2)
     finally:
         os.chdir(olddir)

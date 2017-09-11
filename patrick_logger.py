@@ -17,7 +17,7 @@ http://patrickbrianmooney.nfshost.com/~patrick/
 
 from __future__ import print_function
 
-import sys
+import datetime, os, sys
 
 import text_handling        # https://github.com/patrick-brian-mooney/python-personal-library/
 
@@ -28,11 +28,19 @@ verbosity_level = 0
 
 class Logger(object):
     "An abstract logger class that encapsulates settings and behavior."
-    def __init__(self, name="default logger"):
+    def __init__(self, name="default logger", logfile_path=None):
         """Set up the logger object. Any of these can be changed at any time, if desired."""
-        self.output_destination = sys.stdout
         self.width = text_handling.terminal_width()
         self.name = name
+        if logfile_path is None:
+            self.output_destination = sys.stdout
+        else:
+            self.output_destination = open(logfile_path, 'w')
+            self.output_destination.write('Beginning of a log file: "%s".' % self.name)
+            self.output_destination.write('System info: %s' % os.uname())
+            self.output_destination.write('Log started %s\n\n\n' % str(datetime.now()))
+            self.width = -1
+
     
     def __del__(self):
         """Clean up. More specifically: close any open files that aren't standard
