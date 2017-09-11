@@ -40,7 +40,6 @@ class Logger(object):
             self.output_destination.write('System info: %s' % os.uname())
             self.output_destination.write('Log started %s\n\n\n' % str(datetime.now()))
             self.width = -1
-
     
     def __del__(self):
         """Clean up. More specifically: close any open files that aren't standard
