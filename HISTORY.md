@@ -311,6 +311,8 @@ Added `git_committer.py`, a quick hack that periodically commits archived data t
 11 Sept 2017
 ------------
 * `patrick_logger.py` now supports passing in a filename to open a log file at that point.
+* It now also supports multiple output streams (files, stdout, stderr) for a single logger object.
+* Made output of `git_committer.py` a bit more legible. It now also archives the logs of the `archive_junta` project.
 
 
 

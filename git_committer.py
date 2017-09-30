@@ -37,7 +37,10 @@ task_list = {'/lovecraft': ['git add titles.txt archives/',
                             'git commit -m "@DATE@: archiving new stories"',
                             'git push'],
              '/archive-junta': ['git add data/',
-                                'git commit -m "@DATE@: archiving new tweets"',
+                                'git add logs/',
+								'git add unhandled_data/',
+								'git add unhandled_data/unrecorded_deletions/', 
+                                'git commit -m "@DATE@: archiving new tweets and logs"',
                                 'git push'],
              '/LibidoMechanica': ['git add archives/',
                                   'git commit -m "@DATE@: archiving new poems"',
@@ -54,10 +57,11 @@ if __name__ == "__main__":
         for dir, acts in task_list.items():
             log_it("INFO: changing directory to '%s'" % dir, 2)
             os.chdir(dir)
+            log_it('\n> cd %s' % dir, 0)
             for act in acts:
                 try:
                     act = act.replace('@DATE@',  datetime.datetime.now().strftime('%d %b %Y'))
-                    log_it('> %s' % act, 0)
+                    log_it('\n> %s\n\n' % act, 0)
                     subprocess.call(act, shell=True)
                 except BaseException as e:
                     log_it('ERROR: unable to run command "%s" because %s' % (act, e), 2)
