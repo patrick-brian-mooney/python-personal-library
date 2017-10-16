@@ -314,7 +314,13 @@ Added `git_committer.py`, a quick hack that periodically commits archived data t
 * It now also supports multiple output streams (files, stdout, stderr) for a single logger object.
 * Made output of `git_committer.py` a bit more legible. It now also archives the logs of the `archive_junta` project.
 
+15 Oct 2017
+-----------
+Updated `check_capitalization.py` to avoid asking if we want to save when no changes have been made.
 
+16 Oct 2017
+-----------
+Fixed a problem in `text_handling.py`'s `print_indented()` that sometimes caused a line to be printed twice. (Dumb error. Sigh.)
 
 FUTURE PLANS
 ============

@@ -10,7 +10,7 @@ def multi_replace(text, substitutions):
     """Modify TEXT and return the modified version by repeatedly replacing strings
     in SUBSTITUTIONS (a list of replacements, as specified below) until none of
     the replacements produce any further change in the text.
-    
+
     SUBSTITUTIONS is a list of two-item lists. Each two-item list should be of the
     form [search_string, replace_string]. Here is a sample:
         subs = [['teh', 'the'],
@@ -22,7 +22,7 @@ def multi_replace(text, substitutions):
     if debugging:
         from pprint import pprint
         print("substitutions are:")
-        pprint(substitutions)    
+        pprint(substitutions)
     while changed:              # Repeatedly perform all substitutions until none of them change anything at all.
         orig_text = text[:]
         for which_replacement in substitutions:
@@ -144,7 +144,7 @@ def print_indented(paragraph, each_side=4, extra_line_break_after_paragraph=True
     """
     paragraph = multi_replace(paragraph, [['\n\n', '\n']])
     for p in paragraph.split('\n'):
-        lines = _get_wrapped_lines(paragraph, each_side)
+        lines = _get_wrapped_lines(p, each_side)
         for l in lines:
             l = ' ' * each_side + l.strip()
             print(l)

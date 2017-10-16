@@ -49,9 +49,9 @@ lot of the work it does. See http://www.nltk.org/.
 The most recent version of this script is available at:
 https://github.com/patrick-brian-mooney/python-personal-library/blob/master/check_capitalization.py
 
-This program is copyright 2016 by Patrick Mooney; it is licensed under the
+This program is copyright 2016-17 by Patrick Mooney; it is licensed under the
 GPL v3 or, at your option, any later version. See the file LICENSE.md for a
-copy of this licence.
+copy of this license.
 """
 
 
@@ -84,6 +84,9 @@ allowed_capitalized_words = ("i", "i'll",       # additional words that are allo
                              "i’d", "i'm", "i’m", "i've", "i’ve")
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 punc = ''.join(list(set(string.punctuation) - {"'"} | {'—‘“”'}))
+
+made_changes = False                            # Have we made any changes to the source file this run?
+force_debugging = False
 
 
 def puncstrip(w):
@@ -142,6 +145,7 @@ def check_word_capitalization(tagged_sentence, word_number, allow_always_correct
     """
     global the_lines, filename, always_capitalize_list, always_capitalize_list_filename     # In case we abort and save.
     global apostrophe_words, apostrophe_words_filename                                      # Same reason.
+    global made_changes
 
     the_word = tagged_sentence[word_number][0]
     if comparative_form(the_word) in always_capitalize_list:
@@ -198,6 +202,7 @@ def correct_sentence_capitalization(s):
 
     :param s: a string: the sentence to be examined.
     """
+    global made_changes
     count = 0
     tagged_sent = nltk.tag.pos_tag(s.split())   # This is now a list of tuples: [(word, POS), (word, POS) ...]
     for word, pos in tagged_sent:               # POS = "part of speech." Go through the list of tuples, word by word
@@ -229,6 +234,7 @@ def correct_sentence_capitalization(s):
                 # Capitalized, but not a proper noun?
                 if check_word_capitalization(tagged_sent, count-1, allow_always_correct=True):
                     tagged_sent[count-1] = (tagged_sent[count-1][0].lower(), pos)
+                    made_changes = True
 
     return reassemble_sentence(tagged_sent).strip()
 
@@ -242,27 +248,30 @@ def save_files(allow_saving_text=True):
 
 
     Deals with these global variables:
-        the_lines                             List of lines to be written back to the original file.
-        filename                              Path/name of the original file to be overwritten.
-        always_capitalize_list                List of words always to capitalize.
-        always_capitalize_list_filename       Location of always-capitalize list.
-        apostrophe_words                      List of words allowed to begin with an apostrophe
-        apostrophe_words_filename             Location of file listing words allowed to begin with an apostrophe
+        the_lines                               List of lines to be written back to the original file.
+        filename                                Path/name of the original file to be overwritten.
+        always_capitalize_list                  List of words always to capitalize.
+        always_capitalize_list_filename         Location of always-capitalize list.
+        apostrophe_words                        List of words allowed to begin with an apostrophe
+        apostrophe_words_filename               Location of file listing words allowed to begin with an apostrophe
+        made_changes                            Were any changes made to current file?
 
     """
-    global always_capitalize_list, always_capitalize_list_filename, apostrophe_words_filename
+    global always_capitalize_list, always_capitalize_list_filename, apostrophe_words_filename, made_changes
 
     the_menu = OrderedDict([                                    # Use this same menu for both questions
                             ('Y', "Overwrite the old data"),
                             ('N', 'Cancel and lose the changes')
                             ])
 
-    if allow_saving_text:
-        choice = comparative_form(multi_choice_menu.menu_choice(the_menu, 'Overwrite file "%s" with modified text?' % os.path.split(filename)[1]))
-        if choice == 'y':
-            with open(filename, 'w') as f:
-                f.writelines(the_lines)
-
+    if made_changes:
+        if allow_saving_text:
+            choice = comparative_form(multi_choice_menu.menu_choice(the_menu, 'Overwrite file "%s" with modified text?' % os.path.split(filename)[1]))
+            if choice == 'y':
+                with open(filename, 'w') as f:
+                    f.writelines(the_lines)
+    else:
+        print('No changes made in this file, moving on ...\n\n')
     always_capitalize_list.sort()
     if always_capitalize_list != original_always_capitalize_list:
         print('\n\n')
@@ -370,7 +379,10 @@ def process_file(the_filename):
 
 
 if __name__ == "__main__":
-    opts = process_command_line()
+    if force_debugging:
+        opts=("""/UlyssesRedux/corpora/next run/14/William Shakespeare: "Shall I compare thee to a summer's day? (Sonnet 18)".txt""", None)
+    else:
+        opts = process_command_line()
     filename, always_capitalize_list_filename = filename or opts[0], always_capitalize_list_filename or opts[1]
 
     try:                                        # If an auto-capitalize list was specified, load it
