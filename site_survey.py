@@ -2,7 +2,7 @@
 """Produces a declaration of the contents of my website, as described at
 http://patrickbrianmooney.nfshost.com/~patrick/feeds/geographical-surveys/"""
 
-import requests, time, datetime, uuid, html, bz2, subprocess
+import bz2, datetime, html, requests, subprocess, time, uuid
 
 import searcher         # https://github.com/patrick-brian-mooney/personal-library/blob/master/searcher.py
 

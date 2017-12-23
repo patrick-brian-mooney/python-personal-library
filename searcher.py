@@ -5,7 +5,8 @@ import os
 
 def get_files_list(which_dir, skips):
     """Get a complete list of all files and folders under WHICH_DIR, except those matching SKIPS.
-    Calls itself recursively, so it's a bad idea if the directory is (literally) profound."""
+    Calls itself recursively, so it's a bad idea if the directory is (literally) profound.
+    """
     ret = [][:]
     for (thisdir, dirshere, fileshere) in os.walk(which_dir):
         ret.append(os.path.join(thisdir))

@@ -1,23 +1,27 @@
       <p>This website currently consists of:
       <ul>
-        <li>One <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/blogs/NorCheeringCrowds/">WordPress blog</a>, a self-hosted installation (it's currently at v4.7.3). At the moment, this blog contains 1729 files and 200 directories, though I haven't dug into it to see more specifically what they are. I keep meaning to do that; it just hasn't happened.</li>
-        <li>One <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/blogs/XPB/">Jekyll blog</a> (currently produced by Jekyll 3.3.0), which currently consists of 74 HTML and XML files, and 1 CSS file.</li>
-      <p>Aside from the blogs, the rest of the site consists of 722 other files:</p>
+        <li>One <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/blogs/NorCheeringCrowds/">WordPress blog</a>, a self-hosted installation (it's currently at v4.8.2). At the moment, this blog contains 1662 files and 190 directories, though I haven't dug into it to see more specifically what they are. I keep meaning to do that; it just hasn't happened.</li>
+        <li>One <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/blogs/XPB/">Jekyll blog</a> (currently produced by Jekyll 3.6.0), which currently consists of 74 HTML/XML files and 1 CSS file.</li>
+      <p>Aside from the blogs, the rest of the site consists of 831 other files and 184 other directories:</p>
 	  <ul>
-        <li>508 hand-coded (X)HTML files (370, over 70%, are in the <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/ta/"><code>ta/</code></a> directory)</li>
+        <li>524 hand-coded (X)HTML files (370, over 70%, are in the <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/ta/"><code>ta/</code></a> directory)</li>
 		<li>1 Microsoft-specific <q>HTML components</q> (.htc) file (from the S5 slideshow system)</li>
         <li>20 CSS files</li>
         <li>2 JavaScript files (1 for the navigation header, 1 from the S5 slideshow system)</li>
         <li>56 PNG images, 9 JPEG images, 2 GIF images, 1 .ico image</li>
-        <li>7 XML files (six feeds, one sitemap)</li>
+        <li>5 XML files (four feeds, one sitemap)</li>
         <li>1 BIBTex and 1 RDF file, encoding information about the <a rel="me" href="http://patrickbrianmooney.nfshost.com/~patrick/presentations/w10/harvey/">David Harvey presentation</a></li>
         <li>13 PDF files</li>
 		<li>One LibreOffice Writer document</li>
-        <li>31 CGI scripts</li>
+        <li>30 CGI scripts (25 named ending with <code>.cgi</code>, plus 5 Python modules ending with <code>.py</code> for the other scripts to import)</li>
 		<li>5 .csv files, used as data stores for various CGI scripts</li>
         <li>3 Unix-style shell scripts</li>
-        <li>70 bzip2 archives</li>
+        <li>71 bzip2 archives</li>
+		<li>75 lrzip archives</li>
         <li>11 other plain text files (3 .asc, 1 markdown, 2 detatched signatures, 1 <a rel="muse" href="http://humanstxt.org/">humans.txt</a>, 1 <a rel="muse" href="https://keybase.io/">Keybase</a> verification file, 1 robots.txt file, 2 notes scraps that may get turned into longer pieces eventually, and a software README)</li>
+		<li>An installation of <code><a rel="muse" href="http://wp-cli.org/">wp-cli</a></code> 1.00.</li>
+		<li>One GEDCOM genealogical file, plus one zipped version of that same file</li>
+		<li>One XML-style PowerPoint slide show</li>
       </ul>
-	  <p>The above statistics are totals for the entire website. There are 336 directories in the entire filesystem, including in the blogs/ folder.
+	  <p>The above statistics are totals for the entire website. There are 373 directories in the entire filesystem, including in the <code>blogs/</code> folder.
       <p>A complete auto-generated sitemap for the site at this moment is included as part of this Atom feed entry's metadata. Note that some files reported there are <q>virtual</q> files, i.e. do not actually exist in that location but are hosted elsewhere.</p>
