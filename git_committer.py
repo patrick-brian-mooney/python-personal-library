@@ -47,7 +47,10 @@ task_list = {'/lovecraft': ['git add titles.txt archives/',
                                   'git push'],
              '/TrumpTweets': ['git add data/',
                               'git commit -m "@DATE@: archiving new data"',
-                              'git push']
+                              'git push'],
+             '/home/patrick/Documents/programming/python_projects/network-reporter': ['git add data/',
+                                                                                      'git commit -m "@DATE@: archiving new data"',
+                                                                                      'git push'],
             }
 
 if __name__ == "__main__":
