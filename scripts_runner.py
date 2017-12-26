@@ -39,9 +39,9 @@ def find_and_execute_scripts(path='.'):
             try:
                 olddir = os.getcwd()
                 os.chdir(dirname)
-                print('\n\n    Running script: %s' % which_script)
+                print('\n\n    Running script: %s' % os.path.abspath(which_script))
                 try:
-                    subprocess.call('./' + which_script)
+                    subprocess.call('nice -n 10 ./' + which_script, shell=True)
                 except BaseException as e:
                     print('Unable to execute script: the system said: ' + str(e))
                 os.system('chmod a-x -R %s' % which_script)
