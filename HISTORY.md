@@ -1,7 +1,9 @@
 REVISION HISTORY
 ================
 
-Current version is v1.2, 29 September 2015
+These notes are updated intermittently but (hopefully) contain major updates in addition to sporadic minor updates.
+
+Version numbering for this motley collection has long since been abandoned.
 
 
 v1: 7 October 2015
@@ -321,6 +323,10 @@ Updated `check_capitalization.py` to avoid asking if we want to save when no cha
 16 Oct 2017
 -----------
 Fixed a problem in `text_handling.py`'s `print_indented()` that sometimes caused a line to be printed twice. (Dumb error. Sigh.)
+
+26 Dec 2017
+-----------
+`scripts_runner.py` now runs its scripts at a nice value higher than zero so that long-running scripts found don't lock up the host system.
 
 FUTURE PLANS
 ============
