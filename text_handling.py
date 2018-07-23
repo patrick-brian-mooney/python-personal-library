@@ -55,7 +55,7 @@ def strip_non_alphanumeric(w, also_allow_spacing=False):
 
 def _find_first_alphanumeric(w):
     """Returns the index of the first position in the string that is alphanumeric.
-     If there are no alphanumeric characters in the string, returns -1
+    If there are no alphanumeric characters in the string, returns -1
     """
     for i, c in enumerate(w):
         if c.isalpha() or c.isnumeric():
@@ -119,9 +119,26 @@ def capitalize(w):
         else:
             return w[:first] + w[first].upper() + w[1 + first:]
 
+
+def decapitalize(w):
+    """Lower-case the first letter of the string passed in as W. Leave the case of the
+    rest of the string unchanged. Account for possible degenerate cases.
+    """
+    if not w:
+        return w
+    elif len(w) == 1:
+        return w.lower()
+    else:
+        first = _find_first_alphanumeric(w)
+        if first == -1:
+            return w
+        else:
+            return w[:first] + w[first].lower() + w[1 + first:]
+
+
 def terminal_width(default=80):
-    """Do the best job possible of figuring out the width of the current terminal. Fall back on a default width if it
-    absolutely cannot be determined.
+    """Do the best job possible of figuring out the width of the current terminal.
+    Fall back on a default width if it cannot be determined.
     """
     try:
         width = shutil.get_terminal_size()[0]

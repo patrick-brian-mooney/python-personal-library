@@ -38,7 +38,7 @@ def class_methods_in_module(module_name, class_names=True, include_leading_under
     classes = inspect.getmembers(module_name, inspect.isclass)
     for c in classes:
         for m in c[1].__dict__:
-            if not m.startswith('_') or include_leading_underscores:
+            if include_leading_underscores or not m.startswith('_'):
                 if class_names: ret |= set(["%s.%s" % (c[0], m)])
                 else: ret.add(str(m))
     return ret

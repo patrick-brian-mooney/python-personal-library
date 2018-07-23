@@ -20,10 +20,10 @@ later version. See the file LICENSE.md for details.
 """
 
 
-import os, sys, subprocess
+import os, subprocess, sys
 
 
-debugging = True
+debugging = False
 
 
 def find_and_execute_scripts(path='.'):
@@ -42,9 +42,9 @@ def find_and_execute_scripts(path='.'):
                 print('\n\n    Running script: %s' % os.path.abspath(which_script))
                 try:
                     subprocess.call('nice -n 10 ./' + which_script, shell=True)
+                    os.system('chmod a-x -R %s' % which_script)
                 except BaseException as e:
                     print('Unable to execute script: the system said: ' + str(e))
-                os.system('chmod a-x -R %s' % which_script)
             finally:
                 os.chdir(olddir)
 

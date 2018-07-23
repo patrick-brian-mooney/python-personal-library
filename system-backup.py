@@ -27,7 +27,7 @@ backup_file_list = [    '/etc/anacrontab',
                         working_location
                     ]
 
-backup_file_list = [f for f in backup_file_list if os.path.exists(f)]                  # Prune any non-existent entries in that list
+backup_file_list = [f for f in backup_file_list if os.path.exists(f)]                   # Prune any non-existent entries in that list
 
 commands_list = [   'crontab -l > %s/patrick.cronbak' % working_location,               # export user crontab
                     'sudo crontab -l > %s/patrick.cronbak' % working_location,          # export root crontab

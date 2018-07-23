@@ -328,6 +328,15 @@ Fixed a problem in `text_handling.py`'s `print_indented()` that sometimes caused
 -----------
 `scripts_runner.py` now runs its scripts at a nice value higher than zero so that long-running scripts found don't lock up the host system.
 
+23 July 2018
+------------
+Accumulating several small changes to multiple scripts, mostly making default explicit and editing docstrings. Notable other changes:
+
+* parameters to tweeting functions in `social_media.py` are now more flexible to allow reusing a client API instance.
+  * `post_reply_tweet()` actually works.
+* `text_handling.py` now has a `decapitalize()` function to force-lowercase the first alphanumeric character in the string.
+
+
 FUTURE PLANS
 ============
 * Continue seeing what I need to do and writing code to do it.
