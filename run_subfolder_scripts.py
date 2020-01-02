@@ -11,10 +11,16 @@ Note that this calls scripts in an insecure way:
     subprocess.call(script_name, shell=True)
 
 so it should only be called on scripts that are trusted completely.
+
+This script is copyright 2017-20 by Patrick Mooney. It is licensed under the GNU
+GPL, either version 3 or (at your option) any later version. See the file
+LICENSE.md for details.
 """
+
 
 import glob, os, subprocess
 from pprint import pprint
+
 
 the_dirs = [ d for d in glob.glob("*") if os.path.isdir(d) ]
 for which_dir in the_dirs:
