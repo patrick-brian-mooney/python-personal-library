@@ -4,14 +4,12 @@ punctuation. Additionally, it removes leading and trailing spaces from each
 line.
 
 Usage:
-    
+
     ./poetry_to_prose.py FILENAME
 
 This script is copyright 2016 by Patrick Mooney. It is licensed under the GPL,
 either version 3 or (at your option) any later version. See the file LICENSE.md
 for a copy of this license.
-
-
 """
 
 
@@ -42,7 +40,7 @@ def main(the_filename):
 
     with open(the_filename) as the_file:
         the_text = the_file.readlines()
-    
+
     output_file = [][:]
     for which_line in the_text:
         which_line = which_line.strip()

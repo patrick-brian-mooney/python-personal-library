@@ -8,11 +8,17 @@ Usage:
 
 It requires that the appropriate authentication constants are already set up
 in social_media_auth.py.
+
+This script is copyright 2017-20 by Patrick Mooney. It is licensed under the GNU
+GPL, either version 3 or (at your option) any later version. See the file
+LICENSE.md for details.
 """
+
 
 import sys
 
 import social_media, social_media_auth  # https://github.com/patrick-brian-mooney/personal-library
+
 
 if len(sys.argv) <= 1:
     print('\n\n' + __doc__ % sys.argv[0])

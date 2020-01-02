@@ -7,8 +7,9 @@ encounters them. Not anywhere near general purpose, and is POSIX-dependent.
 Really, I'm just putting this here so I don't have to rewrite it from scratch
 some other time.
 
-This program is licensed under the GPL v3 or, at your option, any later
-version. See the file LICENSE.md for a copy of this license.
+This script is copyright 2017-20 by Patrick Mooney. It is licensed under the GNU
+GPL, either version 3 or (at your option) any later version. See the file
+LICENSE.md for details.
 """
 
 import os, sys, glob, pprint, subprocess
@@ -33,13 +34,13 @@ for d in dirs_list:
             th.print_wrapped('DEBUGGING: entering directory "%s".' % d)
             _ = input("Hit ENTER to continue")
             print()
-        
-        os.chdir(d)   
+
+        os.chdir(d)
         files = sorted(glob.glob('*'))
         if debugging:
             th.print_wrapped('DEBUGGING: files in that directory are %s.' % files)
             _ = input("Hit ENTER to continue")
-        
+
         for f in files:
             if debugging: th.print_wrapped("  ...processing %s" % f)
             new_name = "%05d%s" % (file_count, os.path.splitext(f)[1])

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Routines for object examination."""
+"""Routines for object examination.
+
+This script is copyright 2017-20 by Patrick Mooney. It is licensed under the GNU
+GPL, either version 3 or (at your option) any later version. See the file
+LICENSE.md for details.
+"""
 
 
 import pprint
@@ -17,9 +22,11 @@ def dump_str(obj):
         object_representation[attr] = getattr(obj, attr)
     return pprint.pformat(object_representation)
 
+
 def dump(obj):
     """Just dump a string representation of all object attributes to stdout."""
     pprint.pprint(dump_str(obj))
+
 
 def unpickle_and_dump(the_file):
     """Like dump(), but unpickles the contents of a file, then dumps what comes out."""
@@ -28,9 +35,11 @@ def unpickle_and_dump(the_file):
     dump(data)
     pprint.pprint(data)
 
+
 def object_size_estimate(obj):
     """Yeah, I keep meaning to actually write this. Sigh."""
     pass
+
 
 def class_methods_in_module(module_name, class_names=True, include_leading_underscores=False):
     """Get all class methods from a module."""

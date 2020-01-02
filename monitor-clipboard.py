@@ -4,19 +4,22 @@
 the clipboard are to stdout, from which it can, if necessary, be redirected.
 
 This script relies on the external program XCLIP (try sudo apt-get install xclip
-from within Ubuntu or other Debian-based distributions). It is really just a 
+from within Ubuntu or other Debian-based distributions). It is really just a
 quick hack, but if you want to, you can use it; it's licensed under the GNU GPL
 (either version 3 or, at your option, any later version); see the file
 LICENSE.md for details.
 
-This script is copyright 2017 by Patrick Mooney.
+This script is copyright 2017-20 by Patrick Mooney. It is licensed under the GNU
+GPL, either version 3 or (at your option) any later version. See the file
+LICENSE.md for details.
 """
+
 
 import time, subprocess, sys
 
 if __name__ == "__main__":
     print("\n\nMonitoring clipboard, press Ctrl-C to quit ...", file=sys.stderr)
-    
+
     try:
         last_clipboard = ''
         while True:

@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 """Backs up system config. A quick hack for my own use. Useful before
 (re)installing a Linux distro.
+
+This script is copyright 2017-20 by Patrick Mooney. It is licensed under the GNU
+GPL, either version 3 or (at your option) any later version. See the file
+LICENSE.md for details.
 """
 
 import os, shutil, subprocess

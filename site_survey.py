@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """Produces a declaration of the contents of my website, as described at
 http://patrickbrianmooney.nfshost.com/~patrick/feeds/geographical-surveys/
+
+This script is copyright 2017-20 by Patrick Mooney. It is licensed under the GNU
+GPL, either version 3 or (at your option) any later version. See the file
+LICENSE.md for details.
 """
 
 
 import bz2, datetime, html, requests, subprocess, time, uuid
 
-import searcher         # https://github.com/patrick-brian-mooney/personal-library/blob/master/searcher.py
+import file_utils as fu     # https://github.com/patrick-brian-mooney/personal-library/blob/master/
 
 
 local_website_root = '/website-root'
@@ -63,13 +67,13 @@ def produce_feed(files_list):
     <id>urn:uuid:%s</id>
     <updated>%s</updated>
 """ % (short_date, ISO8601_date, eight_digit_date, two_digit_year, uuid.uuid4(), short_date, uuid.uuid4(), ISO8601_date)
-    
+
     for the_file in files_list:
         the_feed = the_feed + '    <link rel="related self" href="%s" />\n' % requests.utils.quote(the_file)
-    
+
     the_feed = the_feed + """    <content type="html">
 """ + html.escape(open(description_file).read())
-    
+
     the_feed = the_feed + """
     </content>
   </entry>
@@ -83,10 +87,10 @@ def produce_feed(files_list):
     GPG_sign_file(feed_location)
 
 if __name__ == "__main__":
-    local_files = searcher.get_files_list(local_website_root, skip_strings_list)
+    local_files = fu.get_files_list(local_website_root, skip_strings_list)
     remote_files = [ the_item.replace(local_website_root, remote_website_root) for the_item in local_files ]
-    
+
     produce_feed(remote_files)
     IA_archive(remote_files)
-    
+
     print("\n\n\nWE'RE DONE! Don't forget to update the site survey web page and survey list feed.")

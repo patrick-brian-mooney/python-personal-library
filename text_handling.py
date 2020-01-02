@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""A collection of text-handling utilities."""
+"""A collection of text-handling utilities.
+
+This script is copyright 2017-18 by Patrick Mooney. It is licensed under the GNU
+GPL, either version 3 or (at your option) any later version. See the file
+LICENSE.md for details.
+"""
 
 
 import sys, textwrap, shutil, re
@@ -48,12 +53,14 @@ def _is_alphanumeric_char(c):
     """
     return c.isalpha() or c.isnumeric()
 
+
 def is_alphanumeric(w):
     """Return True if the string W has only alphanumeric characters, or False if it
     contains anything else.
     """
     alpha_vers = ''.join([c for c in w if _is_alphanumeric_char(c)])
     return w == alpha_vers
+
 
 def strip_non_alphanumeric(w, also_allow_spacing=False):
     """Returns a string containing only the alphanumeric characters from string W (and,
@@ -64,6 +71,7 @@ def strip_non_alphanumeric(w, also_allow_spacing=False):
     else:
         return "".join([ch for ch in w if _is_alphanumeric_char(ch)])
 
+
 def _find_first_alphanumeric(w):
     """Returns the index of the first position in the string that is alphanumeric.
     If there are no alphanumeric characters in the string, returns -1
@@ -73,6 +81,7 @@ def _find_first_alphanumeric(w):
             return i
     return -1
 
+
 def _find_last_alphanumeric(w):
     """Returns the index of the first position in the string that is alphanumeric.
      If there are no alphanumeric characters in the string, returns -1
@@ -81,6 +90,7 @@ def _find_last_alphanumeric(w):
         if c.isalpha() or c.isnumeric():
             return i
     return -1
+
 
 
 def strip_leading_and_trailing_punctuation(w):
@@ -148,6 +158,7 @@ def terminal_width(default=80):
     if width == -1: width = default
     return width
 
+
 def _get_wrapped_lines(paragraph, indent_width=0, enclosing_width=-1):
     """Function that splits the paragraph into lines. Mostly just wraps textwrap.wrap().
 
@@ -156,6 +167,7 @@ def _get_wrapped_lines(paragraph, indent_width=0, enclosing_width=-1):
     if enclosing_width == -1: enclosing_width = terminal_width()
     ret = textwrap.wrap(paragraph, width=enclosing_width - 2*indent_width, replace_whitespace=False, expand_tabs=False, drop_whitespace=False)
     return [ l.rstrip() for l in ret ]
+
 
 def print_indented(paragraph, each_side=4, extra_line_break_after_paragraph=True):
     """Print a paragraph with spacing on each side.
@@ -167,10 +179,12 @@ def print_indented(paragraph, each_side=4, extra_line_break_after_paragraph=True
             l = ' ' * each_side + l.strip()
             print(l)
 
+
 def print_wrapped(paragraph):
     """Convenience function that wraps print_indented().
     """
     print_indented(paragraph, each_side=0)
+
 
 def getkey():
     """Do the best job possible of waiting for and grabbing a single keystroke.
@@ -191,6 +205,7 @@ def getkey():
                 termios.tcsetattr(stdin_fd, termios.TCSADRAIN, old_status)
         except:                     # If all else fails, fall back on this, though it may well return more than one keystroke's worth of data.
             return input('')
+
 
 def remove_prefix(line, prefix):
     """Returns a version of LINE that definitely does not begin with PREFIX."""

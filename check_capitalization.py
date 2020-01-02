@@ -58,6 +58,7 @@ copy of this license.
 import sys, os, string, getopt, pprint
 from collections import OrderedDict
 
+import file_utils
 import nltk
 
 import patrick_logger, multi_choice_menu                        # https://github.com/patrick-brian-mooney/python-personal-library/
@@ -278,7 +279,7 @@ def save_files(allow_saving_text=True):
         choice = comparative_form(multi_choice_menu.menu_choice(the_menu, 'List of always-capitalize words "%s" modified. Save new list?' %
                                                                 os.path.split(always_capitalize_list_filename)[1]))
         if choice == 'y':
-            always_capitalize_list_filename = always_capitalize_list_filename or sfp.do_open_dialog()
+            always_capitalize_list_filename = always_capitalize_list_filename or file_utils.do_open_dialog()
             with open(always_capitalize_list_filename, 'w') as f:
                 f.writelines(sorted(list(set([comparative_form(line) + '\n' for line in always_capitalize_list]))))
 
@@ -288,7 +289,7 @@ def save_files(allow_saving_text=True):
         choice = comparative_form(multi_choice_menu.menu_choice(the_menu, 'List of begin-with-apostrophe words "%s" modified. Save new list?' %
                                                                 os.path.split(apostrophe_words_filename)[1]))
         if choice == 'y':
-            apostrophe_words_filename = apostrophe_words_filename or sfp.do_open_dialog()
+            apostrophe_words_filename = apostrophe_words_filename or file_utils.do_open_dialog()
             with open(apostrophe_words_filename, 'w') as f:
                 f.writelines(sorted(list(set(['’%s\n' % comparative_form(line).lstrip("’'") for line in apostrophe_words]))))
 
@@ -405,7 +406,7 @@ if __name__ == "__main__":
 
     original_apostrophe_words = apostrophe_words.copy()
 
-    filename = filename or sfp.do_open_dialog()
+    filename = filename or file_utils.do_open_dialog()
     patrick_logger.log_it('File chosen is "%s"' % filename, 2)
     if not filename:
         print("No file to process!")
