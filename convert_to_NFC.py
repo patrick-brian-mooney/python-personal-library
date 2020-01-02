@@ -17,7 +17,7 @@ for details.
 import unicodedata, sys
 
 def convert_to_NFC(what):
-    return unicodedata.normalize("NFC", "what")
+    return unicodedata.normalize("NFC", what)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2 or sys.argv[1] in [ '--help', '-h']:
