@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Produces a declaration of the contents of my website, as described at
-http://patrickbrianmooney.nfshost.com/~patrick/feeds/geographical-surveys/"""
+http://patrickbrianmooney.nfshost.com/~patrick/feeds/geographical-surveys/
+"""
+
 
 import bz2, datetime, html, requests, subprocess, time, uuid
 
 import searcher         # https://github.com/patrick-brian-mooney/personal-library/blob/master/searcher.py
+
 
 local_website_root = '/website-root'
 description_file = '/home/patrick/Documents/programming/python-library/site_survey_description.txt'
@@ -13,7 +16,8 @@ survey_directory = '/~patrick/feeds/geographical-surveys/'
 remote_website_root = 'http://patrickbrianmooney.nfshost.com'
 IA_save_prefix = 'http://web.archive.org/save/'
 
-skip_strings_list = ['.git', '.thumbnails']
+skip_strings_list = ['.git', '.thumbnails', 'IF/']
+
 
 def tz_offset():
     return abs(int(round((datetime.datetime.now() - datetime.datetime.utcnow()).total_seconds())) / 3600)
