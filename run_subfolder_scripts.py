@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """Search through the subfolders of the current folder. For each subfolder found,
 chdir() to it, then run all executable scripts ending in .SH in that folder.
-Does not exhaustively search for subfoldres of subfolders, or subfolders of
+Does not exhaustively search for subfolders of subfolders, or subfolders of
 subfolders of subfolders, etc.; it only does exactly what was described in that
-first sentence.
+first sentence, without recursion.
 
 Note that this calls scripts in an insecure way:
 
