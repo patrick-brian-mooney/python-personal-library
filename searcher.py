@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
-"""Routines for searching files and folders"""
+"""Routines for searching files and folders.
+
+This module is part of Patrick Mooney's Python utility scripts. These scripts
+are licensed under the GNU GPL, either version 3 or (at your option) any later
+version. See the file LICENSE.md for details.
+"""
 
 import os
 
 def get_files_list(which_dir, skips=None):
     """Get a complete list of all files and folders under WHICH_DIR, except those matching SKIPS.
-    Calls itself recursively, so it's a bad idea if the directory is (literally) profound.
+    Calls itself recursively, so it's a bad idea if the directory is (literally)
+    very profound.
     """
-    if skips == None: 
+    if skips == None:
         skips = [][:]
     ret = [][:]
     for (thisdir, dirshere, fileshere) in os.walk(which_dir):
