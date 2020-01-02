@@ -31,7 +31,8 @@ def find_and_execute_scripts(path='.'):
     then execute them. Specify the path to walk as PATH; it defaults to the
     current directory.
     """
-    for (dirname, subsheres, fileshere) in os.walk(path):
+    for (dirname, subshere, fileshere) in os.walk(path, topdown=True):
+        subshere.sort()
         print('Looking for scripts in %s' % dirname)
         file_list = sorted([ which_script for which_script in fileshere if which_script.endswith('SH') ])
         # file_list = [ which_script for which_script in file_list if os.access(which_script, os.X_OK) ]
