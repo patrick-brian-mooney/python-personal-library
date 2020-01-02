@@ -43,26 +43,6 @@ def begins_with_apostrophe(w):
     return False    # If it's effectively zero-length, it doesn't begin with an apostrophe.
 
 
-def strip_non_alphanumeric(w, also_allow_spacing=False):
-    """Returns a string containing only the alphanumeric characters from string W and,
-    if also_allow_spacing is True, whitespace characters.
-    """
-    if also_allow_spacing:
-        return "".join(ch for ch in w if ch.isalpha() or ch.isnumeric() or ch.isspace())
-    else:
-        return "".join(ch for ch in w if ch.isalpha() or ch.isnumeric())
-
-
-def _find_first_alphanumeric(w):
-    """Returns the index of the first position in the string that is alphanumeric.
-    If there are no alphanumeric characters in the string, returns -1
-    """
-    for i, c in enumerate(w):
-        if c.isalpha() or c.isnumeric():
-            return i
-    return -1
-
-
 def _is_alphanumeric_char(c):
     """Convenience function to determine if a given character C is alphanumeric.
     """
@@ -74,6 +54,24 @@ def is_alphanumeric(w):
     """
     alpha_vers = ''.join([c for c in w if _is_alphanumeric_char(c)])
     return w == alpha_vers
+
+def strip_non_alphanumeric(w, also_allow_spacing=False):
+    """Returns a string containing only the alphanumeric characters from string W (and,
+    if also_allow_spacing is True, whitespace characters).
+    """
+    if also_allow_spacing:
+        return "".join([ch for ch in w if _is_alphanumeric_char(ch) or ch.isspace()])
+    else:
+        return "".join([ch for ch in w if _is_alphanumeric_char(ch)])
+
+def _find_first_alphanumeric(w):
+    """Returns the index of the first position in the string that is alphanumeric.
+    If there are no alphanumeric characters in the string, returns -1
+    """
+    for i, c in enumerate(w):
+        if _is_alphanumeric_char(c):
+            return i
+    return -1
 
 def _find_last_alphanumeric(w):
     """Returns the index of the first position in the string that is alphanumeric.
@@ -101,7 +99,10 @@ def is_capitalized(w):
     Probably, this is somewhat better that just testing w[0].isupper(), because it
     ignores leading punctuation.
     """
-    return w[_find_first_alphanumeric(w)].isupper()
+    try:
+        return w[_find_first_alphanumeric(w)].isupper()
+    except IndexError:
+        return False            # I hereby declare by fiat that zero-length strings are not capitalized.
 
 
 def capitalize(w):
@@ -177,7 +178,7 @@ def getkey():
     """
     try:                            # Alas, the statistical likelihood is that this routine is being run under Windows, so try that first.
         import msvcrt
-        return msvcrt.getch()       # This really needs to be actually tested under Windows.
+        return msvcrt.getch()
     except ImportError:             # Under any non-Windows OS. (I hope.)
         try:
             import tty, termios
