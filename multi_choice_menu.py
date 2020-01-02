@@ -24,7 +24,7 @@ def menu_choice(choice_menu, prompt):
                                      ('y', 'yes'),
                                      ('n', 'never')
                                     ])
-    :param prompt:      a direct request for input printed after all of the
+    :param prompt:      a direct request for input; printed after all of the
                         menu options have been displayed.
     :return:            a string: the response the user typed that was
                         validated as an allowed choice.
