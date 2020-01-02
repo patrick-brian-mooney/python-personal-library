@@ -24,7 +24,7 @@ if sys.argv[1] in ['-h', '--help']:
 
 if __name__ == "__main__":
     the_tweet = ' '.join(sys.argv[1:])
-    if len(the_tweet) > 140:
-        print("ERROR: Your tweet is %d characters long, which is more than 140." % len(the_tweet))
+    if len(the_tweet) > 280:
+        print("ERROR: Your tweet is %d characters long, which is more than 280." % len(the_tweet))
         sys.exit(1)
     social_media.post_tweet(the_tweet, client_credentials=social_media_auth.personalTwitter_client)
