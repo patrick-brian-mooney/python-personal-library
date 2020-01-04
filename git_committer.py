@@ -13,13 +13,12 @@ the current working directory to the value of the key, then executes each
 command in the list of commands, trapping errors. It substitutes the current
 date for the string @DATE@ in each case.
 
-This script is licensed under the GNU GPL, either v3 or, at your option, any
-later version. See the file LICENSE.md for a copy of this license. You are
-welcome to use this program, but it is presented WITHOUT ANY WARRANTY or other
-guarantee: without even the guarantee of MERCHANTABILITY of FITNESS FOR ANY
-PARTICULAR PURPOSE. Use of this script is at your own risk. By using this
-program, you agree that in no circumstance will the author of the script be
-liable for any damage it causes.
+This script is copyright 2017-2020 by Patrick Mooney. It is licensed under the
+GNU GPL, either v3 or, at your option, any later version. See the file
+LICENSE.md for a copy of this license. You are welcome to use this program, but
+it is presented WITHOUT ANY WARRANTY or other guarantee: without even the
+guarantee of MERCHANTABILITY of FITNESS FOR ANY PARTICULAR PURPOSE. Use of
+this script is at your own risk.
 """
 
 
@@ -39,7 +38,7 @@ task_list = {'/lovecraft': ['git add titles.txt archives/',
              '/archive-junta': ['git add data/',
                                 'git add logs/',
 								'git add unhandled_data/',
-								'git add unhandled_data/unrecorded_deletions/', 
+								'git add unhandled_data/unrecorded_deletions/',
                                 'git commit -m "@DATE@: archiving new tweets and logs"',
                                 'git push'],
              '/LibidoMechanica': ['git add archives/',

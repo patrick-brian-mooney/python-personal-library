@@ -8,11 +8,6 @@ This script is copyright 2017-2020 by Patrick Mooney. It is licensed under
 GPL v3+ at your option. No guarantees or representations of fitness or
 warranties apply. This is free software; you're getting more than you paid
 for. More info in the file LICENSE.md.
-
-Nevertheless, I'd love to hear suggestions or feedback if anything occurs to
-you.
-
-http://patrickbrianmooney.nfshost.com/~patrick/contact.html
 """
 
 

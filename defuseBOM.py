@@ -34,15 +34,18 @@ program, you agree that in no circumstance will the author of the script be
 liable for any damage it causes. 
 """ % (tuple([sys.argv[0]]) * 4)
 
+
 def print_usage(exit_code=0):
     print(__doc__)
     sys.exit(exit_code)
+
 
 def produce_BOMless(f):
     with open(f, encoding="utf-8-sig") as fh:
         content = fh.read()
     with open(f, "w", encoding="utf-8") as fh:
         fh.write(content)
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:

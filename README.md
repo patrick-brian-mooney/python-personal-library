@@ -15,4 +15,4 @@ feedback.
 Version history, known bugs, and future plans are listed in the [HISTORY.md](https://github
 .com/patrick-brian-mooney/python-personal-library/blob/master/HISTORY.md) file.
 
-Versioning for this motley collection of scripts was abandonded on 9 December 2016.
+Maintaining version numbers for this motley collection of scripts was abandonded on 9 December 2016.

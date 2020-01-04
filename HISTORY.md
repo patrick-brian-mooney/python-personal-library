@@ -336,10 +336,13 @@ Accumulating several small changes to multiple scripts, mostly making default ex
   * `post_reply_tweet()` actually works.
 * `text_handling.py` now has a `decapitalize()` function to force-lowercase the first alphanumeric character in the string.
 
+2 January 2020
+--------------
+* Refactored and reorganized. Several files disappeared when their content was moved into `file_utilities.py`.
 
-FUTURE PLANS
-============
-* Continue seeing what I need to do and writing code to do it.
+3 January 2020
+--------------
+* Finished adding a copyright and license update to every single script. (I hope.)
 
 KNOWN BUGS
 ==========

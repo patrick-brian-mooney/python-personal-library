@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Some file-handling utilities."""
+"""Some file-handling utilities.
+
+This script is copyright 2017-20 by Patrick Mooney. It is licensed under the GNU
+GPL, either version 3 or (at your option) any later version. See the file
+LICENSE.md for details.
+"""
 
 import os
 import tkinter.filedialog
@@ -81,10 +86,6 @@ def get_files_list(which_dir, skips=None):
         return ret
 
 
-if __name__ == "__main__":
-    pass
-
-
 def do_save_dialog(**kwargs):
     """Shows a dialog asking the user where to save a file, or comes as close as
     possible to doing so. Any keyword arguments passed in are piped to the
@@ -129,3 +130,7 @@ def do_open_dialog(**kwargs):
     else:
         patrick_logger.log_it('    INFO: simple_standard_file: Selected file is "%s"' % filename, 2)
     return filename
+
+
+if __name__ == "__main__":
+    pass
