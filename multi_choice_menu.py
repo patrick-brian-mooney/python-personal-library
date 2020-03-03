@@ -28,6 +28,11 @@ def menu_choice(choice_menu, prompt):
                                      ('y', 'yes'),
                                      ('n', 'never')
                                     ])
+
+                        as a special case, if both parts of an entry in the
+                        OrderedDict are two hyphens, that entry is not a valid menu
+                        choice; it is printed as-is, as a visual separator, but is
+                        not a selectable option.
     :param prompt:      a direct request for input; printed after all of the
                         menu options have been displayed.
     :return:            a string: the response the user typed that was
@@ -41,14 +46,17 @@ def menu_choice(choice_menu, prompt):
     # OK, let's print this menu.
     print()
     for option, text in choice_menu.items():
-        current_line = '[ %s ]%s%s' % (option, ' ' * (max_menu_item_width - len(option)), ' ' * spacing_column_width)
-        text_lines = text_handling._get_wrapped_lines(text, enclosing_width=options_column_width)
-        if len(text_lines) == 1:
-            current_line = current_line + text_lines[0]
+        if (option == '--') and (text == '--'):
+            current_line = '  --  ' + ' ' * (max_menu_item_width - len('--')) + ' ' * spacing_column_width + '-----'
         else:
-            current_line = current_line + text_lines.pop(0)     # Finish the line with the first line of the description
-            left_padding = '\n' + (' ' * (menu_column_width + spacing_column_width))
-            current_line = current_line + left_padding.join(text_lines)     # Add in the rest of the description lines
+            current_line = '[ %s ]%s%s' % (option, ' ' * (max_menu_item_width - len(option)), ' ' * spacing_column_width)
+            text_lines = text_handling._get_wrapped_lines(text, enclosing_width=options_column_width)
+            if len(text_lines) == 1:
+                current_line = current_line + text_lines[0]
+            else:
+                current_line = current_line + text_lines.pop(0)     # Finish the line with the first line of the description
+                left_padding = '\n' + (' ' * (menu_column_width + spacing_column_width))
+                current_line = current_line + left_padding + left_padding.join(text_lines)     # Add in the rest of the lines
         print(current_line)
     print()
     patrick_logger.log_it("INFO: multi_choice_menu.py: menu laid out in %d lines." % len(current_line.split('\n')), 2)
@@ -56,12 +64,12 @@ def menu_choice(choice_menu, prompt):
 
     # Now, get the user's choice
     choice = 'not a legal option'
-    legal_options = [ l.lower() for l in choice_menu ]
+    legal_options = [ k.lower() for k, v in choice_menu.items() if ((k != '--') or (v != '--')) ]
     patrick_logger.log_it("INFO: multi_choice_menu.py: Legal options for this menu are %s" % legal_options, 2)
     tried_yet = False
     while choice.lower() not in legal_options:
-        if tried_yet:           # If the user has got it wrong at least once.
-            prompt = prompt.strip() + " [ %s ] " % ('/'.join(choice_menu))
+        if tried_yet:           # If the user has got it wrong at least once...
+            prompt = prompt.strip() + " [ %s ] " % ('/'.join(legal_options))
         choice = input(prompt.strip() + " ").strip()
         tried_yet = True
     return choice

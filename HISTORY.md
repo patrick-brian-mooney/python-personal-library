@@ -257,21 +257,21 @@ Added `justrunit.py`, a quick silence-output-and-`nohup` wrapper.
 * Minor tweaks in `text_handling.py`, mostly punctuation.
 * Created a `dump_str()` method in `introspection.py` to return the string printed by `dump()` instead of just printing it.
   * Of course, `dump()` is now just a convenience wrapper for `dump_str()`
-  
+
 20 April 2017
 -------------
 * Altering the scripts produced by `create_HDR_script.py`.
   * The scripts created now use `-xyzdivvv` as the arguments to `align_image_stack`.
   * `-m` seems to cause more trouble than it fixes, and I wind up using `-xyzdiv` much of the time anyway when re-running.
   * We'll see how this works.
-  
+
 2 May 2017
 ----------
 * Adding another parameter, `delete_originals` (default False), to `create_script_from_file_list()` in `create_HDR_script.py`.
   * This affects the script created. Normally, the original files are moved into the subfolder `HDR_components` after the created script runs.
   * If this parameter is True, the script instead deletes these files after a successful run.
   * All of this is intended to support ...
-* Created a new script, `HDR_from_raw`, intended to create an automated HDR tonemapping from a single raw image. It's still pretty rough and not yet done. 
+* Created a new script, `HDR_from_raw`, intended to create an automated HDR tonemapping from a single raw image. It's still pretty rough and not yet done.
 
 11 May 2017
 -----------
@@ -308,7 +308,7 @@ Added `git_committer.py`, a quick hack that periodically commits archived data t
   * the `git commit` commands no longer use the `-a` switch
     * ... so known, existing files (e.g., code) are not automatically committed
     * this is intended to prevent in-progress code changes from being committed before they're ready.
-  * other minor cosmetic changes   
+  * other minor cosmetic changes
 
 11 Sept 2017
 ------------
@@ -343,6 +343,10 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 3 January 2020
 --------------
 * Finished adding a copyright and license update to every single script. (I hope.)
+
+12 January 2020
+---------------
+* `multi_choice_menu`'s `menu_choice()` now accepts `('--', '--')` to mean a non-selectable menu choice that's printed as a separator.
 
 KNOWN BUGS
 ==========
