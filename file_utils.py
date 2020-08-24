@@ -8,7 +8,6 @@ LICENSE.md for details.
 """
 
 import os
-import tkinter.filedialog
 from pathlib import Path
 
 import patrick_logger
@@ -95,6 +94,7 @@ def do_save_dialog(**kwargs):
 
     Adapted from more complex code in Zombie Apocalypse.
     """
+    import tkinter.filedialog       # Don't want to make tkinter a dependency for every project that uses this module
     patrick_logger.log_it("DEBUGGING: simple_standard_file.do_save_dialog() called", 2)
     try:            # Use TKinter if possible
         import tkinter
@@ -116,6 +116,8 @@ def do_open_dialog(**kwargs):
 
     Adapted from more complex code in Zombie Apocalypse.
     """
+    import \
+        tkinter.filedialog  # Don't want to make tkinter a dependency for every project that uses this module
     patrick_logger.log_it("DEBUGGING: simple_standard_file.do_open_dialog() called", 2)
     try:            # Use TKinter if possible
         import tkinter

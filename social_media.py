@@ -15,7 +15,11 @@ LICENSE.md for details.
 from tumblpy import Tumblpy     # [sudo] pip[3] install python-tumblpy; https://github.com/michaelhelmick/python-tumblpy
 import tweepy                   # http://www.tweepy.org/
 
-from patrick_logger import log_it   # https://github.com/patrick-brian-mooney/python-personal-library/blob/master/patrick_logger.py
+verbosity_level = 2
+
+def log_it(what, debug_level=1):
+    if debug_level >= verbosity_level:
+        print(what)
 
 # Format for Tumblr clients is:
 # the_client = Tumblpy(
@@ -23,6 +27,10 @@ from patrick_logger import log_it   # https://github.com/patrick-brian-mooney/py
 #    'a string',   # consumer_secret
 #    'a string',   # token_key
 #    'a string'    # token_secret       )
+
+def Tumblpy_from_dict(data):
+    """Create a Tumblpy object from the authentication constants stored in a dictionary."""
+    return Tumblpy(data['consumer_key'], data['consumer_secret'], data['token_key'], data['token_secret'])
 
 def tumblr_text_post(the_client, the_tags, the_title, the_content):
     """Create a text post on Tumblr, using THE_CLIENT as an API object. THE_TAGS,
