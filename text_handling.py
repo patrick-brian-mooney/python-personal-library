@@ -155,7 +155,8 @@ def terminal_width(default=80):
         width = shutil.get_terminal_size()[0]
     except Exception:
         width = default
-    if width == -1: width = default
+    if width == -1:
+        width = default
     return width
 
 
@@ -164,7 +165,8 @@ def _get_wrapped_lines(paragraph, indent_width=0, enclosing_width=-1):
 
     Note: Strips leading and trailing spaces.
     """
-    if enclosing_width == -1: enclosing_width = terminal_width()
+    if enclosing_width == -1:
+        enclosing_width = terminal_width()
     ret = textwrap.wrap(paragraph, width=enclosing_width - 2*indent_width, replace_whitespace=False, expand_tabs=False, drop_whitespace=False)
     return [ l.rstrip() for l in ret ]
 
