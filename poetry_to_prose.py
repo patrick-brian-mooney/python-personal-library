@@ -18,21 +18,28 @@ debugging = True
 import sys, os
 import nltk                    # See http://www.nltk.org/install.html
 
+
 def quick_tokenize(what):
     """Produce an NLTK-tokenized list of tuples: (word, part of speech)."""
     return nltk.pos_tag(nltk.word_tokenize(what))
+
 
 def starts_proper(what):
     """Return TRUE if NLTK thinks the first word in WHAT is a proper noun."""
     return (quick_tokenize(what)[0][1] == "NNP")
 
+
 def lower_first(what):
     """Return the string WHAT, as passed in, except that the first character is
     forced to be lowercase.
     """
-    if len(what) == 0: return ""
-    elif len(what) == 1: return what.lower()
-    else: return what[0].lower() + what[1:]
+    if len(what) == 0:
+        return ""
+    elif len(what) == 1:
+        return what.lower()
+    else:
+        return what[0].lower() + what[1:]
+
 
 def main(the_filename):
 
@@ -61,6 +68,8 @@ def main(the_filename):
 
     with open(the_filename, 'w') as the_file:
         the_file.writelines(output_file)
+
+
 
 if __name__ == "__main__":
     main(sys.argv[1])
