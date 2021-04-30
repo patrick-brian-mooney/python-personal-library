@@ -5,11 +5,11 @@
 This is a script to find capitalized words in the middle of sentences that
 are not proper nouns (or approved other capitalized words). It also makes some
 attempt to detect other capitalization problems. It goes through a text,
-sentence by sentence, asking the user whether they should be capitalized. If
-not, it converts them to lowercase. When it has finished, it writes the
-modified text back to the same file, i.e. it modifies the input file in-place.
-It is primarily intended to check the output of my poetry_to_prose.py script
-and was originally developed in order to facilitate the processing of a
+sentence by sentence, asking the user whether each sentence should be
+capitalized. If not, it converts them to lowercase. When it has finished, it
+writes the modified text back to the same file, i.e. it modifies the input file
+in-place. It is primarily intended to check the output of my poetry_to_prose.py
+script and was originally developed in order to facilitate the processing of a
 complete edition of Shakespeare for my automated text blog Ulysses Redux.
 
 Usage:
