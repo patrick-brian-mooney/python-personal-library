@@ -23,10 +23,15 @@ if __name__ == "__main__":
     try:
         last_clipboard = ''
         while True:
-            the_contents = subprocess.check_output('xclip -sel clip -o', shell=True).decode()
-            if the_contents != last_clipboard:
-                last_clipboard = the_contents
-                print(the_contents)
-                time.sleep(0.2)
+            try:
+                the_contents = subprocess.run('xclip -sel clip -o', shell=True, capture_output=True).stdout.decode()
+                if the_contents != last_clipboard:
+                    last_clipboard = the_contents
+                    print(the_contents)
+                    time.sleep(0.2)
+            except (subprocess.CalledProcessError, UnicodeDecodeError):
+                if last_clipboard:
+                    print("WARNING! Unable to read and covert clipboard")
+                    last_clipboard = None
     except KeyboardInterrupt:
         print("\nCaught Ctrl-C, quitting ...\n", file=sys.stderr)
