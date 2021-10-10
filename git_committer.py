@@ -67,6 +67,7 @@ task_list = {'/lovecraft': ['rsync -avhHSP --delete /home/patrick/Dropbox/progra
                                                                                       'git gc --aggressive --prune=now',],
              '/home/patrick/Documents/programming/python_projects/IF utils': ['git add specific_games/ATD/working/progress.json',
                                                                               'git add specific_games/NBM/beta\ 1.62/explored_paths_Africa.json',
+                                                                              'git add specific_games/NBM/beta\ 1.62/successful_paths_Africa.txt',
                                                                               'git commit -m "@DATE@: archiving new data"',
                                                                               'git push',
                                                                               'git gc --aggressive --prune=now',]
