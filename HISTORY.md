@@ -348,6 +348,10 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 ---------------
 * `multi_choice_menu`'s `menu_choice()` now accepts `('--', '--')` to mean a non-selectable menu choice that's printed as a separator.
 
+5 January 2022
+--------------
+* Added `pickle_to_json.py` so I have a utility to deal with data files my own programs create.
+
 KNOWN BUGS
 ==========
 * No known bugs listed at the moment. However, check individual module files to be sure that I haven't just forgotten to list something here.

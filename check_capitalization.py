@@ -31,15 +31,6 @@ Options:
       line. Don't edit this file during a run of the program; if you do, your
       changes will be overwritten when check_capitalization.py ends.
 
-  -v, --verbose
-      Increase the verbosity of the script, i.e. get more output. Can be
-      specified multiple times to make the script more and more verbose.
-
-  -q, --quiet
-      Decrease the verbosity of the script. You can mix -v and -q, bumping the
-      verbosity level up and down as the command line is processed, but really,
-      what are you doing with your life?
-
   -h, --help
       Print this help message, then quit.
 
@@ -49,30 +40,35 @@ lot of the work it does. See http://www.nltk.org/.
 The most recent version of this script is available at:
 https://github.com/patrick-brian-mooney/python-personal-library/blob/master/check_capitalization.py
 
-This program is copyright 2016-17 by Patrick Mooney; it is licensed under the
+This program is copyright 2016-21 by Patrick Mooney; it is licensed under the
 GPL v3 or, at your option, any later version. See the file LICENSE.md for a
 copy of this license.
 """
 
 
-import sys, os, string, getopt, pprint
+import getopt
+import pprint
+import os
+import string
+import sys
+import typing
+
 from collections import OrderedDict
+from pathlib import Path
 
 import file_utils
 import nltk
 
-import patrick_logger, multi_choice_menu                        # https://github.com/patrick-brian-mooney/python-personal-library/
-import text_handling as th                                      # Same source.
-import simple_standard_file as sfp                              # Once again: same source.
+import multi_choice_menu                        # https://github.com/patrick-brian-mooney/python-personal-library/
+import text_handling as th                      # Same source.
 
 
 always_capitalize_sentence_beginnings = True    # Usually, it's helpful to set this to True if NLTK is doing a good job of finding the beginnings of sentences.
-patrick_logger.verbosity_level = 1
 
 
-always_capitalize_list_filename = '/python-library/always_capitalize_list'  # Or leave empty not to use a global list.
-apostrophe_words_filename = '/python-library/apostrophe_words'              # File listing words allowed to begin with an apostrophe
-filename = ''       # Fill this in with a filename to validate that file
+always_capitalize_list_filename = Path('/python-library/always_capitalize_list')    # Or leave empty not to use a global list.
+apostrophe_words_filename = Path('/python-library/apostrophe_words')                # File listing words allowed to begin with an apostrophe
+default_filename = None                                                             # Fill this in with a filename to validate that file
 
 
 the_lines = [][:]
@@ -86,15 +82,17 @@ allowed_capitalized_words = ("i", "i'll",       # additional words that are allo
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 punc = ''.join(list(set(string.punctuation) - {"'"} | {'—‘“”'}))
 
-made_changes = False                            # Have we made any changes to the source file this run?
-force_debugging = False
+text_source_file_changed = False                # Have we made any changes to the source file this run?
 
 
-def puncstrip(w):
+def puncstrip(w: str) -> str:
+    """Return a version of W, a string, that has no punctuation at the beginning or
+    end.
+    """
     return w.rstrip("'").strip(punc)    # Only strip straight quotes off the end: at the beginning, they might be apostrophes.
 
 
-def comparative_form(w):
+def comparative_form(w: str) -> str:
     """A quick convenience function to just return a standardized form of a word for
     the purpose of comparing words for equality. It's lowercase, strips out (most)
     leading and trailing punctuation, and strips out some (but not necessarily all)
@@ -121,32 +119,37 @@ def comparative_form(w):
     # APOSTROPHE_WORDS, then strip the leading apostrophe.
 
 
-def reassemble_sentence(sentence_list):
+def reassemble_sentence(sentence_list: typing.List[typing.Tuple[str, str]]) -> str:
     """Given a tagged sentence -- a list of tuples of the form
     [(word, POS), (word, POS) ... ] -- reassemble it into a string much like the
     original sentence (though possibly with spacing altered).
-
-    :param sentence_list: the list of tuples to be reassembled.
     """
-    ret = ''
+    ret = ''        # FIXME: check if type annotation is correct
     for w, _ in sentence_list:
         ret = "%s%s" % (ret, w) if w in punc else "%s %s" % (ret, w)      # Add space, except before punctuation
     return ret
 
 
-def check_word_capitalization(tagged_sentence, word_number, allow_always_correct=False):
-    """Give the user a choice of whether to correct the capitalization of the
-    word or not to correct the capitalization of the word.
+def check_word_capitalization(tagged_sentence: typing.List[typing.Tuple[str, str]],  # CHECK: is this correct?
+                              word_number: int,
+                              allow_always_correct: bool,
+                              # The rest of these parameters are just in case we have to save while quitting in the
+                              # middle of the run. They can be None; if either is, saving is not an option that's
+                              # offered to the user.
+                              the_lines: typing.Union[typing.List[str], None] = None,
+                              working_filename: typing.Union[Path, None] = None,
+                              ) -> bool:
+    """Give the user a choice of whether to correct the capitalization of word number
+    WORD_NUMBER in TAGGED_SENTENCE or not to correct the capitalization of that
+    word. The "tagged" in TAGGED_SENTENCE means "POS-tagged by NLTK."
 
-    Returns True if the capitalization NEEDS TO BE ALTERED; False if capitalization IS ALREADY CORRECT.
-    This routine modifies the global list always_capitalize_list.
-    :param tagged_sentence: the NLTK-tagged-with-POS sentence to be reassembled, a list of tuples.
-    :param word_number: which word in the sentence is to have its capitalization checked.
-    :param allow_always_correct: True if the user is to be given the option to always capitalize this word.
+    If ALLOW_ALWAYS_CORRECT is True, the user is given the option to always
+    capitalize this word; otherwise, the user is not given this option.
     """
-    global the_lines, filename, always_capitalize_list, always_capitalize_list_filename     # In case we abort and save.
-    global apostrophe_words, apostrophe_words_filename                                      # Same reason.
-    global made_changes
+    global text_source_file_changed
+    global always_capitalize_list, apostrophe_words
+    if working_filename:
+        assert isinstance(working_filename, Path)
 
     the_word = tagged_sentence[word_number][0]
     if comparative_form(the_word) in always_capitalize_list:
@@ -177,14 +180,17 @@ def check_word_capitalization(tagged_sentence, word_number, allow_always_correct
             the_menu['D'] = "Allow this word to begin with an apostrophe"
         if the_word.strip().startswith("'") and comparative_form(the_word).strip("’'") not in apostrophe_words:
             the_menu['C'] = "Correct initial apostrophe ( ' ) to opening quote ( ‘ )"
-        the_menu['Q'] = 'Quit, with option to save training data (but not modified text)'
+        if the_lines and working_filename:
+            the_menu['Q'] = 'Quit, with option to save training data (but not modified text)'
 
         choice = comparative_form(multi_choice_menu.menu_choice(the_menu, "What would you like to do?"))
         if choice == 'a':
             always_capitalize_list += [comparative_form(the_word)]
             choice = "n" if th.is_capitalized(the_word) else "y"
         elif choice == 'q':                         # FIXME: we should really be able to save the modified source text.
-            save_files(allow_saving_text=False)     # The text file hasn't been fully reassembled yes, so we can't save it!
+            # The text file hasn't been fully reassembled yet, so we can't save it! Pass other parameters, though.
+            # This branch only available if THE_LINES and WORKING_FILENAME were specified as parameters.
+            save_files()
             print('\nQuitting ...')
             sys.exit(0)
         elif choice == "d":
@@ -197,13 +203,15 @@ def check_word_capitalization(tagged_sentence, word_number, allow_always_correct
         return ret
 
 
-def correct_sentence_capitalization(s):
-    """Return a corrected version of the sentence that was passed in.
-    This is where the real work actually happens.
+def correct_sentence_capitalization(s: str,
+                                    working_filename: typing.Union[Path, None] = None,
+                                    the_lines: typing.Union[typing.List[str], None] = None) -> str:
+    """Return a corrected version of S, the sentence that was passed in.
 
-    :param s: a string: the sentence to be examined.
+    This is where the real work actually happens.
     """
-    global made_changes
+    global text_source_file_changed
+
     count = 0
     tagged_sent = nltk.tag.pos_tag(s.split())   # This is now a list of tuples: [(word, POS), (word, POS) ...]
     for word, pos in tagged_sent:               # POS = "part of speech." Go through the list of tuples, word by word
@@ -213,209 +221,206 @@ def correct_sentence_capitalization(s):
         # First: check for problems that are independent of whether they occur in the first word of a sentence.
         if comparative_form(word) in always_capitalize_list and not th.is_capitalized(word):
             # Check: uncapitalized word we know should always be capitalized?
-            patrick_logger.log_it('DEBUGGING: found non-capitalized word "%s" on the always-capitalize list' % comparative_form(word), 2)
             tagged_sent[count-1] = (th.capitalize(tagged_sent[count-1][0]), pos)
+            text_source_file_changed = True
 
         # Next, check for problems related to the first word of a sentence.
         if count == 1:                                  # Beginning of sentence has special handling.
             if not th.is_capitalized(word):                   # Check: should first word of sentence be capitalized?
-                patrick_logger.log_it('DEBUGGING: found non-capitalized word "%s" at the beginning of a sentence' % comparative_form(word), 2)
                 if always_capitalize_sentence_beginnings or check_word_capitalization(tagged_sent, count-1):
-                    # If we capitalize it, set the indicated item in the list of tuples to a tuple that capitalizes the word
-                    # in question and maintains the POS tagging for further checking. The rather ugly expression below is of
-                    # course necessary because tuples are immutable.
+                    # If we capitalize it, set the indicated item in the list of tuples to a tuple that capitalizes the
+                    # word in question and maintains the POS tagging for further checking. The rather ugly expression
+                    # below is of course necessary because tuples are immutable.
                     tagged_sent[count-1] = (th.capitalize(tagged_sent[count-1][0]), pos)
+                    text_source_file_changed = True
 
         # Now, check for problems that can happen only outside the first word of a sentence.
         else:                                           # Checks for words other than the first word of the sentence
             # First: is there an unexplained capitalized word beyond the first word of the sentence?
-            if th.is_capitalized(word) and (pos.upper() not in ['NNP']) and (comparative_form(word) not in allowed_capitalized_words):
-                patrick_logger.log_it('DEBUGGING: the word "%s" may be inappropriately capitalized' %
-                                       comparative_form(word), 2)
+            # unused fragment, should it go back in?:  and (pos.upper() not in ['NNP'])
+            # probably not: NLTK is detecting proper nouns in part based on capitalization.
+            if th.is_capitalized(word) and (comparative_form(word) not in allowed_capitalized_words):
                 # Capitalized, but not a proper noun?
-                if check_word_capitalization(tagged_sent, count-1, allow_always_correct=True):
+                if check_word_capitalization(tagged_sentence=tagged_sent, word_number=count-1,
+                                             allow_always_correct=True, the_lines=the_lines,
+                                             working_filename=working_filename):
                     tagged_sent[count-1] = (tagged_sent[count-1][0].lower(), pos)
-                    made_changes = True
+                    text_source_file_changed = True
+            elif (not th.is_capitalized(word)) and (comparative_form(word) in always_capitalize_list):
+                tagged_sent[count-1] = (th.capitalize(tagged_sent[count-1][0]), pos)
+                text_source_file_changed = True
 
     return reassemble_sentence(tagged_sent).strip()
 
 
-def save_files(allow_saving_text=True):
+save_data_menu = OrderedDict([
+    ('Y', "Overwrite the old data"),
+    ('N', 'Cancel and lose the changes')
+])
+
+
+def save_files(the_lines: typing.Union[typing.List[str], None] = None,
+               working_filename: typing.Union[Path, None] = None) -> None:
     """Give the user the option (possibly) to save the modified-in-place verified text (stored
     in global variable THE_LINES), plus, if modified, the list of words to always
     skip.
-
-    :param allow_saving_text:
-
-
-    Deals with these global variables:
-        the_lines                               List of lines to be written back to the original file.
-        filename                                Path/name of the original file to be overwritten.
-        always_capitalize_list                  List of words always to capitalize.
-        always_capitalize_list_filename         Location of always-capitalize list.
-        apostrophe_words                        List of words allowed to begin with an apostrophe
-        apostrophe_words_filename               Location of file listing words allowed to begin with an apostrophe
-        made_changes                            Were any changes made to current file?
-
     """
-    global always_capitalize_list, always_capitalize_list_filename, apostrophe_words_filename, made_changes
+    global apostrophe_words_filename, always_capitalize_list_filename       # semi-constant module configuration params
+    global apostrophe_words, always_capitalize_list
+    global original_always_capitalize_list
+    global text_source_file_changed
 
-    the_menu = OrderedDict([                                    # Use this same menu for both questions
-                            ('Y', "Overwrite the old data"),
-                            ('N', 'Cancel and lose the changes')
-                            ])
+    if working_filename:
+        assert isinstance(working_filename, Path)
+    if apostrophe_words_filename:
+        assert isinstance(apostrophe_words_filename, Path)
+    if always_capitalize_list_filename:
+        assert isinstance(always_capitalize_list_filename, Path)
 
-    if made_changes:
-        if allow_saving_text:
-            choice = comparative_form(multi_choice_menu.menu_choice(the_menu, 'Overwrite file "%s" with modified text?' % os.path.split(filename)[1]))
+    if text_source_file_changed:
+        if the_lines and working_filename:
+            choice = comparative_form(multi_choice_menu.menu_choice(save_data_menu, 'Overwrite file "%s" with modified text?' % working_filename.name))
             if choice == 'y':
-                with open(filename, 'w') as f:
+                with working_filename.open('w') as f:
                     f.writelines(the_lines)
     else:
         print('No changes made in this file, moving on ...\n\n')
-    always_capitalize_list.sort()
+    always_capitalize_list.sort()           # FIXME! Is this happening when called from a module?
     if always_capitalize_list != original_always_capitalize_list:
         print('\n\n')
-        choice = comparative_form(multi_choice_menu.menu_choice(the_menu, 'List of always-capitalize words "%s" modified. Save new list?' %
-                                                                os.path.split(always_capitalize_list_filename)[1]))
+        choice = comparative_form(multi_choice_menu.menu_choice(save_data_menu, 'List of always-capitalize words "%s" modified. Save new list?' %
+                                                                always_capitalize_list_filename.name))
         if choice == 'y':
             always_capitalize_list_filename = always_capitalize_list_filename or file_utils.do_open_dialog()
-            with open(always_capitalize_list_filename, 'w') as f:
+            with always_capitalize_list_filename.open('w') as f:
                 f.writelines(sorted(list(set([comparative_form(line) + '\n' for line in always_capitalize_list]))))
+                original_always_capitalize_list = always_capitalize_list
 
     apostrophe_words.sort()
     if apostrophe_words != original_apostrophe_words:
         print('\n\n')
-        choice = comparative_form(multi_choice_menu.menu_choice(the_menu, 'List of begin-with-apostrophe words "%s" modified. Save new list?' %
-                                                                os.path.split(apostrophe_words_filename)[1]))
+        choice = comparative_form(multi_choice_menu.menu_choice(save_data_menu, 'List of begin-with-apostrophe words "%s" modified. Save new list?' %
+                                                                apostrophe_words_filename.name))
         if choice == 'y':
             apostrophe_words_filename = apostrophe_words_filename or file_utils.do_open_dialog()
-            with open(apostrophe_words_filename, 'w') as f:
+            with apostrophe_words_filename.open('w') as f:
                 f.writelines(sorted(list(set(['’%s\n' % comparative_form(line).lstrip("’'") for line in apostrophe_words]))))
 
 
-def print_usage(exit_code=0):
+def print_usage(exit_code: int = 0) -> typing.NoReturn:
+    """Print a usage message and exit. If a non-zero EXIT_CODE is specified, the OS
+    will understand that there is an error condition.
+    """
     print("\n\n" + __doc__)
     sys.exit(exit_code)
 
 
-def process_command_line():
+def process_command_line() -> typing.Tuple[typing.Union[Path, None], typing.Union[Path, None]]:
     """Read the command-line options. Set global variables appropriately.
 
-    Returns a tuple: (filename of opened file, filename of always-capitalize list).
+    Returns a tuple: (path to opened file, path to always-capitalize list).
     Either or both may be None if the command line does not contain these options;
-    they can be hardcoded above, beneath the docstring.
+    defaults can be hardcoded above, beneath the docstring, but those constants are
+    not read or otherwise dealt with by this function.
     """
     the_filename, the_always_capitalize_list_filename = None, None
     opts = tuple([])
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'l:i:h', ['help', 'input='])
-        patrick_logger.log_it('INFO: options returned from getopt.getopt() are: %s' % pprint.pformat(opts), 2)
+        opts, _ = getopt.getopt(sys.argv[1:], 'l:i:h', ['help', 'input='])
     except getopt.GetoptError:
-        patrick_logger.log_it('ERROR: Bad command-line arguments; exiting to shell', 0)
         print_usage(2)
-    patrick_logger.log_it('INFO: detected number of command-line arguments is %d' % len(sys.argv), 2)
-    for opt, args in opts:
-        patrick_logger.log_it('Processing option %s' % opt, 2)
+    for opt, param in opts:
         if opt in ('-h', '--help'):
-            patrick_logger.log_it('INFO: %s invoked, printing usage message' % opt)
             print_usage()
         elif opt in ('-i', '--input'):
-            patrick_logger.log_it('INFO: %s invoked; file "%s" will be processed' % (opt, args))
-            the_filename = args
-        elif opt in ('-v', '--verbose'):
-            patrick_logger.verbosity_level += 1
-            patrick_logger.log_it('INFO: %s invoked. Raising verbosity level to %d.' % (opt, patrick_logger.verbosity_level))
-        elif opt in ('-q', '--quiet'):
-            patrick_logger.log_it('INFO: %s invoked. Decreasing verbosity level to %d' % (opt, patrick_logger.verbosity_level-1))
-            patrick_logger.verbosity_level -= 1
+            the_filename = Path(param)
         elif opt in ('-l', '--list'):
-            patrick_logger.log_it('INFO: %s invoked; always-capitalize file "%s" will be used' % (opt, args))
-            the_always_capitalize_list_filename = args
+            print('Using always-capitalize file "%s"' % (param))
+            the_always_capitalize_list_filename = Path(param)
         else:
-            patrick_logger.log_it('ERROR: unimplemented switch %s used. Exiting ...' % opt, -1)
+            print('ERROR: unknown switch %s used. Exiting ...' % opt)
             sys.exit(3)
-
-    patrick_logger.log_it('INFO: Done parsing command line. patrick_logger.verbosity_level after parsing command line is  %d.' % patrick_logger.verbosity_level, 1)
     return the_filename, the_always_capitalize_list_filename
 
 
-def process_file(the_filename):
+def process_lines(lines: typing.List[str],
+                  working_filename: Path) -> typing.List[str]:
+    """Process LINES, a list of lines, correcting those that need correcting, and
+     returning the list.
+    """
+    assert isinstance(working_filename, Path)
+    ret = [][:]
+
+    for which_line in [l.strip() for l in lines]:           # Go through the text, paragraph by paragraph.
+        sentences = [][:]                                   # Build a list of corrected sentences to
+
+        # re-assemble when done.
+        for sentence in tokenizer.tokenize(which_line):     # Go through the paragraph, sentence by sentence.
+            sentence = correct_sentence_capitalization(sentence, working_filename=working_filename)
+            sentences.append(sentence)
+        ret.append(' '.join(sentences) + '\n')
+
+    return ret  # Check: is annotation for return type correct?
+
+
+def process_file(the_filename: Path) -> typing.List[str]:
     """Loads the specified file and verifies it, producing a list of verified lines.
     It returns this list, which is a list of lines that SHOULD BE written back to
     disk.
 
     This routine DOES NOT SAVE the file back to disk; save_files() does that.
-
-    :param the_filename: the name of the file to be processed.
     """
+    assert isinstance(the_filename, Path)
+    print("Opening: %s ..." % the_filename.name, end=" ")
 
-    print("Opening: %s ..." % os.path.split(the_filename)[1], end=" ")
-
-    with open(the_filename, 'r') as f:
+    with the_filename.open('r') as f:
         lines = f.readlines()
 
-    print("successfully read %d lines. Processing..." % len(lines))
+    print("successfully read %d lines. Processing...\n" % len(lines))
 
-    for (count, which_line) in zip(range(len(lines)), lines):   # Go through the text, paragraph by paragraph.
-        if patrick_logger.verbosity_level > 0:
-            patrick_logger.log_it("\nProcessing line %d" % (count + 1), 1)
-            patrick_logger.log_it('THE ORIGINAL LINE IS:\t%s' % which_line, 1)
-            patrick_logger.log_it('', 1)
+    ret = process_lines(lines, working_filename=the_filename)
+    return ret                      # Check: is function return type annotation
 
-        which_line = which_line.strip()                                 # Note that this is one source of changes of some lines from one valid form to another
-        sentences = [][:]                                               # Build a list of corrected sentences to
-        # re-assemble when done.
-        for sentence in tokenizer.tokenize(which_line):                 # Go through the paragraph, sentence by sentence.
-            sentence = correct_sentence_capitalization(sentence)
-            sentences += [sentence]                                    # Add corrected sentence to the list of sentences in this paragraph
-        corrected_line = ' '.join(sentences) + '\n'                     # Note that we're not (necessarily) preserving original spacing here.
 
-        patrick_logger.log_it('\nTHE CORRECTED LINE IS:\t%s' % corrected_line)
-
-        lines[count] = corrected_line
-
-    return lines
-
+force_debugging = False      # Do we want to force a controlled run instead of reading the command line?
 
 if __name__ == "__main__":
     if force_debugging:
-        opts=("""/UlyssesRedux/corpora/next run/14/William Shakespeare: "Shall I compare thee to a summer's day? (Sonnet 18)".txt""", None)
+        opts = Path("""/home/patrick/Documents/programming/python_projects/spuh-ghetty/William Shakespeare: Sonnet 063"""), None
     else:
         opts = process_command_line()
-    filename, always_capitalize_list_filename = filename or opts[0], always_capitalize_list_filename or opts[1]
+    working_filename, always_capitalize_list_filename = default_filename or opts[0], always_capitalize_list_filename or opts[1]
 
     try:                                        # If an auto-capitalize list was specified, load it
         if always_capitalize_list_filename:
-            with open(always_capitalize_list_filename, 'r') as skipfile:
+            with always_capitalize_list_filename.open('r') as skipfile:
                 always_capitalize_list = sorted(list(set([comparative_form(line) for line in skipfile.readlines()])))
-    except:
-        patrick_logger.log_it("WARNING: unable to open always-capitalize file %s" % always_capitalize_list_filename, 0)
-        patrick_logger.log_it("    ... proceeding with empty list", 0)
+    except Exception as errrr:
+        print("WARNING: unable to open always-capitalize file %s! The system said: %s" % (always_capitalize_list_filename, errrr))
+        print("    ... proceeding with empty list")
 
     original_always_capitalize_list = always_capitalize_list.copy()     # Make a shallow copy of whatever we start with.
 
     try:                                        # If words-with-apostrophes file was specified, load it
         if apostrophe_words_filename:
-            with open(apostrophe_words_filename, 'r') as skipfile:
+            with apostrophe_words_filename.open('r') as skipfile:
                 apostrophe_words = sorted(list(set([comparative_form(line).lstrip('’') for line in skipfile.readlines()])))
-    except:
-        patrick_logger.log_it("WARNING: unable to open apostrophe file %s" % apostrophe_words_filename, 0)
-        patrick_logger.log_it("    ... proceeding with empty list", 0)
+    except Exception as errrr:
+        print("WARNING: unable to open apostrophe file %s! The system said: %s" % (apostrophe_words_filename, errrr))
+        print("    ... proceeding with empty list")
 
     original_apostrophe_words = apostrophe_words.copy()
 
-    filename = filename or file_utils.do_open_dialog()
-    patrick_logger.log_it('File chosen is "%s"' % filename, 2)
-    if not filename:
+    working_filename = working_filename or file_utils.do_open_dialog()
+    if not working_filename:
         print("No file to process!")
         sys.exit(0)
 
-    the_lines = process_file(filename)
+    the_lines = process_file(working_filename)
 
     print('\n\n\nEntire file processed.')
 
-    save_files()
+    save_files(the_lines=the_lines, working_filename=working_filename)        #FIXME: don't reference globals!
 
     print("All done!\n\n")
