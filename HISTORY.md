@@ -352,6 +352,11 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 --------------
 * Added `pickle_to_json.py` so I have a utility to deal with data files my own programs create.
 
+8 February 2022
+---------------
+* Added `wordle_helper.py`, a helper for guessing Wordle words.
+
+
 KNOWN BUGS
 ==========
 * No known bugs listed at the moment. However, check individual module files to be sure that I haven't just forgotten to list something here.
