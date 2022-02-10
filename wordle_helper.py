@@ -54,6 +54,11 @@ for i in range(1, 6):
     else:
         possible[i] = ''.join([c for c in string.ascii_lowercase if (c not in elim)])
 
+for c in correct:
+    for i in range(1, 6):
+        if input(f"Can you eliminate character {c} from position {i}? ").lower().strip() == "y":
+            possible[i] = ''.join([char for char in possible[i] if char != c])
+
 print("Possible answers:")
 
 num_found = 0
