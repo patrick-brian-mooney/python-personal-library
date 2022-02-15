@@ -356,6 +356,10 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 ---------------
 * Added `wordle_helper.py`, a helper for guessing Wordle words.
 
+14 February 2022
+----------------
+* `wordle_helper.py` is much much faster now that it uses (hashmap-based) sets internally, instead of lists.
+
 
 KNOWN BUGS
 ==========

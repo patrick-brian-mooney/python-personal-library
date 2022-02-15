@@ -32,7 +32,7 @@ def normalize_char_string(s: str) -> str:
 
 word_list_text = word_list_file.read_text()
 known_english_words = [w.strip() for w in word_list_text.split('\n') if w.strip()]
-known_five_letter_words = [w for w in known_english_words if len(w) == 5]
+known_five_letter_words = {w for w in known_english_words if len(w) == 5}
 
 possible = {}
 
@@ -67,7 +67,7 @@ for c1 in possible[1]:
         for c3 in possible[3]:
             for c4 in possible[4]:
                 for c5 in possible[5]:
-                    word = ''.join([c1, c2, c3, c4, c5])
+                    word = c1 + c2 + c3 + c4 + c5
                     if word not in known_five_letter_words:
                         continue
                     if (len(correct) > 0) and (correct[0] not in word):
