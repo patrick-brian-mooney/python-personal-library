@@ -34,6 +34,8 @@ word_list_text = word_list_file.read_text()
 known_english_words = [w.strip() for w in word_list_text.split('\n') if w.strip()]
 known_five_letter_words = {w for w in known_english_words if len(w) == 5}
 
+print(f"\n{len(known_five_letter_words)} five-letter words known!\n\n")
+
 possible = {}
 
 if input("Have you entirely eliminated any letters? ").strip().lower()[0] == 'y':
@@ -56,8 +58,18 @@ for i in range(1, 6):
 
 for c in correct:
     for i in range(1, 6):
+        if len(possible[i]) == 1:       # Have we already determined for sure what letter is in a position?
+            continue                    # No need to ask if we've eliminated other characters, then.
         if input(f"Can you eliminate character {c} from position {i}? ").lower().strip() == "y":
             possible[i] = ''.join([char for char in possible[i] if char != c])
+
+known_letters = ''.join([s[0] for s in possible.values() if (len(s) == 1)])
+untried_letters = ''.join([c for c in string.ascii_lowercase if ((c not in elim) and (c not in known_letters))])
+
+def count_untried_letters(w: str) -> int:
+    return len(set([c for c in w if (c not in known_letters)]))
+
+possible_answers = set()
 
 print("Possible answers:")
 
@@ -82,7 +94,10 @@ for c1 in possible[1]:
                         continue
 
                     num_found += 1
-                    print(word)
+                    possible_answers.add(word)
 
-if not num_found:
+if num_found:
+    for w in sorted(possible_answers, key=count_untried_letters):
+        print(w)
+else:
     print("No possibilities found!")

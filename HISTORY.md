@@ -360,6 +360,10 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 ----------------
 * `wordle_helper.py` is much much faster now that it uses (hashmap-based) sets internally, instead of lists.
 
+19 February 2022
+----------------
+* Tweaks to make `wordle_helper.py` avoid asking for some information that could be inferred, and to sort results based on how many untried letters they try. 
+
 
 KNOWN BUGS
 ==========
