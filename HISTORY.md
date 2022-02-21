@@ -364,6 +364,9 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 ----------------
 * Tweaks to make `wordle_helper.py` avoid asking for some information that could be inferred, and to sort results based on how many untried letters they try. 
 
+20 February 2022
+----------------
+* Another small optimiation tweak to `wordle_helper.py`.
 
 KNOWN BUGS
 ==========

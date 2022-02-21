@@ -39,7 +39,7 @@ print(f"\n{len(known_five_letter_words)} five-letter words known!\n\n")
 possible = {}
 
 if input("Have you entirely eliminated any letters? ").strip().lower()[0] == 'y':
-    elim = normalize_char_string(input("Enter all eliminated letters: "))
+    elim = ''.join(set(normalize_char_string(input("Enter all eliminated letters: "))))
 else:
     elim = ''
 
