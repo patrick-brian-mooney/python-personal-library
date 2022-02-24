@@ -366,7 +366,12 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 
 20 February 2022
 ----------------
-* Another small optimiation tweak to `wordle_helper.py`.
+* Another small optimization tweak to `wordle_helper.py`.
+
+23 February 2022
+----------------
+* `wordle_helper.py` now scores guesses based on the frequency with which each letter occurs in the sample of five-letter words known to the script.
+
 
 KNOWN BUGS
 ==========

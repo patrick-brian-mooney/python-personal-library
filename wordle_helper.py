@@ -15,6 +15,7 @@ file LICENSE.md for details.
 """
 
 
+import collections
 from pathlib import Path
 import string
 import unicodedata
@@ -33,6 +34,8 @@ def normalize_char_string(s: str) -> str:
 word_list_text = word_list_file.read_text()
 known_english_words = [w.strip() for w in word_list_text.split('\n') if w.strip()]
 known_five_letter_words = {w for w in known_english_words if len(w) == 5}
+
+letter_frequencies = collections.Counter(''.join(known_five_letter_words))
 
 print(f"\n{len(known_five_letter_words)} five-letter words known!\n\n")
 
@@ -66,8 +69,20 @@ for c in correct:
 known_letters = ''.join([s[0] for s in possible.values() if (len(s) == 1)])
 untried_letters = ''.join([c for c in string.ascii_lowercase if ((c not in elim) and (c not in known_letters))])
 
-def count_untried_letters(w: str) -> int:
-    return len(set([c for c in w if (c not in known_letters)]))
+def untried_word_score(w: str) -> int:
+    """Produce a score for W, a word that has not yet been attempted. The score depends
+    on how often each letter in W that hasn't yet been tried appears in the sample
+    of five-letter words. This count is pre-computed and stored in the
+    LETTER_FREQUENCIES variable. Letters that have already been tried and are known
+    to occur in the word we're trying to guess contribute nothing to the calculated
+    score: the score is designed to favor getting more information from the next
+    guess, not to increase the likelihood of making the next guess the correct one.
+    (We're trying to minimize the overall number of guesses, not to win on the next
+    guess.) Repeated letters, after the first occurrence, also do not count toward
+    the word's overall score: they don't elicit new information, either
+    """
+    return sum([letter_frequencies[c] for i, c in enumerate(w) if ((c in untried_letters) and (c not in w[:i]))])
+    # return len(set([c for c in w if (c not in known_letters)]))
 
 possible_answers = set()
 
@@ -97,7 +112,7 @@ for c1 in possible[1]:
                     possible_answers.add(word)
 
 if num_found:
-    for w in sorted(possible_answers, key=count_untried_letters):
+    for w in sorted(possible_answers, key=untried_word_score):
         print(w)
 else:
     print("No possibilities found!")
