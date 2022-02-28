@@ -79,9 +79,11 @@ def untried_word_score(w: str) -> int:
     guess, not to increase the likelihood of making the next guess the correct one.
     (We're trying to minimize the overall number of guesses, not to win on the next
     guess.) Repeated letters, after the first occurrence, also do not count toward
-    the word's overall score: they don't elicit new information, either
+    the word's overall score: they don't elicit new information, either. "As many
+    new letters as possible" is further incentivized by multiplying the derived
+    score-sum by the number of unique letters in the word to derive the final score.
     """
-    return sum([letter_frequencies[c] for i, c in enumerate(w) if ((c in untried_letters) and (c not in w[:i]))])
+    return sum([letter_frequencies[c] for i, c in enumerate(w) if ((c in untried_letters) and (c not in w[:i]))]) * len(set(w))
     # return len(set([c for c in w if (c not in known_letters)]))
 
 possible_answers = set()
