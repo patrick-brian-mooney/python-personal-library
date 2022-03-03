@@ -114,7 +114,7 @@ for c1 in possible[1]:
                     possible_answers.add(word)
 
 if num_found:
-    for w in sorted(possible_answers, key=untried_word_score):
+    for w in sorted(possible_answers, key=untried_word_score, reverse=True):
         print(w)
 else:
     print("No possibilities found!")
