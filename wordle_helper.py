@@ -5,6 +5,20 @@ prompts the user for already-known information and then prints a list of known
 English words that match the specified info. It also requires a list of known
 English words; I use one from https://github.com/dwyl/english-words.
 
+At the end of the run, it prints out a list of known English five-letter words,
+based on the word list, that are not excluded by the information already known.
+These words are ranked according to an algorithm that prioritizes:
+
+  * words with more, rather than fewer, unique untried letters;
+  * words containing letters that occur more frequently in the list of known
+    five-letter words.
+
+The overall strategy is not to try to guess right on the next guess, but to
+use the next guess to elicit as much new information as possible while also
+acting in a way that maximizes the likelihood of being right on the next guess,
+to the extent that that doesn't conflict with getting as much new info as
+possible.
+
 Wordle is at https://www.powerlanguage.co.uk/wordle/.
 
 This program comes with ABSOLUTELY NO WARRANTY. Use at your own risk. It is
