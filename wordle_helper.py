@@ -27,6 +27,7 @@ word_list_file = Path('/home/patrick/Documents/programming/resources/word-lists/
 def strip_accents(s: str) -> str:
     return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
 
+
 def normalize_char_string(s: str) -> str:
     return strip_accents(''.join([s for s in s.lower().strip() if s.isalpha()]))
 
@@ -46,7 +47,7 @@ if input("Have you entirely eliminated any letters? ").strip().lower()[0] == 'y'
 else:
     elim = ''
 
-if input("Do you have any letters yet without knowing their position? ").strip().lower()[0]:
+if input("Do you have any letters yet without knowing their position? ").strip().lower()[0] == 'y':
     correct = normalize_char_string(input("Enter all known letters: "))
 else:
     correct = ''
@@ -69,6 +70,7 @@ for c in correct:
 known_letters = ''.join([s[0] for s in possible.values() if (len(s) == 1)])
 untried_letters = ''.join([c for c in string.ascii_lowercase if ((c not in elim) and (c not in known_letters))])
 
+
 def untried_word_score(w: str) -> int:
     """Produce a score for W, a word that has not yet been attempted. The score depends
     on how often each letter in W that hasn't yet been tried appears in the sample
@@ -85,6 +87,7 @@ def untried_word_score(w: str) -> int:
     """
     return sum([letter_frequencies[c] for i, c in enumerate(w) if ((c in untried_letters) and (c not in w[:i]))]) * len(set(w))
     # return len(set([c for c in w if (c not in known_letters)]))
+
 
 possible_answers = set()
 
