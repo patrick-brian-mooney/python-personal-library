@@ -50,8 +50,6 @@ word_list_text = word_list_file.read_text()
 known_english_words = [w.strip() for w in word_list_text.split('\n') if w.strip()]
 known_five_letter_words = {w for w in known_english_words if len(w) == 5}
 
-letter_frequencies = collections.Counter(''.join(known_five_letter_words))
-
 print(f"\n{len(known_five_letter_words)} five-letter words known!\n\n")
 
 possible = {}
@@ -129,6 +127,8 @@ for c1 in possible[1]:
 
                     num_found += 1
                     possible_answers.add(word)
+
+letter_frequencies = collections.Counter(''.join(possible_answers))
 
 if num_found:
     for w in sorted(possible_answers, key=untried_word_score, reverse=True):
