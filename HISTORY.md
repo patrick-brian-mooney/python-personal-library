@@ -372,6 +372,10 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 ----------------
 * `wordle_helper.py` now scores guesses based on the frequency with which each letter occurs in the sample of five-letter words known to the script.
 
+13 May 2022
+-----------
+* Refactoring wordle_helper.py to prepare for more Wordle-referencing code.
+
 
 KNOWN BUGS
 ==========
