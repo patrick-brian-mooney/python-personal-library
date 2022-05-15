@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#cython: language_level=3
 """Utility functions used by the other Wordle code.
 
 Wordle is at https://www.powerlanguage.co.uk/wordle/.
@@ -39,7 +40,7 @@ def strip_accents(s: str) -> str:
 
 
 def normalize_char_string(s: str) -> str:
-    return strip_accents(''.join([s for s in s.lower().strip() if s.isalpha()]))
+    return strip_accents(''.join([c for c in s.lower().strip() if c.isalpha()]))
 
 
 def enumerate_solutions(possible: typing.Dict[int, str],

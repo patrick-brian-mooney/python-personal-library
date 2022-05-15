@@ -32,10 +32,14 @@ file LICENSE.md for details.
 
 import typing
 import string
+import sys
+
+import pyximport; pyximport.install()
 
 import wordle.wordle_utils as wu
 
 print('\n\n\nStarting up ...')
+print(f"    (running under Python {sys.version}")
 
 
 def prompt_and_solve() -> typing.Tuple[str, str, typing.List[str]]:
@@ -51,7 +55,7 @@ def prompt_and_solve() -> typing.Tuple[str, str, typing.List[str]]:
     else:
         correct = ''
 
-    if input("Have you finalized the position of any letters?").strip().lower()[0] == 'y':
+    if input("Have you finalized the position of any letters? ").strip().lower()[0] == 'y':
         possible = {}
         for i in range(1, 6):
             if input(f"Do you know the letter in position {i}? ").strip().lower()[0] == 'y':
