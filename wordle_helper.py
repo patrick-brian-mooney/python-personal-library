@@ -86,7 +86,7 @@ if __name__ == "__main__":
     print("Possible answers:")
 
     if possible_answers:
-        for w in wu.ranked_answers(possible_answers):
+        for w in wu.ranked_answers(possible_answers, letter_frequencies, untried_letters):
             print(w)
     else:
         print("No possibilities found!")
