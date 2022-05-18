@@ -30,6 +30,12 @@ class Strategy:
     modules that keep their related functions in packages, nothing else. All that
     instantiating them achieves is checking that all of a Strategy's abstract
     methods have been filled in.
+
+    (Even that's not true any ore! Moving to Cython has mandated that Strategy no
+    longer be a Python ABC with abstract methods, because that can't be combined
+    with static methods when compiling via Cython. So there is no benefit
+    whatsoever to instantiating a Strategy! It's just a package of functions that
+    benefits from inheritance to facilitate decomposition.)
     """
     @classmethod
     def all_strategies(cls) -> typing.Generator[type, None, None]:
