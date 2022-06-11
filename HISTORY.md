@@ -376,6 +376,10 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 -----------
 * Refactoring wordle_helper.py to prepare for more Wordle-referencing code.
 
+11 June 2022
+------------
+* Splitting off the Wordle code to [a separate repository](https://github.com/patrick-brian-mooney/wordle).
+
 
 KNOWN BUGS
 ==========
