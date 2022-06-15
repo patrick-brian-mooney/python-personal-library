@@ -380,6 +380,10 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 ------------
 * Splitting off the Wordle code to [a separate repository](https://github.com/patrick-brian-mooney/wordle).
 
+15 June 2022
+------------
+* Added `FairLimitedHeap.py`, which contains a pair of collectionclasses that maintain heap-type collections with flexible size parameters.
+
 
 KNOWN BUGS
 ==========
