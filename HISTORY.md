@@ -382,7 +382,11 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 
 15 June 2022
 ------------
-* Added `FairLimitedHeap.py`, which contains a pair of collectionclasses that maintain heap-type collections with flexible size parameters.
+* Added `FairLimitedHeap.py`, which contains a pair of collection classes that maintain heap-type collections with flexible size parameters.
+
+4 Aug 2022
+---------
+* Added `fake_decorator_module.py`, a module that supplies an object that pretends to be a module that supplies decorators.
 
 
 KNOWN BUGS
