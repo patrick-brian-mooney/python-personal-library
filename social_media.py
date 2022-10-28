@@ -12,12 +12,21 @@ GPL, either version 3 or (at your option) any later version. See the file
 LICENSE.md for details.
 """
 
-from tumblpy import Tumblpy     # [sudo] pip[3] install python-tumblpy; https://github.com/michaelhelmick/python-tumblpy
-import tweepy                   # http://www.tweepy.org/
+
+import typing
+
+
+# We no longer import the two lines below at the top level to avoid forcing dependencies on every project that uses this
+# unit. Import statements now happen in the functions that need them.
+#from tumblpy import Tumblpy     # [sudo] pip[3] install python-tumblpy; https://github.com/michaelhelmick/python-tumblpy
+#import tweepy                   # http://www.tweepy.org/
 
 verbosity_level = 2
 
+
 def log_it(what, debug_level=1):
+    """Convenience function to print optionally.
+    """
     if debug_level >= verbosity_level:
         print(what)
 
@@ -28,11 +37,17 @@ def log_it(what, debug_level=1):
 #    'a string',   # token_key
 #    'a string'    # token_secret       )
 
-def Tumblpy_from_dict(data):
-    """Create a Tumblpy object from the authentication constants stored in a dictionary."""
+def Tumblpy_from_dict(data: dict) -> 'Tumblpy':
+    """Create a Tumblpy object from the authentication constants stored in a dictionary.
+    """
+    from tumblpy import Tumblpy  # [sudo] pip[3] install python-tumblpy; https://github.com/michaelhelmick/python-tumblpy
     return Tumblpy(data['consumer_key'], data['consumer_secret'], data['token_key'], data['token_secret'])
 
-def tumblr_text_post(the_client, the_tags, the_title, the_content):
+
+def tumblr_text_post(the_client: 'TumblrAPI',
+                     the_tags: typing.List[str],
+                     the_title: str,
+                     the_content: str) -> typing.Tuple[dict, dict]:
     """Create a text post on Tumblr, using THE_CLIENT as an API object. THE_TAGS,
     THE_TITLE, and THE_CONTENT all describe what you'd expect them to describe, and
     they're all strings.
@@ -57,15 +72,19 @@ def tumblr_text_post(the_client, the_tags, the_title, the_content):
 #    'access_token_secret' : 'a string'
 #    }
 
-def get_new_twitter_API(client_credentials):
-    """Get an instance of the Tweepy API object to work with."""
+def get_new_twitter_API(client_credentials: dict) -> 'API':
+    """Get an instance of the Tweepy API object to work with.
+    """
+    import tweepy               # http://www.tweepy.org/
     auth = tweepy.OAuthHandler(client_credentials['consumer_key'], client_credentials['consumer_secret'])
     auth.set_access_token(client_credentials['access_token'], client_credentials['access_token_secret'])
     ret = tweepy.API(auth)
     ret.wait_on_rate_limit, ret.wait_on_rate_limit_notify = True, True
     return ret
 
-def _the_API(client_credentials=None, API_instance=None):
+
+def _the_API(client_credentials = None,
+             API_instance = None):
     """Private convenience function to get an API instance object from several
     possible values that the calling code might supply.
     """
@@ -76,14 +95,22 @@ def _the_API(client_credentials=None, API_instance=None):
             API_instance = get_new_twitter_API(client_credentials)
     return API_instance
 
-def post_tweet(the_tweet, client_credentials=None, API_instance=None):
+
+def post_tweet(the_tweet: str,
+               client_credentials = None,
+               API_instance = None) -> typing.Type[object]:         # FIXME: better return type annotation!
     """Post a tweet, THE_TWEET. If you already have a Tweepy API instance handy
     pass that in as API_instance; otherwise, pass in a CLIENT_CREDENTIALS
     dictionary and a throwaway API object will be created, then discarded.
     """
-    return _the_API(client_credentials, API_instance).update_status(status=the_tweet)
+    return _the_API(client_credentials, API_instance).update_status(status=the_tweet)       # FIXME: annotate return type!
 
-def post_reply_tweet(text, user_id, tweet_id, client_credentials=None, API_instance=None):
+
+def post_reply_tweet(text: str,
+                     user_id,
+                     tweet_id,
+                     client_credentials = None,
+                     API_instance = None) -> typing.Type[object]:       # FIXME: better return type annotation!
     """Post a reply tweet. TWEET_ID is the id of the tweet that this tweet is a reply
     to; the USER_ID is the person to whom we are replying, and the user_id is
     automatically prepended to the beginning of TEXT before posting.
@@ -91,15 +118,21 @@ def post_reply_tweet(text, user_id, tweet_id, client_credentials=None, API_insta
     This routine is now believed to work; previously, it was a stub.
     """
     log_it("INFO: posting tweet: @%s %s  ----  in reply to tweet ID# %d" % (user_id, text, tweet_id))
-    return _the_API(client_credentials, API_instance).update_status("@%s %s" % (user_id, text), in_reply_to_status_id = tweet_id)
+    return _the_API(client_credentials, API_instance).update_status("@%s %s" % (user_id, text), in_reply_to_status_id=tweet_id)   # FIXME: annoate return type
 
-def modified_retweet(text, user_id, tweet_id):
+
+def modified_retweet(the_API: 'API',
+                     text: str,
+                     user_id, tweet_ID) -> None:
     """Tweet a message about another tweet.
     """
     log_it("%s\n\nhttps://twitter.com/%s/status/%s" % (text, user_id, tweet_ID))
     the_API.update_status("%s\n\nhttps://twitter.com/%s/status/%s" % (text, user_id, tweet_ID))
 
-def send_DM(the_API, text, user):
+
+def send_DM(the_API: 'API',
+            text: str,
+            user) -> None:
     """Send a direct message to another user. Currently, this method is only used to
     reply to DMs sent by other users. Does not currently do anything.
     """
