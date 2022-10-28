@@ -101,7 +101,7 @@ def comparative_form(w: str) -> str:
     :param w: the word to take the comparative form of
     :return: the comparative form of the word
     """
-    ret = puncstrip(puncstrip(w.strip()).strip()).lower()
+    ret = puncstrip(puncstrip(w.strip()).strip()).casefold()
     if th.begins_with_apostrophe(ret):      # Next, normalize the apostrophe form.
         if ret not in apostrophe_words:     # If it's not allowed to begin with an apostrophe, return it without the apostrophe, on the assumption that that apostrophe is really an opening quote mark.
             if len(ret) > 1:                # Avoid degenerate cases, e.g. where W *is* an apostrophe
@@ -114,7 +114,7 @@ def comparative_form(w: str) -> str:
     # That is to say: strip whitespace from both ends, then strip leading and
     # trailing elements of string.punctuation except for the apostrophe, plus
     # additional other stuff, then strip whitespace from both ends again, then
-    # strip the same set of punctuation, then lowercase the result. Additionally,
+    # strip the same set of punctuation, then casefold the result. Additionally,
     # if the word begins with an apostrophe but doesn't appear in the global list
     # APOSTROPHE_WORDS, then strip the leading apostrophe.
 
@@ -387,7 +387,7 @@ force_debugging = False      # Do we want to force a controlled run instead of r
 
 if __name__ == "__main__":
     if force_debugging:
-        opts = Path("""/home/patrick/Documents/programming/python_projects/spuh-ghetty/William Shakespeare: Sonnet 063"""), None
+        opts = Path("""/home/patrick/Documents/programming/python_projects/LibidoMechanica/poetry_corpus/William Shakespeare: Sonnet 033"""), None
     else:
         opts = process_command_line()
     working_filename, always_capitalize_list_filename = default_filename or opts[0], always_capitalize_list_filename or opts[1]
