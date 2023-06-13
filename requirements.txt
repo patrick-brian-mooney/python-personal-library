@@ -8,7 +8,7 @@ importlib-resources==5.4.0
 joblib==1.1.1
 mutagen==1.45.1
 nltk==3.6.7
-numpy==1.19.5
+numpy==1.22.0
 oauthlib==3.2.2
 pybeerxml==2.1.2
 python-tumblpy==1.1.4
