@@ -72,11 +72,6 @@ def pickle_to_json(which_file: Path) -> None:
 
 
 if __name__ == "__main__":
-    force_test = True
-    if force_test:
-        pickle_to_json(Path('/home/patrick/Documents/programming/python_projects/VideoDataStore/samples/.metadata.pkl'))
-        sys.exit(0)
-
     if len(sys.argv) == 1:
         print_usage(1)
     elif len(sys.argv) == 2 and (sys.argv[1].lower().strip() in ["--help", "-h"]):

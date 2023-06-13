@@ -121,7 +121,7 @@ class FairLimitedHeap(collections.abc.Iterable):
 
 class NonNanFairLimitedHeap(FairLimitedHeap):
     """Just Like FairLimitedHeap, except that it silently declines to push items
-    onto the heap if the vlue assoociated with the item is a NaN value.
+    onto the heap if the value associated with the item is a NaN value.
     """
     def push(self, item: typing.Any,
              value: numbers.Number) -> None:

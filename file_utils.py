@@ -8,6 +8,9 @@ LICENSE.md for details.
 """
 
 import os
+import subprocess
+import typing
+
 from pathlib import Path
 
 import patrick_logger
@@ -62,12 +65,14 @@ def find_and_execute_scripts(path='.'):
                 os.chdir(olddir)
 
 
-def get_files_list(which_dir, skips=None):
+def get_files_list(which_dir: typing.Union[Path, str],
+                   skips: typing.Optional[typing.Iterable[typing.Union[str, Path]]] = None
+                   ) -> typing.Iterable[typing.Union[str, Path]]:
     """Get a complete list of all files and folders under WHICH_DIR, except those matching SKIPS.
     Calls itself recursively, so it's a bad idea if the directory is (literally)
     very profound.
     """
-    if skips == None:
+    if skips is None:
         skips = [][:]
     ret = [][:]
     for (thisdir, dirshere, fileshere) in os.walk(which_dir):
@@ -82,7 +87,7 @@ def get_files_list(which_dir, skips=None):
             for the_skip in skips:
                 ret = [the_item for the_item in ret if the_skip not in the_item]
         ret.sort()
-        return ret
+    return ret
 
 
 def do_save_dialog(**kwargs):
@@ -116,8 +121,7 @@ def do_open_dialog(**kwargs):
 
     Adapted from more complex code in Zombie Apocalypse.
     """
-    import \
-        tkinter.filedialog  # Don't want to make tkinter a dependency for every project that uses this module
+    import tkinter.filedialog  # Don't want to make tkinter a dependency for every project that uses this module
     patrick_logger.log_it("DEBUGGING: simple_standard_file.do_open_dialog() called", 2)
     try:            # Use TKinter if possible
         import tkinter
