@@ -37,7 +37,11 @@ is copyright 2017 by Patrick Mooney; it is licensed under the GNU GPL version
 """
 
 
-import json, os, glob, urllib.request, shutil
+import glob
+import json
+import os
+import shutil
+import urllib.request
 
 import flickrapi            # [sudo] pip3 install flickrapi or see https://stuvel.eu/flickrapi
 
@@ -49,6 +53,7 @@ from social_media_auth import flickr_api_key as f_a_k   # unshared file where I 
 flickr = flickrapi.FlickrAPI(f_a_k['key'], f_a_k['secret'])
 if not flickr.token_valid(perms='write'):
     flickr.get_access_token(f_a_k['verifier'])
+
 
 patrick_logger.verbosity_level = 4
 
@@ -103,6 +108,7 @@ def preprocess_dir(pathname):
     finally:
         os.chdir(olddir)
     patrick_logger.log_it('    INFO: done preprocessing directory: %s' % pathname, 2)
+
 
 def upload_photos(dir):
     """Upload all of the photos in the current directory. If a .json metadata file
@@ -162,7 +168,8 @@ def upload_photos(dir):
 
 
 if __name__ == "__main__":
-    # Get a (non-recursive) list of all subdirectories of the current directory. Ignore any non-directory files in the current directory.
-    for dir in sorted([ d for d in glob.glob('/home/patrick/Desktop/working/to post (Flickr)/Google Albums/*') if os.path.isdir(d) ]):
+    # Get a (non-recursive) list of all subdirectories of the current directory.
+    # Ignore any non-directory files in the current directory.
+    for dir in sorted([d for d in glob.glob('/home/patrick/Desktop/working/to post (Flickr)/Google Albums/*') if os.path.isdir(d)]):
         preprocess_dir(dir)
         upload_photos(dir)

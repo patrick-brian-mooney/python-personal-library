@@ -12,7 +12,10 @@ GPL, either version 3 or (at your option) any later version. See the file
 LICENSE.md for details.
 """
 
-import os, sys, glob, pprint, subprocess
+
+import glob
+import os
+import subprocess
 
 import text_handling as th      # https://github.com/patrick-brian-mooney/python-personal-library/blob/master/text_handling.py
 

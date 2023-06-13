@@ -15,7 +15,10 @@ LICENSE.md for details.
 """
 
 
-import time, subprocess, sys
+import time
+import subprocess
+import sys
+
 
 if __name__ == "__main__":
     print("\n\nMonitoring clipboard, press Ctrl-C to quit ...", file=sys.stderr)

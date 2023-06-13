@@ -13,10 +13,12 @@ for a copy of this license.
 """
 
 
-debugging = True
+import sys
 
-import sys, os
 import nltk                    # See http://www.nltk.org/install.html
+
+
+debugging = True
 
 
 def quick_tokenize(what):
@@ -68,7 +70,6 @@ def main(the_filename):
 
     with open(the_filename, 'w') as the_file:
         the_file.writelines(output_file)
-
 
 
 if __name__ == "__main__":

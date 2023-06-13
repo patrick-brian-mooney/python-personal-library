@@ -390,8 +390,11 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 
 13 June 2023
 ------------
-* micro-updates to documentation and edge-case behavior in several modules
-* `save_files()` in `check_capitalization.py` now has an optional `suppress_kvetching` Boolean parameter to, well, suppress kvetching, so it can be called from less-cranky scripts.q
+* micro-updates to documentation and edge-case behavior in several modules.
+* `save_files()` in `check_capitalization.py` now has an optional `suppress_kvetching` Boolean parameter to, well, suppress kvetching, so it can be called from less-cranky scripts.
+* added `flex_config.py`, a system for managing multiple JSON config files stored in different locations across a filesystem.
+  * that one was imported from the VideoDataStore project.
+* Deleted `sample.py`, a three-line script that did nothing useful and that, I'm pretty sure, nothing else uses.
 
 
 KNOWN BUGS

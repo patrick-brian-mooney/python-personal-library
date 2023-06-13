@@ -56,11 +56,11 @@ import typing
 from collections import OrderedDict
 from pathlib import Path
 
-import file_utils
-import nltk
+import nltk                                     # nltk.org
 
-import multi_choice_menu                        # https://github.com/patrick-brian-mooney/python-personal-library/
-import text_handling as th                      # Same source.
+import file_utils                               # https://github.com/patrick-brian-mooney/python-personal-library/
+import multi_choice_menu                        # Same source.
+import text_handling as th                      # Same.
 
 
 always_capitalize_sentence_beginnings = True    # Usually, it's helpful to set this to True if NLTK is doing a good job of finding the beginnings of sentences.

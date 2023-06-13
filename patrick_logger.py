@@ -13,7 +13,9 @@ for. More info in the file LICENSE.md.
 
 from __future__ import print_function
 
-import datetime, os, sys
+import datetime
+import os
+import sys
 
 import text_handling        # https://github.com/patrick-brian-mooney/python-personal-library/
 

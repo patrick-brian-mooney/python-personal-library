@@ -20,7 +20,9 @@ later version. See the file LICENSE.md for details.
 """
 
 
-import os, subprocess, sys
+import os
+import subprocess
+import sys
 
 
 debugging = False

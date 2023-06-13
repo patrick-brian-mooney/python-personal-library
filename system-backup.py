@@ -8,16 +8,22 @@ GPL, either version 3 or (at your option) any later version. See the file
 LICENSE.md for details.
 """
 
-import os, shutil, subprocess
+
+import os
+import shutil
+import subprocess
+
 
 initial_tar_location = '/home/patrick/'
 backup_name = "sys-backup.tar"
 working_location = '/home/patrick/.system-config-backup'
 
+
 try:
     os.mkdir(working_location)
 except FileExistsError:
     pass    # Oh well.
+
 
 backup_file_list = [    '/etc/anacrontab',
                         '/etc/fstab',
@@ -31,13 +37,16 @@ backup_file_list = [    '/etc/anacrontab',
                         working_location
                     ]
 
+
 backup_file_list = [f for f in backup_file_list if os.path.exists(f)]                   # Prune any non-existent entries in that list
+
 
 commands_list = [   'crontab -l > %s/patrick.cronbak' % working_location,               # export user crontab
                     'sudo crontab -l > %s/patrick.cronbak' % working_location,          # export root crontab
                     'ls -la / | grep -- "->" > %s/root-symlinks' % working_location,    # export list of symlinks at root of drive
                     'sudo dpkg --get-selections > %s/installed-software.tsv' % working_location,    # export list of installed (Debian) pkgs.
                  ]
+
 
 if __name__ == "__main__":
     for which_command in commands_list:

@@ -20,7 +20,10 @@ guarantee: without even tghe guarantee of MERCHANTABILITY of FITNESS FOR ANY
 PARTICULAR PURPOSE. Use of this script is at your own risk.
 """
 
-import sys, os
+
+import os
+import sys
+
 
 if __name__ == "__main__":
     if sys.argv[1] in ['-h', '--help']:

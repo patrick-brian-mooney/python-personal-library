@@ -16,11 +16,6 @@ LICENSE.md for details.
 import typing
 
 
-# We no longer import the two lines below at the top level to avoid forcing dependencies on every project that uses this
-# unit. Import statements now happen in the functions that need them.
-#from tumblpy import Tumblpy     # [sudo] pip[3] install python-tumblpy; https://github.com/michaelhelmick/python-tumblpy
-#import tweepy                   # http://www.tweepy.org/
-
 verbosity_level = 2
 
 

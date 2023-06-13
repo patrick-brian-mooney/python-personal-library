@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Folds the contents of multiple JSON files into one JSON file. Intended as a 
+"""Folds the contents of multiple JSON files into one JSON file. Intended as a
 convenience for importing Google Photos albums to Flickr, because Google Photos
 albums seem to occasionally be split into two folders, each with JSON metadata
 that may or may not be the same.
@@ -10,7 +10,9 @@ either version 3 or (at your option) any later version. See the file LICENSE.md
 for details.
 """
 
-import argparse, json
+
+import argparse
+import json
 
 
 parser = argparse.ArgumentParser(description=__doc__.split('\n\n')[0], epilog=__doc__.split('\n\n')[1])

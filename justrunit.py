@@ -13,7 +13,10 @@ GPL, either version 3 or (at your option) any later version. See the file
 LICENSE.md for details.
 """
 
-import subprocess, sys
+
+import subprocess
+import sys
+
 
 if len(sys.argv) <= 1:
     print('\n\n' + __doc__ % sys.argv[0])

@@ -8,7 +8,13 @@ LICENSE.md for details.
 """
 
 
-import bz2, datetime, html, requests, subprocess, time, uuid
+import bz2
+import datetime
+import html
+import requests
+import subprocess
+import time
+import uuid
 
 import file_utils as fu     # https://github.com/patrick-brian-mooney/personal-library/blob/master/
 
@@ -26,6 +32,7 @@ skip_strings_list = ['.git', '.thumbnails', 'IF/']
 def tz_offset():
     return abs(int(round((datetime.datetime.now() - datetime.datetime.utcnow()).total_seconds())) / 3600)
 
+
 def IA_archive(files_list):
     """Get the Internet Archive to save all of the files in FILES_LIST."""
     for which_page in files_list:                                   # Request a URL that causes the Internet Archive to archive the page in question
@@ -34,8 +41,10 @@ def IA_archive(files_list):
         for the_item in req.iter_content(chunk_size=100000): pass   # read the file to make the IArchive archive it.
         time.sleep(3)
 
+
 def GPG_sign_file(which_file):
     subprocess.check_output(['gpg --detach-sign %s' % which_file ], shell=True)
+
 
 def produce_feed(files_list):
     """Produce the Atom XML feed."""
@@ -85,6 +94,7 @@ def produce_feed(files_list):
     with open(feed_location, 'wb') as the_atom_file:
         the_atom_file.write(bzipped_feed)
     GPG_sign_file(feed_location)
+
 
 if __name__ == "__main__":
     local_files = fu.get_files_list(local_website_root, skip_strings_list)

@@ -10,10 +10,12 @@ GPL, either version 3 or (at your option) any later version. See the file
 LICENSE.md for details.
 """
 
+
 import datetime
 
+
 start_date_1 = "8/9/2016"       # date of first office hour, in US date format
-start_date_2 = "8/11/2016"       # date of second office hour
+start_date_2 = "8/11/2016"      # date of second office hour
 weeks_in_term = 5               # summer session
 time_of_first_OH = "T11:30:00"  # just a string that gets appended
 end_of_first_OH = "T12:20:00"   # same

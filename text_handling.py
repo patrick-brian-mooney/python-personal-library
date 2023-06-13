@@ -8,7 +8,10 @@ LICENSE.md for details.
 """
 
 
-import sys, textwrap, shutil, re
+import sys
+import textwrap
+import shutil
+import re
 
 
 def multi_replace(text, substitutions):
@@ -90,7 +93,6 @@ def _find_last_alphanumeric(w):
         if c.isalpha() or c.isnumeric():
             return i
     return -1
-
 
 
 def strip_leading_and_trailing_punctuation(w):

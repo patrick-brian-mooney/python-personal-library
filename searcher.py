@@ -6,7 +6,9 @@ are licensed under the GNU GPL, either version 3 or (at your option) any later
 version. See the file LICENSE.md for details.
 """
 
+
 import os
+
 
 def get_files_list(which_dir, skips=None):
     """Get a complete list of all files and folders under WHICH_DIR, except those matching SKIPS.

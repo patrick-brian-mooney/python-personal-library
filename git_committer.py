@@ -22,9 +22,9 @@ this script is at your own risk.
 """
 
 
-import datetime, os, subprocess
-
-import text_handling as th      # https://github.com/patrick-brian-mooney/python-personal-library/blob/master/text_handling.py
+import datetime
+import os
+import subprocess
 
 import patrick_logger           # https://github.com/patrick-brian-mooney/python-personal-library/blob/master/patrick_logger.py
 from patrick_logger import log_it
@@ -70,7 +70,7 @@ task_list = {'/lovecraft': ['rsync -avhHSP --delete /home/patrick/Dropbox/progra
                                                                               'git commit -m "@DATE@: archiving new data"',
                                                                               'git push',
                                                                               'git gc --aggressive --prune=now',]
-                                                            
+
             }
 
 if __name__ == "__main__":

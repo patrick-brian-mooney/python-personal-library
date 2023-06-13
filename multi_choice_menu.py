@@ -10,7 +10,8 @@ LICENSE.md for details.
 
 from collections import OrderedDict
 
-import text_handling, patrick_logger    # https://github.com/patrick-brian-mooney/python-personal-library/
+import text_handling        # https://github.com/patrick-brian-mooney/python-personal-library/
+import patrick_logger       # same
 
 
 def menu_choice(choice_menu, prompt):

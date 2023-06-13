@@ -13,7 +13,8 @@ version. See the file LICENSE.md for a copy of this licence.
 
 import sys
 
-import patrick_logger       # https://github.com/patrick-brian-mooney/python-personal-library/blob/master/patrick_logger.py
+import patrick_logger  # https://github.com/patrick-brian-mooney/python-personal-library/blob/master/patrick_logger.py
+
 
 def do_save_dialog(**kwargs):
     """Shows a dialog asking the user where to save a file, or comes as close as
@@ -25,15 +26,18 @@ def do_save_dialog(**kwargs):
     Adapted from more complex code in Zombie Apocalypse.
     """
     patrick_logger.log_it("DEBUGGING: simple_standard_file.do_save_dialog() called", 2)
-    try:            # Use TKinter if possible
+    try:  # Use Tkinter if possible
         import tkinter
         import tkinter.filedialog
-        tkinter.Tk().withdraw()     # No root window
+
+        tkinter.Tk().withdraw()  # No root window
+
         filename = tkinter.filedialog.asksaveasfilename()
-    except:         # If all else fails, ask the user to type a filename.
+    except Exception as errrr:  # If all else fails, ask the user to type a filename.
         filename = input('Under what name would you like to save the file? ')
     patrick_logger.log_it('    Selected file is %s' % filename, 2)
     return filename
+
 
 def do_open_dialog(**kwargs):
     """Shows a dialog asking the user which file to open, or comes as close as
@@ -45,12 +49,12 @@ def do_open_dialog(**kwargs):
     Adapted from more complex code in Zombie Apocalypse.
     """
     patrick_logger.log_it("DEBUGGING: simple_standard_file.do_open_dialog() called", 2)
-    try:            # Use TKinter if possible
+    try:  # Use TKinter if possible
         import tkinter
         import tkinter.filedialog
-        tkinter.Tk().withdraw()     # No root window
+        tkinter.Tk().withdraw()  # No root window
         filename = tkinter.filedialog.askopenfilename(**kwargs)
-    except:         # If all else fails, ask the user to type it.
+    except:  # If all else fails, ask the user to type it.
         filename = input('What file would you like to open? ')
     if filename == tuple([]):
         patrick_logger.log_it('    INFO: simple_standard_file: do_open_dialog() cancelled', 2)
@@ -59,5 +63,8 @@ def do_open_dialog(**kwargs):
         patrick_logger.log_it('    INFO: simple_standard_file: Selected file is "%s"' % filename, 2)
     return filename
 
+
 if __name__ == "__main__":
-    patrick_logger.log_it("ERROR: %s is not a program you can run. It is a collection of software to be used by other software." % sys.argv[0])
+    patrick_logger.log_it(
+        "ERROR: %s is not a program you can run. It is a collection of software to be used by other software." %
+        sys.argv[0])

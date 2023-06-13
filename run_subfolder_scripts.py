@@ -18,8 +18,12 @@ LICENSE.md for details.
 """
 
 
-import glob, os, subprocess
+import glob
+import os
+
 from pprint import pprint
+
+import subprocess
 
 
 the_dirs = [ d for d in glob.glob("*") if os.path.isdir(d) ]
