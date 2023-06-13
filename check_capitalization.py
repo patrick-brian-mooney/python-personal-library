@@ -260,10 +260,14 @@ save_data_menu = OrderedDict([
 
 
 def save_files(the_lines: typing.Union[typing.List[str], None] = None,
-               working_filename: typing.Union[Path, None] = None) -> None:
+               working_filename: typing.Union[Path, None] = None,
+               suppress_kvetching: bool = False) -> None:
     """Give the user the option (possibly) to save the modified-in-place verified text (stored
     in global variable THE_LINES), plus, if modified, the list of words to always
     skip.
+
+    If no changes were made, then the procedure well helpfully inform you of that,
+    unless SUPPRESS_KVETCHING is True.
     """
     global apostrophe_words_filename, always_capitalize_list_filename       # semi-constant module configuration params
     global apostrophe_words, always_capitalize_list
@@ -284,7 +288,8 @@ def save_files(the_lines: typing.Union[typing.List[str], None] = None,
                 with working_filename.open('w') as f:
                     f.writelines(the_lines)
     else:
-        print('No changes made in this file, moving on ...\n\n')
+        if not suppress_kvetching:
+            print('No changes made in this file, moving on ...\n\n')
     always_capitalize_list.sort()           # FIXME! Is this happening when called from a module?
     if always_capitalize_list != original_always_capitalize_list:
         print('\n\n')

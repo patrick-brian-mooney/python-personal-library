@@ -388,6 +388,11 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 ---------
 * Added `fake_decorator_module.py`, a module that supplies an object that pretends to be a module that supplies decorators.
 
+13 June 2023
+------------
+* micro-updates to documentation and edge-case behavior in several modules
+* `save_files()` in `check_capitalization.py` now has an optional `suppress_kvetching` Boolean parameter to, well, suppress kvetching, so it can be called from less-cranky scripts.q
+
 
 KNOWN BUGS
 ==========
