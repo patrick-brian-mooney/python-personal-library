@@ -8,36 +8,39 @@ LICENSE.md for details.
 """
 
 
-from collections import OrderedDict
+import collections
+import typing
 
 import text_handling        # https://github.com/patrick-brian-mooney/python-personal-library/
 import patrick_logger       # same
 
 
-def menu_choice(choice_menu, prompt):
+def menu_choice(choice_menu: typing.Hashable,
+                prompt: str) -> str:
     """Takes a menu description, passed in as CHOICE_MENU (see below for format),
      and asks the user to make a choice between the options. It then passes back
      the user's choice to the caller.
 
-    :param choice_menu: an OrderedDict that maps a list of options to be typed
-                        (short strings, each of which is ideally a single
-                        letter) to a full description of what that option means
-                        (a longer string). For example:
+    CHOICE_MENU is an OrderedDict (or similar, including regular dicts in Python
+    3.7+) mapping a list of options to be typed (short strings, each of which is
+    ideally a single letter) to a full description of what that option means (a
+    longer string). For example:
 
-                        OrderedDict([
-                                     ('a', 'always capitalize'),
-                                     ('y', 'yes'),
-                                     ('n', 'never')
-                                    ])
+        OrderedDict([
+                     ('a', 'always capitalize'),
+                     ('y', 'yes'),
+                     ('n', 'never')
+                    ])
 
-                        as a special case, if both parts of an entry in the
-                        OrderedDict are two hyphens, that entry is not a valid menu
-                        choice; it is printed as-is, as a visual separator, but is
-                        not a selectable option.
-    :param prompt:      a direct request for input; printed after all of the
-                        menu options have been displayed.
-    :return:            a string: the response the user typed that was
-                        validated as an allowed choice.
+    As a special case, if both parts of an entry in the OrderedDict are two hyphens,
+    that entry is not a valid menu choice; it is printed as-is, as a visual
+    separator, but is not a selectable option.
+
+    PROMPT is a direct request for input; printed after all the menu options have
+    been displayed.
+
+    Returns a string, the response the user typed that was validated as an allowed
+    choice.
     """
     max_menu_item_width = max(len(x) for x in choice_menu)
     menu_column_width = max_menu_item_width + len("  [ ") + len(" ]")
@@ -65,10 +68,10 @@ def menu_choice(choice_menu, prompt):
 
     # Now, get the user's choice
     choice = 'not a legal option'
-    legal_options = [ k.lower() for k, v in choice_menu.items() if ((k != '--') or (v != '--')) ]
+    legal_options = [ k.casefold() for k, v in choice_menu.items() if ((k != '--') or (v != '--')) ]
     patrick_logger.log_it("INFO: multi_choice_menu.py: Legal options for this menu are %s" % legal_options, 2)
     tried_yet = False
-    while choice.lower() not in legal_options:
+    while choice.casefold() not in legal_options:
         if tried_yet:           # If the user has got it wrong at least once...
             prompt = prompt.strip() + " [ %s ] " % ('/'.join(legal_options))
         choice = input(prompt.strip() + " ").strip()
@@ -76,14 +79,48 @@ def menu_choice(choice_menu, prompt):
     return choice
 
 
+def easy_menu_choice(choice_menu: typing.Iterable[str],
+                     prompt: str) -> str:
+    """Does the same thing as menu_choice(), except that it takes an iterable of
+    strings instead of a dictionary mapping responses to strings. It then auto-
+    calculates responses itself and passes the manufactured response -> prompts dict
+    to menu_choice().
+
+    Does not return the short response the user typed, as menu_choice() does,
+    because the auto-0calculated menu choice is not meaningful to the calling code.
+    Instead, returns the full prompt string.
+    """
+    assert isinstance(choice_menu, collections.Iterable)
+    assert all([isinstance(i, str) for i in choice_menu])
+    assert isinstance(prompt, str)
+
+    menu = collections.OrderedDict()
+
+    def unused_answer(option: str) -> str:
+        used_keys = set([i.strip().casefold() for i in menu.keys()])
+        for length in range(1, 1+len(option)):
+            for i in range(len(option) - length):
+                if option[i: i+length].strip().casefold() not in used_keys:
+                    return option[i: i+length]
+
+        raise RuntimeError("Cannot derive a response key for option %s!!!" % option)
+
+    for item in choice_menu:
+        menu[unused_answer(item)] = item
+
+    ans = menu_choice(menu, prompt)
+    return menu[ans]
+
+
 if __name__ == "__main__":
     patrick_logger.verbosity_level = 3
     print("INFO: Terminal width is %d.\n" % text_handling.terminal_width())
     response = "N"
-    the_menu = OrderedDict([
-                            ('Y', 'Yes, I do'),
-                            ('N', 'No, not yet')
-                            ])
+    the_menu = collections.OrderedDict([
+        ('Y', 'Yes, I do'),
+        ('N', 'No, not yet')
+    ])
     while response.lower() == "n":
-        response = menu_choice(the_menu, "You do understand that this is not a program itself, but rather a utility for other programs to use, don't you?")
+        response = menu_choice(the_menu, "You do understand that this is not a program itself, but rather a utility "
+                                         "for other programs to use, don't you?")
         print("\nYou chose '%s'." % response)

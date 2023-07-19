@@ -395,6 +395,13 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 * added `flex_config.py`, a system for managing multiple JSON config files stored in different locations across a filesystem.
   * that one was imported from the VideoDataStore project.
 * Deleted `sample.py`, a three-line script that did nothing useful and that, I'm pretty sure, nothing else uses.
+* Micro-cleanup of code in many modules.
+
+19 July 2023
+------------
+* `file_utils.py` now has new functions `relative_to()` and `relative_to_with_name()` for computing relative paths with a bit more finesse than the system calls do.
+* `flex_config.py` now allows instances to specify a JSON encoder to use as the actual data serializer.  
+* `multi_choice_menu.py` now has an `easy_menu_choice()` function that auto-generates the user-selectable option strings that the user uses to respond to the prompt. 
 
 
 KNOWN BUGS

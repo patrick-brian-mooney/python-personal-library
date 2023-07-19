@@ -139,5 +139,45 @@ def do_open_dialog(**kwargs):
     return filename
 
 
+def relative_to(from_where: Path,
+                to_where: Path) -> Path:
+    """Describe the path leading from the file or directory FROM_WHERE to the file or
+    directory TO_WHERE, even if FROM_WHERE is not an ancestor of TO_WHERE.
+
+    Relies largely on os.path.relpath(), but that's not *quite* always what we want;
+    if FROM_WHERE is a file, we don't want the initial '../' that means "move up
+    from that file to its parent directory"; users expect '../' to mean "move up
+    from one directory to another," not "take the parent directory of this file,"
+    which is a rather pedantic interpretation from a UI perspective even if it's
+    perfectly correct from a path-operation perspective.
+
+    In fact, os.path.relpath() assumes both components are directories, which is
+    kind of weird, so we test and correct both FROM_WHERE and TO_WHERE.
+    """
+    assert isinstance(from_where, Path)
+    assert isinstance(to_where, Path)
+
+    if from_where.is_file():
+        from_where = from_where.parent
+    if to_where.is_file():
+        to_where = to_where.parent
+
+    return Path(os.path.relpath(to_where, from_where))
+
+
+def relative_to_with_name(from_where: Path,
+                          to_where: Path) -> Path:
+    """Same as relative_to() above, but returns a Path with a terminal filename, not
+    just the relative directory structure.
+    """
+    assert isinstance(from_where, Path)
+    assert isinstance(to_where, Path)
+
+    ret = Path(relative_to(from_where, to_where))
+    if ret.name != to_where.name:
+        ret = ret / to_where.name
+    return ret
+
+
 if __name__ == "__main__":
     pass
