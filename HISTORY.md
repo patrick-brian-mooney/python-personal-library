@@ -402,7 +402,7 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 * `file_utils.py` now has new functions `relative_to()` and `relative_to_with_name()` for computing relative paths with a bit more finesse than the system calls do.
 * `flex_config.py` now allows instances to specify a JSON encoder to use as the actual data serializer.  
 * `multi_choice_menu.py` now has an `easy_menu_choice()` function that auto-generates the user-selectable option strings that the user uses to respond to the prompt. 
-
+* added `MusicOrganizer.py`, a script to help organize a music collection.
 
 KNOWN BUGS
 ==========
