@@ -109,7 +109,10 @@ def easy_menu_choice(choice_menu: typing.Iterable[str],
         menu[unused_answer(item)] = item
 
     ans = menu_choice(menu, prompt)
-    return menu[ans]
+
+    # This next bit is to make absolutely sure we allow for differences in case and with leading/trailing space
+    return {k.strip().casefold(): v for k, v in menu.items()}[ans.strip().casefold()]
+    # FIXME: The above line may process incorrectly if multiple keys that differ only in case are in the dict!
 
 
 if __name__ == "__main__":
