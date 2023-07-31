@@ -404,6 +404,11 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 * `multi_choice_menu.py` now has an `easy_menu_choice()` function that auto-generates the user-selectable option strings that the user uses to respond to the prompt. 
 * added `MusicOrganizer.py`, a script to help organize a music collection.
 
+31 July 2023
+------------
+* `MusicOrganizer.py` now properly handles MP4 files as a valid type that is understood to belong in the library.
+
+
 KNOWN BUGS
 ==========
 * No known bugs listed at the moment. However, check individual module files to be sure that I haven't just forgotten to list something here.

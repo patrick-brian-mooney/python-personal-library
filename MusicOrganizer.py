@@ -40,11 +40,14 @@ from pathlib import Path
 
 import pprint
 import shutil
-import typing
+
+from typing import Any, Callable, Generator, Iterable, List, Optional, Set, Union
 
 import mutagen                      # https://mutagen.readthedocs.io/
 from mutagen.id3 import ID3
 from mutagen.easyid3 import EasyID3
+from mutagen.mp4 import MP4Tags
+from mutagen.easymp4 import EasyMP4Tags
 
 import tqdm                         # https://tqdm.github.io/
 
@@ -60,8 +63,8 @@ default_config = {
     'folders to skip': ["""/home/patrick/Music/Receiving Bay/00-Incomplete collections""",
                         """/home/patrick/Music/Receiving Bay/00-To Transcode""",],
     'destination': '/home/patrick/Music/Receiving Bay/0xFF - organized',
-    'allowed music extensions': ['.mp3',],
-    "music extensions to convert": [".flac", ".wma", ".wav", ".ape", ".m4p", ".aa", ".m4a", ".m4b", ".part",],
+    'allowed music extensions': ['.mp3', ".m4a",],
+    "music extensions to convert": [".flac", ".wma", ".wav", ".ape", ".m4p", ".aa",  ".m4b", ".part",],
     "extensions to ignore": [".htm", ".html", ".txt", ".jpg", ".jpeg", ".pdf", ".cue", ".gif", ".png", ".css",
                              ".m3u", ".nfo", ".doc", "", ".js", ".aspx", ".m4v", ".pls", ".vob", ".bmp",
                              ".rtf", ".avi", ".bz2",],
@@ -69,10 +72,13 @@ default_config = {
     "allowed frames": ["APIC", "SYLT", "TALB", "TCOM", "TCON", "TDOR", "TDRC", "TDRL", "TFLT", "TIPL", "TIT1",
                        "TIT2", "TIT3", "TKEY", "TLAN", "TLEN", "TMCL", "TOAL", "TOLY", "TOPE", "TPE1", "TPE2",
                        "TPE3", "TPE4", "TPOS", "TPUB", "TRCK", "TSOA", "TSOP", "TSOTTSST", "USLT", "WOAF",
-                       "WOAR", "WOAS", "WPUB", "TMED", "WXXX", "TBPM", "MCDI", "©DAY", "TEXT",],
+                       "WOAR", "WOAS", "WPUB", "TMED", "WXXX", "TBPM", "MCDI", "©DAY", "TEXT", 'covr', '©wrt', 'TMPO',
+                       '©alb', 'tmpo', 'cprt', '©WRT', 'trkn', '©gen', '©day', 'TSOT', '©GEN', 'CPIL', '©ART', 'pgap',
+                       'TSST', 'PGAP', 'disk', 'geID', 'stik', '©nam', 'aART', '©lyr', 'cpil', ],
     "frames to delete": ["TDTG", "TENC", "TMOO", "TOWN", "TPRO", "TRSN", "TRSO", "TSRC", "TSSE", "UFID",
                          "USER", "WCOM", "WCOP", "WORS", "WPAY", "TSO2", "TXXX", "COMM", "TCOP", "PRIV",
-                         "TCMP", "PCNT", "RVA2", "TDEN", "TSST", "POPM",],
+                         "TCMP", "PCNT", "RVA2", "TDEN", "TSST", "POPM", 'purd', 'akID', 'SOAA', 'apID', 'sfID',
+                         '----', '©too', 'cnID', 'plID', 'atID', 'flvr', 'cmID', 'soaa', 'rtng', 'soar',],
 }
 
 
@@ -84,7 +90,7 @@ unprocessed_dirs = set()
 
 
 # Some very general utility code.
-def _flatten_list(l: typing.Iterable[typing.Any]) -> typing.Generator[typing.Any, None, None]:
+def _flatten_list(l: Iterable[Any]) -> Generator[Any, None, None]:
     """Emit the non-list (and non-list-like) atoms composing the list L. If L contains
     any lists (or list-like iterables), only the ELEMENTS of those sublists are ever
     emitted, rather than the sublists themselves. No matter how deeply nested L is,
@@ -105,14 +111,14 @@ def _flatten_list(l: typing.Iterable[typing.Any]) -> typing.Generator[typing.Any
             yield elem
 
 
-def flatten_list(l: typing.Iterable[typing.Any]) -> typing.List[typing.Any]:
+def flatten_list(l: Iterable[Any]) -> List[Any]:
     """Purely a convenience fucntion that wraps _flatten_list in a list() call so that
     it returns a whole list rather than yielding one element at a time.
     """
     return list(_flatten_list(l))
 
 
-def _files_in_folders_recursively(p: Path) -> typing.Generator[Path, None, None]:
+def _files_in_folders_recursively(p: Path) -> Generator[Path, None, None]:
     """A generator that emits each file that is in any subdirectory of P, a Path
     representing a directory. If an all-at-once list of every file under this folder
     is needed, use the no-underscore convenience function with a similar name,
@@ -128,7 +134,7 @@ def _files_in_folders_recursively(p: Path) -> typing.Generator[Path, None, None]
             yield item
 
 
-def files_in_folders_recursively(p: Path) -> typing.List[Path]:
+def files_in_folders_recursively(p: Path) -> List[Path]:
     """Just a convenience function that produces a list, all at once, from the
     similarly named generator function.
     """
@@ -180,7 +186,7 @@ def sanitize_path(suggested_name: Path) -> Path:
 
 
 def clean_name(suggested_name: Path,
-               other_dirs_unique: typing.Iterable[Path] = ()) -> Path:
+               other_dirs_unique: Iterable[Path] = ()) -> Path:
     """Given SUGGESTED NAME, returns a unique Path to a file in the same directory
     specified, but that does not exist and whose name is based on SUGGESTED_NAME.
     If SUGGESTED_NAME does not exist, appends (1), (2), (3) ... to SUGGESTED NAME
@@ -200,20 +206,72 @@ def clean_name(suggested_name: Path,
 
     new_name, suffix = sanitize_text(suggested_name.stem), suggested_name.suffix
     count = 0
-    dirs_to_check = list(other_dirs_unique) + [suggested_name.parent]
 
     # Vulnerable to race conditions, but what else can we do?
-    while True:
+    unique = False
+    while not unique:
         if count:
-            new_name = f"{suggested_name.stem} ({count})"
+            new_name = suggested_name.stem + " (" + str(count) + ")"
         else:
             new_name = suggested_name.stem
 
         count += 1
-        if not any ([(d / new_name).with_suffix(suffix).exists() for d in dirs_to_check]):
-            break
 
-    return suggested_name.with_name(new_name).with_suffix(suffix)
+        # First: if new full name we generated exists, it's a conflict if it's not the same file as the suggested name.
+        new_full = suggested_name.parent / (new_name + suffix)
+        if suggested_name.exists() and new_full.exists():
+            if not suggested_name.samefile(new_full):
+                continue            # generated name is not unique. Try again by starting from the top of the main loop
+
+        # next, check to see if it's unique relative to the other_dirs_unique directories.
+        unique = True
+        for f in other_dirs_unique:
+            if (f / (new_name + suffix)).exists():
+                unique = False
+                break
+
+    return new_full
+
+
+def del_tags(data: Union[ID3, MP4Tags],
+             key: str) -> None:
+    """A function that provides an abstract interface to functionality that deletes
+    data of a certain type from a tags structure. Annoyingly, this functionality is
+    named different for different types of audio files, so this convenience function
+    provides a uniform interface regardless of underlying file type. If the tag
+    structure supports multiple tags of the same type, all tags of that type are
+    removed.
+
+    DATA is the tag data to operate on. KEY is the key whose information should be
+    deleted.
+    """
+    try:
+        assert isinstance(data, ID3)
+        data.delall(key)                   # FIXME! Can we just use del data[key], as with MP4?
+    except (AssertionError, AttributeError,):
+        assert isinstance(data, MP4Tags)
+        for which_key in sorted(i for i in data.keys() if i.strip().casefold().startswith(key.strip().casefold())):
+            del data[which_key]
+
+
+def get_tags(data: Union[ID3, MP4Tags],
+             key: str) -> List[str]:
+    """Returns a list of all tags in DATA matching KEY. If no tags in DATA mach KEY,
+    returns an empty list.
+    """
+    try:
+        assert isinstance(data, ID3)
+        return [str(i) for i in data.getall(key)]
+    except AssertionError:
+        assert isinstance(data, MP4Tags)
+        return [f"{i}:\n{str(data[i])}" for i in data.keys() if i.startswith(key)]
+
+
+def print_tags(data: Union[ID3, MP4Tags],
+               key: str) -> None:
+    """Pretty-print the information matching KEY in DATA.
+    """
+    pprint.pprint(get_tags(data, key))
 
 
 class PathAsStrJSONEncoder(json.JSONEncoder):
@@ -226,7 +284,7 @@ class PathAsStrJSONEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-def do_convert_audio(which_files: typing.Iterable[Path]) -> None:
+def do_convert_audio(which_files: Iterable[Path]) -> None:
     """Convert WHICH_FILES to the default target audio format.
     """
     print(f"Not converting files {which_files} -- functionality not yet implemented!")          # FIXME
@@ -244,7 +302,7 @@ def set_up() -> None:
     config.save_preferences()               # Warn early if we can't write prefs back to disk.
 
     for key in ('folder to organize', 'folders to skip', 'destination'):
-        if isinstance(config[key], typing.Iterable) and not isinstance(config[key], str):
+        if isinstance(config[key], Iterable) and not isinstance(config[key], str):
             if any([not issubclass(type(item), Path) for item in config[key]]):
                 config[key] = [Path(i).resolve() for i in config[key]]
         elif not issubclass(type(config[key]), Path):
@@ -255,8 +313,7 @@ def set_up() -> None:
         config['folders to skip'].append(config['destination'])
 
     # Check to make sure the destination folder exists and looks like an actual folder.
-    if not config['destination'].exists():
-        config['destination'].mkdir(parents=True)
+    config['destination'].mkdir(parents=True, exist_ok=True)
     assert config['destination'].exists(), f"Could not create {config['destination']} !!!"
     assert config['destination'].is_dir(), f"{config['destination']} seems to exist, but is not a folder!"
 
@@ -356,7 +413,7 @@ def ask_about_key(key: str,
         elif answer == 'r':
             return False
         elif answer == "s":
-            pprint.pprint(data.getall(key))
+            print_tags(data, key)
         else:
             raise RuntimeError(f"Somehow got an invalid response ({answer}) from menu_choice()!!")
         print('\n\n')
@@ -364,21 +421,21 @@ def ask_about_key(key: str,
 
 # These next few routines do the actual work of cleaning files, renaming them, and moving them around.
 def do_clean_tags(which_file: Path,
-                  title: typing.Optional[str] = None,
-                  artist: typing.Optional[str] = None,
-                  album: typing.Optional[str] = None,
-                  albumartist: typing.Optional[str] = None,
-                  composer: typing.Optional[str] = None,
-                  conductor: typing.Optional[str] = None,
-                  author: typing.Optional[str] = None,
-                  version: typing.Optional[str] = None,
-                  discnumber: typing.Optional[str] = None,
-                  tracknumber: typing.Optional[str] = None,
-                  language: typing.Optional[str] = None,
-                  genre: typing.Optional[str] = None,
-                  date: typing.Optional[str] = None,
-                  originaldate: typing.Optional[str] = None,
-                  performer: typing.Optional[str] = None,
+                  title: Optional[str] = None,
+                  artist: Optional[str] = None,
+                  album: Optional[str] = None,
+                  albumartist: Optional[str] = None,
+                  composer: Optional[str] = None,
+                  conductor: Optional[str] = None,
+                  author: Optional[str] = None,
+                  version: Optional[str] = None,
+                  discnumber: Optional[str] = None,
+                  tracknumber: Optional[str] = None,
+                  language: Optional[str] = None,
+                  genre: Optional[str] = None,
+                  date: Optional[str] = None,
+                  originaldate: Optional[str] = None,
+                  performer: Optional[str] = None,
                   ) -> None:
     """Clean tags from the .mp3 or other authorized files. Keeps and updates a list of
     allowed and disallowed tags. Removes disallowed tags. Queries the user about
@@ -394,34 +451,34 @@ def do_clean_tags(which_file: Path,
 
     try:
         data = mutagen.File(which_file)
-        for key in {k[:4].strip().upper() for k in data.tags.keys()}:
+        for key in {k[:4].strip() for k in data.tags.keys()}:
             if key in config['frames to delete']:
-                data.tags.delall(key)
+                del_tags(data.tags, key)
             elif key not in config['allowed frames']:
                 if not ask_about_key(key, which_file, data.tags):        # If key goes onto the 'delete' list ...
-                    data.tags.delall(key)
+                    del_tags(data.tags, key)
 
         data.save()
 
         if any([title, artist, album, albumartist, composer, conductor, author, version, discnumber,
                 tracknumber, language, genre, date, originaldate, performer]):
-            data = EasyID3(which_file)
+            data = easy_from(which_file)
 
-            if title: data['title'] = title
-            if artist: data['artist'] = artist
-            if album: data['album'] = album
-            if albumartist: data['albumartist'] = albumartist
-            if composer: data['composer'] = composer
-            if conductor: data['conductor'] = conductor
-            if author: data['author'] = author
-            if version: data['version'] = version
-            if discnumber: data['discnumber'] = discnumber
-            if tracknumber: data['tracknumber'] = tracknumber
-            if language: data['language'] = language
-            if genre: data['genre'] = genre
-            if date: data['date'] = date
-            if originaldate: data['originaldate'] = originaldate
-            if performer: data['performer'] = performer
+            if title: data.tags['title'] = title
+            if artist: data.tags['artist'] = artist
+            if album: data.tags['album'] = album
+            if albumartist: data.tags['albumartist'] = albumartist
+            if composer: data.tags['composer'] = composer
+            if conductor: data.tags['conductor'] = conductor
+            if author: data.tags['author'] = author
+            if version: data.tags['version'] = version
+            if discnumber: data.tags['discnumber'] = discnumber
+            if tracknumber: data.tags['tracknumber'] = tracknumber
+            if language: data.tags['language'] = language
+            if genre: data.tags['genre'] = genre
+            if date: data.tags['date'] = date
+            if originaldate: data.tags['originaldate'] = originaldate
+            if performer: data.tags['performer'] = performer
 
             data.save()
 
@@ -431,8 +488,36 @@ def do_clean_tags(which_file: Path,
         print(f"Could not update {which_file}! The system said: {errrr}")
 
 
-def _data_from_easy(data: EasyID3,
-                    key: str) -> typing.Union[str, None]:
+def easy_from(which_file: Path):  # FIXME: annotate returns types!
+    """Returns the Easy-style mutagen.File object, after validating that it has
+    appropriate tags.
+
+    Note that if all you want is read-only metadata, use the convenience function
+    easy_metadata_from(), below.
+    """
+    ret = None
+
+    try:
+        ret = mutagen.File(which_file, easy=True)
+        assert isinstance(ret.tags, (EasyMP4Tags, EasyID3))
+
+    except (IOError, AttributeError, AssertionError, ) as errrr:
+        print(f"Unable to read metadata from {which_file.name}! the system said: {errrr}.")
+    except Exception as errrr:
+        print(f"Unanticipated error occurred! Could not load metadata for file {which_file.name}.THe system said: {errrr}")
+
+    return ret
+
+
+def easy_metadata_from(which_file: Path) -> Union[EasyID3, EasyMP4Tags, None]:
+    """Returns the Easy-style metadata object for WHICH_FILE's tags. Returns None if
+    metadata cannot be found.
+    """
+    return easy_from(which_file).tags
+
+
+def _data_from_easy(data: Union[EasyID3, EasyMP4Tags],
+                    key: str) -> Union[str, None]:
     """Parses DATA, an EasyID3 tag, to extract KEY, if possible; if it's possible,
     returns the relevant data; otherwise, returns None.
     """
@@ -440,14 +525,14 @@ def _data_from_easy(data: EasyID3,
         ret = data[key]
         if isinstance(ret, str):
             return ret
-        elif isinstance(ret, typing.Iterable):
+        elif isinstance(ret, Iterable):
             return ret[0]
     except (KeyError,):
         return None
 
 
-def title_from_easy(data: EasyID3,
-                    f: Path) -> typing.Union[str, None]:
+def title_from_easy(data: Union[EasyID3, EasyMP4Tags],
+                    f: Path) -> Union[str, None]:
     """Parses DATA, an EasyID3 tag, to try to extract the song title from that data.
     Tries to deal sensibly with problems. Returns None if it absolutely cannot
     figure that out.
@@ -455,32 +540,32 @@ def title_from_easy(data: EasyID3,
     return _data_from_easy(data, 'title')
 
 
-def artist_from_easy(data: EasyID3,
-                     f: Path) -> typing.Union[str, None]:
+def artist_from_easy(data: Union[EasyID3, EasyMP4Tags],
+                     f: Path) -> Union[str, None]:
     """Try to get the artist name for the song represented by DATA. Return that name
     as a string, or else None, if we can't figure it out.
     """
     return _data_from_easy(data, 'artist')
 
 
-def album_from_easy(data: EasyID3,
-                    f: Path) -> typing.Union[str, None]:
+def album_from_easy(data: Union[EasyID3, EasyMP4Tags],
+                    f: Path) -> Union[str, None]:
     """Try to get the album name for the song represented by DATA. Return that name
     as a string, or else None, if we can't figure it out.
     """
     return _data_from_easy(data, 'album')
 
 
-def albumartist_from_easy(data: EasyID3,
-                          f: Path) -> typing.Union[str, None]:
+def albumartist_from_easy(data: Union[EasyID3, EasyMP4Tags],
+                          f: Path) -> Union[str, None]:
     """Try to get the album artist name for the song represented by DATA. Return that
     name as a string, or else None, if we can't figure it out.
     """
     return _data_from_easy(data, 'albumartist')
 
 
-def artist_or_albumartist_from_easy(data:EasyID3,
-                                    f: Path) -> typing.Union[str, None]:
+def artist_or_albumartist_from_easy(data: Union[EasyID3, EasyMP4Tags],
+                                    f: Path) -> Union[str, None]:
     """Try to get the artist name for the song represented by DATA. If that's not
     possible, try getting the album artist instead. If neither is possible, return
     None instead.
@@ -488,8 +573,8 @@ def artist_or_albumartist_from_easy(data:EasyID3,
     return artist_from_easy(data, f) or albumartist_from_easy(data, f) or None
 
 
-def trackno_from_easy(data: EasyID3,
-                      f: Path) -> typing.Union[str, None]:
+def trackno_from_easy(data: Union[EasyID3, EasyMP4Tags],
+                      f: Path) -> Union[str, None]:
     """Try to extract the track number from DATA, an EasyID3 object describing metadata
     for a file; try to deal with the formats it may come in, primarily the
     track-number-slash-total-number-of-tracks common format. If the determination
@@ -510,8 +595,8 @@ def trackno_from_easy(data: EasyID3,
     return f"{ret:02d}"
 
 
-def year_from_easydata(data: EasyID3,
-                       f: Path) -> typing.Union[str, None]:
+def year_from_easydata(data: Union[EasyID3, EasyMP4Tags],
+                       f: Path) -> Union[str, None]:
     """Try to extract the (release, presumably) year from EasyID3 metadata. Tries to
     deal with predictable problems that may occur. Returns a string if it can
     determine the year, or None if that cannot be determined.
@@ -538,12 +623,12 @@ def year_from_easydata(data: EasyID3,
     return None
 
 
-def check_if_write_to_tag(frames_to_check: typing.Union[str, typing.Iterable[str]],
+def check_if_write_to_tag(frames_to_check: Union[str, Iterable[str]],
                           value: str,
                           which_file: Path) -> bool:
     """A utility function called when the user has manually specified the value for a
     tag; it asks whether the user wants to write the value to the relevant frame in
-    the file, and if so, does so. THe user also has the option of also writing the
+    the file, and if so, does so. The user also has the option of also writing the
     value to the relevant frame of every music file in an allowable format in the
     same directory, non-recursively.
 
@@ -559,7 +644,8 @@ def check_if_write_to_tag(frames_to_check: typing.Union[str, typing.Iterable[str
     if isinstance(frames_to_check, str):
         frames_to_check = [frames_to_check]
 
-    assert isinstance(frames_to_check, typing.Iterable)
+    assert isinstance(frames_to_check, Iterable)
+    assert frames_to_check      # e.g., not an empty iterable.
     assert all([isinstance(i, str) for i in frames_to_check])
     assert isinstance(value, str)
     assert isinstance(which_file, Path)
@@ -568,7 +654,7 @@ def check_if_write_to_tag(frames_to_check: typing.Union[str, typing.Iterable[str
     ret = mcm.menu_choice({'Y': f"Write the metadata to {which_file.name}'s tag",
                            'N': f"Do not write the metadata to {which_file.name}'s tag",
                            '--': '--',
-                           'A': f"Write the metadata to {which_file.name}'s tag, and also do the tags of all other"
+                           'A': f"Write the metadata to {which_file.name}'s tag, and also to the tags of all other "
                                 f"audio files in allowable formats in the same directory"},
                           prompt=f"Write the updated metadata to the {' or '.join([i.upper() for i in frames_to_check])} frame for {which_file.name}?").casefold().lower()
 
@@ -591,8 +677,8 @@ def check_if_write_to_tag(frames_to_check: typing.Union[str, typing.Iterable[str
     return True
 
 
-def artist_or_albumartist(data: EasyID3,
-                          f: Path) -> typing.Union[str, None]:
+def artist_or_albumartist(data: Union[EasyID3, EasyMP4Tags],
+                          f: Path) -> Union[str, None]:
     """Gets an artist, or album artist, preferentially from ID3 data, but trying
     several other things if that's not available. Only returns None if everything,
     including asking the user, fails to turn up useful information.
@@ -603,9 +689,9 @@ def artist_or_albumartist(data: EasyID3,
 
     rel_path = fu.relative_to(config['folder to organize'], f)
     parts = {i for i in rel_path.parts if i}
-    known_artists = {i.name.strip().casefold() for i in config['folder to organize'].glob('*') if i.is_dir()}
-    known_artists |= {i.name.strip().casefold() for i in config['destination'].glob('*') if i.is_dir()}
-    opts = {i.strip().casefold() for i in parts}.intersection(known_artists)
+    known_artists = {i.name.strip() for i in config['folder to organize'].glob('*') if i.is_dir() and i.name.strip()}
+    known_artists |= {i.name.strip() for i in config['destination'].glob('*') if i.is_dir() and i.name.strip()}
+    opts = {i.strip() for i in parts}.intersection(known_artists)
     if opts:
         if len(opts) == 1:
             ret = list(opts)[0]
@@ -622,15 +708,17 @@ def artist_or_albumartist(data: EasyID3,
 
 
 def _filename_from_components(f: Path,
-                              components: typing.Iterable[typing.Union[typing.Callable[[EasyID3,], typing.Union[str, None]],
-                                                                       typing.Iterable[typing.Callable[[EasyID3,], typing.Union[str, None]]]]],
-                              ) -> typing.Union[Path, None]:
+                              components: Iterable[Union[Callable[[Union[EasyID3, EasyMP4Tags],],
+                                                                  Union[str, None]],
+                                                         Iterable[Callable[[Union[EasyID3, EasyMP4Tags],],
+                                                                           Union[str, None]]]]],
+                              ) -> Union[Path, None]:
     """Given F, a path to a music file, try to suggest a new name for that file based on
     the file's metadata, keeping the location within the filesystem and the existing
     suffix. That suggested filename is built from COMPONENTS, an iterable of
-    functions that extract a string from EasyID3 metadata. Returns the new Path if
-    it's able to construct one, or else None if this turns out to be completely
-    impossible.
+    functions that extract a string from EasyID3 (or similar) metadata. Returns the
+    new Path if it's able to construct one, or else None if this turns out to be
+    completely impossible.
 
     The elements of the COMPONENTS iterable can be not only single callables, but
     iterables of callables. In this case, each callable in that second-level
@@ -655,13 +743,13 @@ def _filename_from_components(f: Path,
     ret = ''
 
     try:
-        data = EasyID3(f)
+        data = easy_metadata_from(f)
     except (Exception, ) as errrr:
         print(f"Cannot read metadata for file {f.name}! The system said: {errrr}.")
         return
 
     for item in components:
-        if not isinstance(item, typing.Iterable):
+        if not isinstance(item, Iterable):
             item = [item]
         for func in item:
             try:
@@ -679,9 +767,10 @@ def _filename_from_components(f: Path,
     return sanitize_path(f.with_name(ret.strip()).with_suffix(f.suffix))
 
 
-def most_common_answer(music_files: typing.Iterable[Path],
-                       data_getter: typing.Callable[[EasyID3], typing.Union[str, None]],
-                       exclude_falsey: bool = True) -> typing.Union[str, None]:
+def most_common_answer(music_files: Iterable[Path],
+                       data_getter: Callable[[Path], Union[str, None]],
+                       exclude_falsey: bool = True,
+                       ) -> Union[str, None]:
     """Apply the DATA_GETTER function to the EasyID3 data from each file in
     MUSIC_FILES, then return the answer most frequently provided by the function.
     In the case of ties, it just picks one. If EXCLUDE_FALSEY is True (the default),
@@ -694,14 +783,14 @@ def most_common_answer(music_files: typing.Iterable[Path],
     in a folder was ripped from: most_common_answer(files, album_from_easy) will
     find the album that the largest number of files in a folder think they belong to.
     """
-    assert isinstance(music_files, typing.Iterable)
+    assert isinstance(music_files, Iterable)
     assert all([isinstance(i, Path) for i in music_files])
-    assert isinstance(data_getter, typing.Callable)
+    assert isinstance(data_getter, Callable)
 
     data = list()
     for f in music_files:
         try:
-            data.append(data_getter(EasyID3(f), f))
+            data.append(data_getter(easy_metadata_from(f), f))
         except (Exception,) as errrr:
             pass
 
@@ -719,16 +808,16 @@ def most_common_answer(music_files: typing.Iterable[Path],
     return ret
 
 
-def album_by_artist_filename(f: Path) -> typing.Union[Path, None]:
+def album_by_artist_filename(f: Path) -> Union[Path, None]:
     """Given F, a Path to a music file, tries to scan the file's metadata and generate
     a new name for the file of the form [track #] - [Artist] - [Song title].suffix.
     """
     return _filename_from_components(f, (trackno_from_easy, artist_from_easy, title_from_easy))
 
 
-def album_by_artist_folder_structure(year: typing.Optional[str] = None,
-                                     artist: typing.Optional[str] = None,
-                                     album: typing.Optional[str] = None) -> typing.Union[Path, None]:
+def album_by_artist_folder_structure(year: Optional[str] = None,
+                                     artist: Optional[str] = None,
+                                     album: Optional[str] = None) -> Union[Path, None]:
     """Generates a relative Path, meant to be created underneath the destination
     directory, not necessarily unique, not necessarily already existing or not.
     Returns a Path if it can be constructed, or None if that is impossible.
@@ -748,12 +837,12 @@ def album_by_artist_folder_structure(year: typing.Optional[str] = None,
         return Path(ret) if ret else None
 
 
-def process_collection(music_files: typing.Set[Path],
-                       non_music_files: typing.Set[Path],
+def process_collection(music_files: Set[Path],
+                       non_music_files: Set[Path],
                        parent_dir: Path,
-                       filename_generator: typing.Callable[[Path,], typing.Union[Path, None]],
-                       dirname_generator: typing.Callable[[typing.Iterable[Path],], typing.Union[Path, None]],
-                       ) -> bool:
+                       filename_generator: Callable[[Path,], Union[Path, None]],
+                       dirname_generator: Callable[[Iterable[Path],], Union[Path, None]],
+                       ) -> None:
     """A folder-processing routine that takes the relevant file lists and processes
     the files, ultimately moving cleaned music files and (untouched) all other files
     into the relevant new directory.
@@ -764,7 +853,8 @@ def process_collection(music_files: typing.Set[Path],
     assert all([isinstance(i, Path) for i in music_files])
     assert all([isinstance(i, Path) for i in non_music_files])
 
-    music_files = {f: f.stat() for f in music_files}    # stash os.stat() info that will be needed later, before making changes
+    music_files = {f: f.stat() for f in music_files}            # stash os.stat() info that will be needed later,
+    non_music_files = {f: f.stat() for f in non_music_files}    # before making changes
 
     dir = dirname_generator(music_files)
 
@@ -789,8 +879,17 @@ def process_collection(music_files: typing.Set[Path],
         music_files[new_name] = music_files[f]  # OK to modify music_files, we're iterating over a derivative iterable
         del music_files[f]                      # ditto
 
+    for i in sorted(non_music_files):
+        new_name = clean_name(i, [target_dir])
+        if (new_name.exists()) and new_name.samefile(i):
+            continue
+
+        i.rename(new_name)
+        non_music_files[new_name] = non_music_files[i]
+        del non_music_files[i]
+
     # OK. We've got a destination directory, and files ready to move into it. Let's do this.
-    for f, st_info in music_files.items():
+    for f, st_info in (sorted(music_files.items()) + sorted(non_music_files.items())):
         if f.is_file():                             # move all files, music or otherwise
             dest = shutil.move(str(f), str(target_dir))         # shutil.move chokes on Paths for Pythons < 3.9.
             os.utime(dest, (st_info.st_atime, st_info.st_mtime))       # maintain access/modified times after moving
@@ -799,12 +898,12 @@ def process_collection(music_files: typing.Set[Path],
                 shutil.move(str(f), str(target_dir))                # shutil.move() chokes on Paths for Pythons < 3.9.
 
 
-def process_as_album_by_artist(music_files: typing.Iterable[Path],
-                               non_music_files: typing.Iterable[Path],
+def process_as_album_by_artist(music_files: Iterable[Path],
+                               non_music_files: Iterable[Path],
                                parent_dir: Path) -> bool:
     """Convenience wrapper for process_collection, filling in some parameters.
     """
-    def dirname_generator(files: typing.Iterable[Path]) -> typing.Union[Path, None]:
+    def dirname_generator(files: Iterable[Path]) -> Union[Path, None]:
         """Convenience wrapper to avoid one hell of a lambda.
         """
         return album_by_artist_folder_structure(year=most_common_answer(files, year_from_easydata),
@@ -815,7 +914,7 @@ def process_as_album_by_artist(music_files: typing.Iterable[Path],
                               dirname_generator=dirname_generator)
 
 
-def grab_bag_filename(f: Path) -> typing.Union[Path, None]:
+def grab_bag_filename(f: Path) -> Union[Path, None]:
     """Given F, a Path to a music file, tries to scan the file's metadata and generate
     a new name for the file of the form [track #] - [Artist] - [Song title].suffix.
     """
@@ -823,7 +922,7 @@ def grab_bag_filename(f: Path) -> typing.Union[Path, None]:
                                          trackno_from_easy, title_from_easy))
 
 
-def grab_bag_dirname(files: typing.Iterable[Path]) -> typing.Union[Path, None]:
+def grab_bag_dirname(files: Iterable[Path]) -> Union[Path, None]:
     """Get the directory in which FILES should be dumped after cleaning.
     """
     try:
@@ -832,8 +931,8 @@ def grab_bag_dirname(files: typing.Iterable[Path]) -> typing.Union[Path, None]:
         return None
 
 
-def process_as_grab_bag(music_files: typing.Iterable[Path],
-                        non_music_files: typing.Iterable[Path],
+def process_as_grab_bag(music_files: Iterable[Path],
+                        non_music_files: Iterable[Path],
                         parent_dir: Path) -> bool:
     """Process as a "grab bag" collection, i.e. one where files share artist or album
     artist, but are not from the same album.
@@ -890,7 +989,8 @@ def process_dir(p: Path) -> None:
 
     if all_exts_in_dir.intersection(set(config['music extensions to convert'])):
         do_convert_audio([f for f in p.glob('*') if f.suffix in all_exts_in_dir.intersection(set(config['music extensions to convert']))])
-        print(f"The following files need to be converted: {set(f.name for f in p.glob('*') if f.suffix in all_exts_in_dir.intersection(set(config['music extensions to convert'])))}")
+        to_convert = set(f.name for f in p.glob('*') if f.suffix in all_exts_in_dir.intersection(set(config['music extensions to convert'])))
+        print(f"The following {len(to_convert)} {'files need' if len(to_convert) > 1 else 'file needs'} to be converted: {to_convert}")
         return      # For now, we just don't process directories containing unendorsed audio types.         #FIXME
 
     for i in p.glob('*'):
@@ -934,7 +1034,8 @@ def process_dir(p: Path) -> None:
         else:
             process_as_album_by_artist(music_files, non_music_files, p)
     else:
-        print(f"Folder {p} is unprocessed: no strategy for dealing with this collection!")
+        print(f"Giving up on figuring out how to process {p}! Treating collection as grab bag.")
+        process_as_grab_bag(music_files, non_music_files, p)
 
     do_clean_dir(p)
 
@@ -968,5 +1069,5 @@ if __name__ == "__main__":
     set_up()
     print(f"\n\nBeginning run; pre-scanning {config['folder to organize']} ...", end="")
     prescan_dir(config['folder to organize'])
-    print(" ... finished.")
+    print(f" ... finished. Identified {len(dirs_with_music)} folders with music")
     process_library()
