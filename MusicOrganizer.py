@@ -40,6 +40,7 @@ from pathlib import Path
 
 import pprint
 import shutil
+import subprocess
 
 from typing import Any, Callable, Generator, Iterable, List, Optional, Set, Union
 
@@ -71,7 +72,7 @@ default_config = {
     "extensions to delete": [ ".log", ".log", ".ini", ".sfv", ".accurip", ".ffp", ".md5", ".url"],
     "allowed frames": ["APIC", "SYLT", "TALB", "TCOM", "TCON", "TDOR", "TDRC", "TDRL", "TFLT", "TIPL", "TIT1",
                        "TIT2", "TIT3", "TKEY", "TLAN", "TLEN", "TMCL", "TOAL", "TOLY", "TOPE", "TPE1", "TPE2",
-                       "TPE3", "TPE4", "TPOS", "TPUB", "TRCK", "TSOA", "TSOP", "TSOTTSST", "USLT", "WOAF",
+                       "TPE3", "TPE4", "TPOS", "TPUB", "TRCK", "TSOA", "TSOP", "TSST", "USLT", "WOAF",
                        "WOAR", "WOAS", "WPUB", "TMED", "WXXX", "TBPM", "MCDI", "©DAY", "TEXT", 'covr', '©wrt', 'TMPO',
                        '©alb', 'tmpo', 'cprt', '©WRT', 'trkn', '©gen', '©day', 'TSOT', '©GEN', 'CPIL', '©ART', 'pgap',
                        'TSST', 'PGAP', 'disk', 'geID', 'stik', '©nam', 'aART', '©lyr', 'cpil', ],
@@ -79,6 +80,10 @@ default_config = {
                          "USER", "WCOM", "WCOP", "WORS", "WPAY", "TSO2", "TXXX", "COMM", "TCOP", "PRIV",
                          "TCMP", "PCNT", "RVA2", "TDEN", "TSST", "POPM", 'purd', 'akID', 'SOAA', 'apID', 'sfID',
                          '----', '©too', 'cnID', 'plID', 'atID', 'flvr', 'cmID', 'soaa', 'rtng', 'soar',],
+
+    # de-/encoding options next.
+    'LAME options': ['--replaygain-accurate', '-t', '--id3v2-only', '-V', '2', '-h', '-', ],    # ENcoding opt for .mp3
+    'flac options': ['-cd', ]                                                                   # DEcoding opts
 }
 
 
@@ -118,6 +123,17 @@ def flatten_list(l: Iterable[Any]) -> List[Any]:
     return list(_flatten_list(l))
 
 
+class PathAsStrJSONEncoder(json.JSONEncoder):
+    """Store paths as plain strings. They'll be re-interpreted as paths on load.
+    """
+    def default(self, obj):
+        if issubclass(type(obj), Path) or isinstance(obj, Path):
+            return str(obj)
+        else:
+            return json.JSONEncoder.default(self, obj)
+
+
+# Filesystem hierarchy utilities.
 def _files_in_folders_recursively(p: Path) -> Generator[Path, None, None]:
     """A generator that emits each file that is in any subdirectory of P, a Path
     representing a directory. If an all-at-once list of every file under this folder
@@ -169,6 +185,7 @@ def rmdir_if_effectively_empty(dir: Path) -> bool:
         return True
 
 
+# Text-related utility functions.
 def sanitize_text(text: str) -> str:
     """Takes TEXT, a string and makes it safe to use as a pathname. This means that it
     strips leading/trailing whitespace and removes characters that are not safe to
@@ -233,6 +250,40 @@ def clean_name(suggested_name: Path,
     return new_full
 
 
+def unicode_of(what: Union[str, bytes]) -> str:
+    """Just force WHAT to be a Unicode string, as much as we can possibly automate
+    that. We start by using the system default, then trying UTF-8, and then, if
+    either or both is installed, tries UnicodeDammit and chardet. If all else fails,
+    decodes to Latin-1, which should always not fail although it may munge data. If
+    even *that* doesn't work or some unknown godawful reason, the error will
+    propagate upwards.
+
+    This comes in handy when interacting with external programs, which may just barf
+    up data without caring about encoding.
+    """
+    if isinstance(what, str):
+        return what
+
+    try:
+        what = what.decode()
+    except Exception:
+        try:
+            what = what.decode('utf-8')
+        except Exception:
+            try:
+                from bs4 import UnicodeDammit       # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+                return UnicodeDammit(what).unicode_markup
+            except Exception:
+                try:
+                    import chardet
+                    char_info = chardet.detect(what)
+                    what = what.decode(char_info['encoding'])
+                except Exception:
+                    what = what.decode('latin-1')
+    return what
+
+
+# High-level utilities for handling tags in a format-agnostic way.
 def del_tags(data: Union[ID3, MP4Tags],
              key: str) -> None:
     """A function that provides an abstract interface to functionality that deletes
@@ -274,20 +325,203 @@ def print_tags(data: Union[ID3, MP4Tags],
     pprint.pprint(get_tags(data, key))
 
 
-class PathAsStrJSONEncoder(json.JSONEncoder):
-    """Store paths as plain strings. They'll be re-interpreted as paths on load.
+def do_copy_tags(from_f: Path,
+                 to_f: Path,
+                 quiet: bool = False) -> None:
+    """Copy tags from FROM_F, a music file, to TO_F, another music file, as well as
+    possible. Makes no attept to avoid copying tags from "prohibited" frame types.
+
+    "As well as possible" means "doing whatever can easily be done with easy=True
+    while using Mutagen to open files."
     """
-    def default(self, obj):
-        if issubclass(type(obj), Path):
-            return str(obj)
-        else:
-            return json.JSONEncoder.default(self, obj)
+    from_data, to_data = mutagen.File(from_f, easy=True), mutagen.File(to_f, easy=True)
+    for k, v in from_data.items():
+        try:
+            to_data[k] = v
+        except Exception as errr:
+            if not quiet:
+                print(f"        ... unable to add value {v} for key {k} in {to_f.name}")
+
+    to_data.save()
+
+
+# Utilities for handling file-format conversion.
+executables_required = ('lame', 'flac', 'vbrfix', 'ffmpeg', 'cat')
+executable_locations = {n: shutil.which(n) for n in executables_required}
+
+
+def do_vbrfix(which_file: Path,
+              quiet: bool = False) -> None:
+    """Fixes the VBR header in WHICH_FILE, an .mp3 file, by using the vbrfix utility.
+
+    Creates a temporary file, then overwrites the original file if successful.
+    """
+    tmp = sanitize_path(Path(which_file.name + '-temp' + which_file.suffix))
+    out = subprocess.run(['vbrfix', str(which_file.resolve()), str(tmp.resolve())],
+                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    if out.returncode == 0:
+        tmp.replace(which_file)
+    else:
+        if not quiet:
+            print(f"Unable to fix VBR bitrate information for {which_file.name}! The system said: {out.stdout}")
+
+
+def run_conversion(infile: Path,
+                   dec_args: List[str],
+                   enc_args: List[str],
+                   new_suffix: str = '.mp3',
+                   quiet: bool = False,
+                   vbrfix: bool = True,
+                   ) -> Path:
+    """Takes INFILE, a file to be processed, and processes it by starting two processes
+    modeled by two Popen instances. THe first is started using DEC_ARGS as the
+    command-line argument; the second is started using ENC_ARGS as the argument
+    list. The stdout output from the decoder (first, started from DEC_ARGS) is fed
+    into the stdin input for the encoder (second, started from ENC_ARGS).
+
+    The new filename generated will be unique within its own directory and have the
+    file extension specified by NEW_SUFFIX. Assuming the conversion succeeds and
+    produces the expected file, tags are copied from the old to the new file, and,
+    if VBRFIX is True (which it is, by default), a pass through the vbrfix program
+    will be made at the end of processing. (This last is useful because LAME does
+    not automatically put this information at the beginning of the file when taking
+    input through a pipe, because it does not have the necessary information at the
+    beginning of the single pass it makes.)
+
+    ENC_ARGS is modified before the process is started by appending the name of the
+    desired output file after that output filename has been generated. This requires
+    that the command be constructed in such a way that it ends with the output
+    filename. Specifying command-line options in the prefs files is pretty hacky in
+    general and it's easy for end-users to break by editing thoughtlessly.
+
+    ENC_ARGS and DEC_ARGS are passed directly to the underlying OS and therefore
+    must begin with the name of a command.
+    """
+    assert isinstance(infile, Path)
+    assert isinstance(dec_args, Iterable)
+    assert all([isinstance(o, str) for o in dec_args])
+    assert isinstance(enc_args, Iterable)
+    assert all([isinstance(o, str) for o in enc_args])
+
+    outfile = clean_name(infile.with_suffix(new_suffix))
+    enc_args.append(outfile)
+
+    p1 = subprocess.Popen(dec_args, stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(enc_args, stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    p1.stdout.close()       # Allow p1 to receive a SIGPIPE if p2 exits.)
+    out = p2.communicate()
+    assert outfile.exists()
+
+    if vbrfix:
+        do_vbrfix(outfile, quiet)
+    do_copy_tags(infile, outfile, quiet)
+    if not quiet:
+        print('\n\n'.join([unicode_of(i) for i in out if i]).strip(), end="\n\n")
+
+    return outfile
+
+
+def convert_flac(which_file: Path,
+                 quiet: bool = True) -> Path:
+    """Converts WHICH_FILE, which must be a valid .flac file, to .mp3.
+    """
+    dec_args = [executable_locations['flac']] + config['flac options'] + [str(which_file.resolve())]
+    enc_args = [executable_locations['lame']] + config['LAME options']
+
+    return run_conversion(which_file, dec_args=dec_args, enc_args=enc_args, new_suffix='.mp3',
+                          quiet=quiet, vbrfix=True)
+
+
+def convert_wav(which_file: Path,
+                quiet: bool = True) -> Path:
+    """Converts WHICH_FILE, which must be a valid IBM/Microsoft .wav file with standard
+    header, to .mp3.
+
+    Note that not much metadata is copied from the .wav to the .mp3; it seems like
+    mutagen's support for accessing .wav files through the Easy interface is limited?
+    """
+    dec_args = [executable_locations['cat'], str(which_file.resolve())]
+    enc_args = [executable_locations['lame']] + config['LAME options']
+
+    return run_conversion(which_file, dec_args=dec_args, enc_args=enc_args, new_suffix='.mp3',
+                          quiet=quiet, vbrfix=True)
+
+
+def convert_wma(which_file: Path,
+                quiet: bool = True) -> Path:
+    """Converts WHICH_FILE, which must be a valid .flac file, to .mp3.
+
+    Note that the exact command sent to ffmpeg is not currently user-configurable
+    via the preferences mechanism.
+
+    Note that there is plenty of information that copy_tags does not copy from .wma
+    files to .mp3. Manual intervention in the process is helpful here.
+    """
+    dec_args = [executable_locations['ffmpeg']] + ['-i', str(which_file.resolve()), '-f', 'wav',
+                                                   '-c:a', 'pcm_s16le', '-ar', '44100', 'pipe:1']
+    enc_args = [executable_locations['lame']] + config['LAME options']
+
+    return run_conversion(which_file, dec_args=dec_args, enc_args=enc_args, new_suffix='.mp3',
+                          quiet=quiet, vbrfix=True)
+
+
+# A list of converter functions used by convert_file(), below, mapping extensions to functions that handle
+# that extension. Each function must have the same call signature as convert_file and also return a new Path.
+# Use convert_flac(), above, as a model for new extensions.
+converters = {
+    '.flac': convert_flac,
+    '.wav': convert_wav,
+    '.wma': convert_wma,
+}
+
+
+def convert_file(which_file: Path,
+                 delete_original: bool = False,
+                 quiet: bool = False) -> Path:
+    """Convert a single file, WHICH_FILE, to an acceptable format. Also copies any
+    available tag information from the original file to the converted file. Returns
+    the Path to the new file. If DELETE_ORIGINAL is True (default False), also
+    delete the original file after conversion and tag copying.
+
+    The format of WHICH_FILE is determined purely by file extension.
+
+    The returned name should generally be the same as WHICH_NAME, except with a new
+    suffix, but may be renamed due to conflicts with existing files in the
+    directory.
+    """
+    assert isinstance(which_file, Path)
+    assert which_file.exists()
+
+    if not quiet:
+        print(f"\nConverting {which_file.name} ...")
+
+    try:
+        ret = converters[which_file.suffix.strip().casefold()](which_file, quiet)
+    except (KeyError,) as errr:
+        raise RuntimeError(f"Cannot determine what to do with file {which_file}: unrecognized extension!") from errr
+    except Exception as errr:
+        print(f"Cannot process file {which_file.name}! The system said: {errr}")
+        raise errr
+
+    assert ret.suffix.strip().casefold() in config['allowed music extensions']
+    if not quiet:
+        print(f"    ... conversion of {which_file.name} resulted in {ret.name}")
+
+    if delete_original:
+        which_file.unlink()
+        if not quiet:
+            print(f"        ... deleted original file: {which_file.name}")
+
+    return ret
 
 
 def do_convert_audio(which_files: Iterable[Path]) -> None:
     """Convert WHICH_FILES to the default target audio format.
     """
-    print(f"Not converting files {which_files} -- functionality not yet implemented!")          # FIXME
+    print(f"\nConverting {len(which_files)} files ...")
+    for f in sorted(which_files):
+        convert_file(f, delete_original=True)
 
 
 # Set-up and pre-scanning routines.
@@ -419,75 +653,61 @@ def ask_about_key(key: str,
         print('\n\n')
 
 
-# These next few routines do the actual work of cleaning files, renaming them, and moving them around.
-def do_clean_tags(which_file: Path,
-                  title: Optional[str] = None,
-                  artist: Optional[str] = None,
-                  album: Optional[str] = None,
-                  albumartist: Optional[str] = None,
-                  composer: Optional[str] = None,
-                  conductor: Optional[str] = None,
-                  author: Optional[str] = None,
-                  version: Optional[str] = None,
-                  discnumber: Optional[str] = None,
-                  tracknumber: Optional[str] = None,
-                  language: Optional[str] = None,
-                  genre: Optional[str] = None,
-                  date: Optional[str] = None,
-                  originaldate: Optional[str] = None,
-                  performer: Optional[str] = None,
-                  ) -> None:
-    """Clean tags from the .mp3 or other authorized files. Keeps and updates a list of
-    allowed and disallowed tags. Removes disallowed tags. Queries the user about
-    new tags it encounters.
+def check_if_write_to_tag(frames_to_check: Union[str, Iterable[str]],
+                          value: str,
+                          which_file: Path) -> bool:
+    """A utility function called when the user has manually specified the value for a
+    tag; it asks whether the user wants to write the value to the relevant frame in
+    the file, and if so, does so. The user also has the option of also writing the
+    value to the relevant frame of every music file in an allowable format in the
+    same directory, non-recursively.
 
-    If ARTIST, ALBUM, TITLE, and/or ALBUM_ARTIST are specified, they are set; if
-    they are None, this function leaves them alone. Same is true for the other
-    (selected) EasyID3 tags in the function header.
+    FRAMES_TO_CHECK is an iterable of which frames the user might want to write this
+    info to; if it contains multiple options, the user will be asked to choose one.
+    (If it contains just one item, the choice is made automatically.) VALUE is the
+    value to write to teh relevant frame(s). WHICH_FILE is the file to write the
+    data to.
 
-    Saves the updated file to disk after making any modifications.
+    Returns True if at least one frame was written to at least one file, or False
+    otherwise.
     """
+    if isinstance(frames_to_check, str):
+        frames_to_check = [frames_to_check]
+
+    assert isinstance(frames_to_check, Iterable)
+    assert frames_to_check      # e.g., not an empty iterable.
+    assert all([isinstance(i, str) for i in frames_to_check])
+    assert isinstance(value, str)
     assert isinstance(which_file, Path)
+    assert which_file.is_file()
 
-    try:
-        data = mutagen.File(which_file)
-        for key in {k[:4].strip() for k in data.tags.keys()}:
-            if key in config['frames to delete']:
-                del_tags(data.tags, key)
-            elif key not in config['allowed frames']:
-                if not ask_about_key(key, which_file, data.tags):        # If key goes onto the 'delete' list ...
-                    del_tags(data.tags, key)
+    ret = mcm.menu_choice({'Y': f"Write the metadata to {which_file.name}'s tag",
+                           'N': f"Do not write the metadata to {which_file.name}'s tag",
+                           '--': '--',
+                           'A': f"Write the metadata to {which_file.name}'s tag, and also to the tags of all other "
+                                f"audio files in allowable formats in the same directory"},
+                          prompt=f"Write the updated metadata to the {' or '.join([i.upper() for i in frames_to_check])} frame for {which_file.name}?").casefold().lower()
 
-        data.save()
+    if ret == "n":
+        return False
 
-        if any([title, artist, album, albumartist, composer, conductor, author, version, discnumber,
-                tracknumber, language, genre, date, originaldate, performer]):
-            data = easy_from(which_file)
+    if ret == "a":
+        files = [i for i in which_file.parent.glob('*') if i.suffix in config['allowed music extensions']]
+    else:
+        files = [which_file]
 
-            if title: data.tags['title'] = title
-            if artist: data.tags['artist'] = artist
-            if album: data.tags['album'] = album
-            if albumartist: data.tags['albumartist'] = albumartist
-            if composer: data.tags['composer'] = composer
-            if conductor: data.tags['conductor'] = conductor
-            if author: data.tags['author'] = author
-            if version: data.tags['version'] = version
-            if discnumber: data.tags['discnumber'] = discnumber
-            if tracknumber: data.tags['tracknumber'] = tracknumber
-            if language: data.tags['language'] = language
-            if genre: data.tags['genre'] = genre
-            if date: data.tags['date'] = date
-            if originaldate: data.tags['originaldate'] = originaldate
-            if performer: data.tags['performer'] = performer
+    if len(frames_to_check) > 1:
+        frame = mcm.easy_menu_choice(frames_to_check, f"Which frame do you want to write the data {value.upper()} to?")
+    else:
+        frame = frames_to_check[0]
 
-            data.save()
+    for f in files:
+        do_clean_tags(f, **{frame: value})
 
-    except (IOError, mutagen.MutagenError) as errrr:
-        print(f"Could not update {which_file}! The system said: {errrr}")
-    except (Exception,) as errrr:
-        print(f"Could not update {which_file}! The system said: {errrr}")
+    return True
 
 
+# Lower-level functions handling getting info out of metadata for files.
 def easy_from(which_file: Path):  # FIXME: annotate returns types!
     """Returns the Easy-style mutagen.File object, after validating that it has
     appropriate tags.
@@ -623,60 +843,117 @@ def year_from_easydata(data: Union[EasyID3, EasyMP4Tags],
     return None
 
 
-def check_if_write_to_tag(frames_to_check: Union[str, Iterable[str]],
-                          value: str,
-                          which_file: Path) -> bool:
-    """A utility function called when the user has manually specified the value for a
-    tag; it asks whether the user wants to write the value to the relevant frame in
-    the file, and if so, does so. The user also has the option of also writing the
-    value to the relevant frame of every music file in an allowable format in the
-    same directory, non-recursively.
+# These next few routines do the actual work of cleaning files, renaming them, and moving them around.
+def do_clean_tags(which_file: Path,
+                  title: Optional[str] = None,
+                  artist: Optional[str] = None,
+                  album: Optional[str] = None,
+                  albumartist: Optional[str] = None,
+                  composer: Optional[str] = None,
+                  conductor: Optional[str] = None,
+                  author: Optional[str] = None,
+                  version: Optional[str] = None,
+                  discnumber: Optional[str] = None,
+                  tracknumber: Optional[str] = None,
+                  language: Optional[str] = None,
+                  genre: Optional[str] = None,
+                  date: Optional[str] = None,
+                  originaldate: Optional[str] = None,
+                  performer: Optional[str] = None,
+                  ) -> None:
+    """Clean tags from the .mp3 or other authorized files. Keeps and updates a list of
+    allowed and disallowed tags. Removes disallowed tags. Queries the user about
+    new tags it encounters.
 
-    FRAMES_TO_CHECK is an iterable of which frames the user might want to write this
-    info to; if it contains multiple options, the user will be asked to choose one.
-    (If it contains just one item, the choice is made automatically.) VALUE is the
-    value to write to teh relevant frame(s). WHICH_FILE is the file to write the
-    data to.
+    If ARTIST, ALBUM, TITLE, and/or ALBUM_ARTIST are specified, they are set; if
+    they are None, this function leaves them alone. Same is true for the other
+    (selected) EasyID3 tags in the function header.
 
-    Returns True if at least one frame was written to at least one file, or False
-    otherwise.
+    Saves the updated file to disk after making any modifications.
     """
-    if isinstance(frames_to_check, str):
-        frames_to_check = [frames_to_check]
-
-    assert isinstance(frames_to_check, Iterable)
-    assert frames_to_check      # e.g., not an empty iterable.
-    assert all([isinstance(i, str) for i in frames_to_check])
-    assert isinstance(value, str)
     assert isinstance(which_file, Path)
-    assert which_file.is_file()
 
-    ret = mcm.menu_choice({'Y': f"Write the metadata to {which_file.name}'s tag",
-                           'N': f"Do not write the metadata to {which_file.name}'s tag",
-                           '--': '--',
-                           'A': f"Write the metadata to {which_file.name}'s tag, and also to the tags of all other "
-                                f"audio files in allowable formats in the same directory"},
-                          prompt=f"Write the updated metadata to the {' or '.join([i.upper() for i in frames_to_check])} frame for {which_file.name}?").casefold().lower()
+    try:
+        data = mutagen.File(which_file)
+        for key in {k[:4].strip() for k in data.tags.keys()}:
+            if key in config['frames to delete']:
+                del_tags(data.tags, key)
+            elif key not in config['allowed frames']:
+                if not ask_about_key(key, which_file, data.tags):        # If key goes onto the 'delete' list ...
+                    del_tags(data.tags, key)
 
-    if ret == "n":
-        return False
+        data.save()
 
-    if ret == "a":
-        files = [i for i in which_file.parent.glob('*') if i.suffix in config['allowed music extensions']]
-    else:
-        files = [which_file]
+        if any([title, artist, album, albumartist, composer, conductor, author, version, discnumber,
+                tracknumber, language, genre, date, originaldate, performer]):
+            data = easy_from(which_file)
 
-    if len(frames_to_check) > 1:
-        frame = mcm.easy_menu_choice(frames_to_check, f"Which frame do you want to write the data {value.upper()} to?")
-    else:
-        frame = frames_to_check[0]
+            if title: data.tags['title'] = title
+            if artist: data.tags['artist'] = artist
+            if album: data.tags['album'] = album
+            if albumartist: data.tags['albumartist'] = albumartist
+            if composer: data.tags['composer'] = composer
+            if conductor: data.tags['conductor'] = conductor
+            if author: data.tags['author'] = author
+            if version: data.tags['version'] = version
+            if discnumber: data.tags['discnumber'] = discnumber
+            if tracknumber: data.tags['tracknumber'] = tracknumber
+            if language: data.tags['language'] = language
+            if genre: data.tags['genre'] = genre
+            if date: data.tags['date'] = date
+            if originaldate: data.tags['originaldate'] = originaldate
+            if performer: data.tags['performer'] = performer
 
-    for f in files:
-        do_clean_tags(f, **{frame: value})
+            data.save()
 
-    return True
+    except (IOError, mutagen.MutagenError) as errrr:
+        print(f"Could not update {which_file}! The system said: {errrr}")
+    except (Exception,) as errrr:
+        print(f"Could not update {which_file}! The system said: {errrr}")
 
 
+def most_common_answer(music_files: Iterable[Path],
+                       data_getter: Callable[[Path], Union[str, None]],
+                       exclude_falsey: bool = True,
+                       ) -> Union[str, None]:
+    """Apply the DATA_GETTER function to the EasyID3 data from each file in
+    MUSIC_FILES, then return the answer most frequently provided by the function.
+    In the case of ties, it just picks one. If EXCLUDE_FALSEY is True (the default),
+    then frequencies for Falsey answers are discounted in determining the "winner."
+
+    Returns None if none of MUSIC_FILES provides an answer to the question
+    DATA_GETTER encodes, or if the answer cannot be determined for any other reason.
+
+    This function is useful to, for instance, determine which album a group of files
+    in a folder was ripped from: most_common_answer(files, album_from_easy) will
+    find the album that the largest number of files in a folder think they belong to.
+    """
+    assert isinstance(music_files, Iterable)
+    assert all([isinstance(i, Path) for i in music_files])
+    assert isinstance(data_getter, Callable)
+
+    data = list()
+    for f in music_files:
+        try:
+            data.append(data_getter(easy_metadata_from(f), f))
+        except (Exception,) as errrr:
+            pass
+
+    counts = collections.Counter([d for d in data if d])
+
+    ret = counts.most_common(1)
+    if (len(ret) < 1) or (len(ret[0]) < 1):
+        return None
+
+    ret = ret[0][0]
+    while exclude_falsey and counts and not ret:
+        del counts[ret]
+        ret = counts.most_common(1)[0][0]
+
+    return ret
+
+
+# More high-level data-getting operations.
 def artist_or_albumartist(data: Union[EasyID3, EasyMP4Tags],
                           f: Path) -> Union[str, None]:
     """Gets an artist, or album artist, preferentially from ID3 data, but trying
@@ -767,47 +1044,6 @@ def _filename_from_components(f: Path,
     return sanitize_path(f.with_name(ret.strip()).with_suffix(f.suffix))
 
 
-def most_common_answer(music_files: Iterable[Path],
-                       data_getter: Callable[[Path], Union[str, None]],
-                       exclude_falsey: bool = True,
-                       ) -> Union[str, None]:
-    """Apply the DATA_GETTER function to the EasyID3 data from each file in
-    MUSIC_FILES, then return the answer most frequently provided by the function.
-    In the case of ties, it just picks one. If EXCLUDE_FALSEY is True (the default),
-    then frequencies for Falsey answers are discounted in determining the "winner."
-
-    Returns None if none of MUSIC_FILES provides an answer to the question
-    DATA_GETTER encodes, or if the answer cannot be determined for any other reason.
-
-    This function is useful to, for instance, determine which album a group of files
-    in a folder was ripped from: most_common_answer(files, album_from_easy) will
-    find the album that the largest number of files in a folder think they belong to.
-    """
-    assert isinstance(music_files, Iterable)
-    assert all([isinstance(i, Path) for i in music_files])
-    assert isinstance(data_getter, Callable)
-
-    data = list()
-    for f in music_files:
-        try:
-            data.append(data_getter(easy_metadata_from(f), f))
-        except (Exception,) as errrr:
-            pass
-
-    counts = collections.Counter([d for d in data if d])
-
-    ret = counts.most_common(1)
-    if (len(ret) < 1) or (len(ret[0]) < 1):
-        return None
-
-    ret = ret[0][0]
-    while exclude_falsey and counts and not ret:
-        del counts[ret]
-        ret = counts.most_common(1)[0][0]
-
-    return ret
-
-
 def album_by_artist_filename(f: Path) -> Union[Path, None]:
     """Given F, a Path to a music file, tries to scan the file's metadata and generate
     a new name for the file of the form [track #] - [Artist] - [Song title].suffix.
@@ -837,6 +1073,7 @@ def album_by_artist_folder_structure(year: Optional[str] = None,
         return Path(ret) if ret else None
 
 
+# Now, the very high-level functions that compose the basic units of the task as a whole.
 def process_collection(music_files: Set[Path],
                        non_music_files: Set[Path],
                        parent_dir: Path,
@@ -989,9 +1226,6 @@ def process_dir(p: Path) -> None:
 
     if all_exts_in_dir.intersection(set(config['music extensions to convert'])):
         do_convert_audio([f for f in p.glob('*') if f.suffix in all_exts_in_dir.intersection(set(config['music extensions to convert']))])
-        to_convert = set(f.name for f in p.glob('*') if f.suffix in all_exts_in_dir.intersection(set(config['music extensions to convert'])))
-        print(f"The following {len(to_convert)} {'files need' if len(to_convert) > 1 else 'file needs'} to be converted: {to_convert}")
-        return      # For now, we just don't process directories containing unendorsed audio types.         #FIXME
 
     for i in p.glob('*'):
         try:

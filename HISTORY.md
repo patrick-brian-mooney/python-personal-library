@@ -409,6 +409,11 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 * `MusicOrganizer.py` now properly handles MP4 files as a valid type that is understood to belong in the library.
 
 
+2 Aug 2023
+----------
+* `MusicOrganizer.py` now transcodes .wav, .flac, and .wma files to .mp3 before processing them.
+
+
 KNOWN BUGS
 ==========
 * No known bugs listed at the moment. However, check individual module files to be sure that I haven't just forgotten to list something here.
