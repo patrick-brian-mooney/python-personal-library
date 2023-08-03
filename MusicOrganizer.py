@@ -9,22 +9,30 @@ configurability.
 Basic tasks performed as it traverses the specified directory:
 
 * Pre-scans to find directories with music files.
+
+* Converts certain audio files to an approved format.
+  * Currently, these formats are:
+        .wav, .flac, .wma, .ape, .m4b, .aa
+
 * Traverses that list of directories, validating that music files found are
   not tagged in inappropriate ways. (Removes a lot of crufty metadata. Asks
   when it doesn't know what to do about a tag type.)
+
 * Moves files into a new, regularized directory structure.
 
 Does not yet, but will:
 
-* convert files to an appropriate format. (Currently skips non-approved media
-  file formats).
+* convert other audio files to an appropriate format. (Currently skips
+  directories with non-approved media file formats).
 
 Currently, most usefully run from within an IDE with appropriate breakpoints so
 its behavior can be observed.
 
 This script takes a first pass at the needed work in order to eliminate
 drudgery, but is not intended to be a substitute for human oversight in
-caring for a file's metadata.
+caring for a file's metadata. There are plenty of good reasons to run it in
+a debugger, setting breakpoints to watch what it's doing as it goes about its
+business.
 
 This project and all associated code is copyright 2023 by Patrick Mooney. Code
 in this project is licensed under the GPL, either version 3 or (at your option)
@@ -62,7 +70,8 @@ import text_handling as th          # same
 default_config = {
     'folder to organize':"/home/patrick/Music/Receiving Bay",
     'folders to skip': ["""/home/patrick/Music/Receiving Bay/00-Incomplete collections""",
-                        """/home/patrick/Music/Receiving Bay/00-To Transcode""",],
+                        """/home/patrick/Music/Receiving Bay/00-To Transcode""",
+                        """/home/patrick/Music/Receiving Bay/00-unidentified"""],
     'destination': '/home/patrick/Music/Receiving Bay/0xFF - organized',
     'allowed music extensions': ['.mp3', ".m4a",],
     "music extensions to convert": [".flac", ".wma", ".wav", ".ape", ".m4p", ".aa",  ".m4b", ".part",],
@@ -83,7 +92,12 @@ default_config = {
 
     # de-/encoding options next.
     'LAME options': ['--replaygain-accurate', '-t', '--id3v2-only', '-V', '2', '-h', '-', ],    # ENcoding opt for .mp3
-    'flac options': ['-cd', ]                                                                   # DEcoding opts
+    'm4a options':  ["-i", "pipe:", "-c:a", "aac", "-q:a", "2",],                               # ENcoding for .m4a
+
+    'flac options': ['-cd', ],                                                                  # DEcoding opts
+
+    "ffmpeg pre-input options": ['-i', ],           # ffmpeg can often be used as a general decoder
+    "ffmpeg post-input options": ['-f', 'wav', '-c:a', 'pcm_s16le', '-ar', '44100', 'pipe:1'],
 }
 
 
@@ -334,7 +348,19 @@ def do_copy_tags(from_f: Path,
     "As well as possible" means "doing whatever can easily be done with easy=True
     while using Mutagen to open files."
     """
+    assert isinstance(from_f, Path)
+    assert isinstance(to_f, Path)
+    assert from_f.exists()
+    assert to_f.exists()
+
     from_data, to_data = mutagen.File(from_f, easy=True), mutagen.File(to_f, easy=True)
+
+    for data, which_f in ((from_data, from_f), (to_data, to_f)):
+        if not data:
+            if not quiet:
+                print(f"Unable to handle metadata on {which_f.name}! Not copying metadata ...")
+            return
+
     for k, v in from_data.items():
         try:
             to_data[k] = v
@@ -346,7 +372,7 @@ def do_copy_tags(from_f: Path,
 
 
 # Utilities for handling file-format conversion.
-executables_required = ('lame', 'flac', 'vbrfix', 'ffmpeg', 'cat')
+executables_required = ('lame', 'flac', 'vbrfix', 'ffmpeg', 'cat', 'mp3splt')
 executable_locations = {n: shutil.which(n) for n in executables_required}
 
 
@@ -357,7 +383,7 @@ def do_vbrfix(which_file: Path,
     Creates a temporary file, then overwrites the original file if successful.
     """
     tmp = sanitize_path(Path(which_file.name + '-temp' + which_file.suffix))
-    out = subprocess.run(['vbrfix', str(which_file.resolve()), str(tmp.resolve())],
+    out = subprocess.run([executable_locations['vbrfix'], str(which_file.resolve()), str(tmp.resolve())],
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if out.returncode == 0:
         tmp.replace(which_file)
@@ -422,6 +448,27 @@ def run_conversion(infile: Path,
     return outfile
 
 
+def construct_ffmpeg_cmdline(which_file: Path) -> List[str]:
+    """Convenience function to construct a parameter list calling ffmpeg to do the
+    work of converting to .wav and outputting to stdout to be piped into a
+    compressor.
+    """
+    ret = [executable_locations['ffmpeg']] + config["ffmpeg pre-input options"] + [str(which_file.resolve())]
+    ret += config["ffmpeg post-input options"]
+    return ret
+
+
+def convert_audible_audiobook(which_file: Path,
+                              quiet: bool = True) -> Path:
+    """Converts WHICH_FILE, which must be a valid .aa file, to .m4a.
+    """
+    dec_args = construct_ffmpeg_cmdline(which_file)
+    enc_args = [executable_locations['ffmpeg']] + config['m4a options']
+
+    return run_conversion(which_file, dec_args=dec_args, enc_args=enc_args, new_suffix='.m4a',
+                          quiet=quiet, vbrfix=False)
+
+
 def convert_flac(which_file: Path,
                  quiet: bool = True) -> Path:
     """Converts WHICH_FILE, which must be a valid .flac file, to .mp3.
@@ -431,6 +478,66 @@ def convert_flac(which_file: Path,
 
     return run_conversion(which_file, dec_args=dec_args, enc_args=enc_args, new_suffix='.mp3',
                           quiet=quiet, vbrfix=True)
+
+
+def convert_ipod_audiobook(which_file: Path,
+                           quiet: bool = True) -> Path:
+    """Converts an iPod audiobook (an .m4b file) to an .m4a file. Since an .m4b file is
+    always just an .m4a file with an .m4b extension, all we have to do is to change
+    the extension of the file. We generate a new clean name to make absolutely sure
+    (well, as sure as we can be, barring race conditions) we're nto overwriting an
+    existing file.
+    """
+    assert isinstance(which_file, Path)
+    assert which_file.suffix
+    assert which_file.suffix.strip().casefold() == '.m4b'
+
+    new_name = clean_name(suggested_name=which_file.with_suffix('.m4a'))
+    which_file.rename(new_name)
+    assert new_name.exists()
+    return new_name
+
+
+def convert_monkey(which_file: Path,
+                   quiet: bool = True) -> Path:
+    """Converts WHICH_FILE, which must be a valid Monkey's Audio (ugh) file, to .mp3.
+
+    If the directory containing WHICH_FILE also includes EXACTLY ONE .cue file, then
+    an attempt is made to split the resulting .mp3 into a series of .mp3s using that
+    .cue file. If this succeeds, the intermediate (long, full-album) .mp3 file is
+    discarded, and the return value for the function becomes only the first filename
+    generated (lexicographically) in the split.
+
+    Note that the exact command sent to ffmpeg is not currently user-configurable
+    via the preferences mechanism.
+
+    Note that there is plenty of information that copy_tags does not copy from .wma
+    files to .mp3. Manual intervention in the process is helpful here.
+    """
+    dec_args = construct_ffmpeg_cmdline(which_file)
+    enc_args = [executable_locations['lame']] + config['LAME options']
+
+    ret = run_conversion(which_file, dec_args=dec_args, enc_args=enc_args, new_suffix='.mp3',
+                         quiet=quiet, vbrfix=True)
+
+    # Now, check to see if we've inherited a .cue file.
+    cue_files = [i for i in which_file.parent.glob("*") if i.suffix.strip().casefold() == ".cue"]
+    if len(cue_files) == 1:
+        if not quiet:
+            print(f"    ... found single .cue file, {cue_files[0].name}. Attempting to split .mp3 ...")
+        out = subprocess.run([executable_locations['mp3splt'], '-a', '-c',
+                              str(cue_files[0].resolve()), str(ret.resolve())],
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if out.returncode == 0:
+            if not quiet:
+                print("    ... success!")
+            old_ret, ret = ret, [i for i in ret.parent.glob("*") if i.suffix in ('.mp3', '.MP3')][0]
+            old_ret.unlink()
+        else:
+            if not quiet:
+                print(f"Unable to split .mp3 (result code {out.returncode})! The system said: {out.stdout}")
+
+    return ret
 
 
 def convert_wav(which_file: Path,
@@ -470,7 +577,10 @@ def convert_wma(which_file: Path,
 # that extension. Each function must have the same call signature as convert_file and also return a new Path.
 # Use convert_flac(), above, as a model for new extensions.
 converters = {
+    '.aa': convert_audible_audiobook,
+    '.ape': convert_monkey,
     '.flac': convert_flac,
+    '.m4b': convert_ipod_audiobook,
     '.wav': convert_wav,
     '.wma': convert_wma,
 }
@@ -508,11 +618,10 @@ def convert_file(which_file: Path,
     if not quiet:
         print(f"    ... conversion of {which_file.name} resulted in {ret.name}")
 
-    if delete_original:
-        which_file.unlink()
+    if delete_original and which_file.exists(): # File might have been removed or renamed as a side-effect
+        which_file.unlink()                         # of various processing along the way. Gone already? Oh well.
         if not quiet:
             print(f"        ... deleted original file: {which_file.name}")
-
     return ret
 
 
@@ -574,10 +683,11 @@ def prescan_dir(which_dir: Path) -> None:
         except Exception as errrr:
             continue
 
-        # Found something that can be read with Mutagen.
+        # If we didn't get back something Falsey, we found something that can be read with Mutagen.
         # Add this dir to the list of dirs with music, then stop scanning files in this dir.
-        dirs_with_music.add(which)
-        break
+        if f:
+            dirs_with_music.add(which)
+            break
 
     for i in (f for f in which.glob("*") if f.is_dir()):
         if i.is_dir():

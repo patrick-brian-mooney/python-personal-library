@@ -411,7 +411,11 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 
 2 Aug 2023
 ----------
-* `MusicOrganizer.py` now transcodes .wav, .flac, and .wma files to .mp3 before processing them.
+* `MusicOrganizer.py` now transcodes .wav, .flac, and .wma files to .mp3 before processing the folders containing them.
+
+3 Aug 2023
+----------
+* `MusicOrganizer.py` now transcodes or otherwise converts Audible and iPod audiobooks to .m4a and and Monkey's Audio files to .mp3 before processing the folders containing tem. 
 
 
 KNOWN BUGS
