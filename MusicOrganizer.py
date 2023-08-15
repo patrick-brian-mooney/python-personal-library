@@ -69,9 +69,7 @@ import text_handling as th          # same
 # Global variables
 default_config = {
     'folder to organize':"/home/patrick/Music/Receiving Bay",
-    'folders to skip': ["""/home/patrick/Music/Receiving Bay/00-Incomplete collections""",
-                        """/home/patrick/Music/Receiving Bay/00-To Transcode""",
-                        """/home/patrick/Music/Receiving Bay/00-unidentified"""],
+    'folders to skip': ["""/home/patrick/Music/Receiving Bay/00-unidentified""",],
     'destination': '/home/patrick/Music/Receiving Bay/0xFF - organized',
     'allowed music extensions': ['.mp3', ".m4a",],
     "music extensions to convert": [".flac", ".wma", ".wav", ".ape", ".m4p", ".aa",  ".m4b", ".part",],
@@ -89,6 +87,12 @@ default_config = {
                          "USER", "WCOM", "WCOP", "WORS", "WPAY", "TSO2", "TXXX", "COMM", "TCOP", "PRIV",
                          "TCMP", "PCNT", "RVA2", "TDEN", "TSST", "POPM", 'purd', 'akID', 'SOAA', 'apID', 'sfID',
                          '----', '©too', 'cnID', 'plID', 'atID', 'flvr', 'cmID', 'soaa', 'rtng', 'soar',],
+    'foreign ignore frames': ['IsVBR', 'WM/UniqueFileIdentifier', 'DeviceConformanceTemplate', 'WMFSDKNeeded',
+                              'WM/MCDI', 'WM/Text', 'ID3/PRIV', 'WM/SharedUserRating', 'WM/Publisher', 'Rating',
+                              'Description', 'WMFSDKVersion', 'WM/Picture', 'WM/Provider', 'AverageLevel', 'PeakValue',
+                              'ID3/PCNT', 'ID3/WCOM', 'WM/EncodedBy', 'WM/OriginalArtist', 'DeviceConformanceTemplate',
+                              'encoder',
+                              ],
 
     # de-/encoding options next.
     'LAME options': ['--replaygain-accurate', '-t', '--id3v2-only', '-V', '2', '-h', '-', ],    # ENcoding opt for .mp3
@@ -339,6 +343,29 @@ def print_tags(data: Union[ID3, MP4Tags],
     pprint.pprint(get_tags(data, key))
 
 
+# This next dictionary is lists translations from "foreign" (.e.g, .wma) metadata keys to those understood by
+# Mutagen's Easy interface.
+data_key_trans = {
+    # .wma-related fields
+    'Author': 'artist',
+
+    'ID3/TMED': 'media',
+
+    'WM/AlbumArtist': 'albumartist',
+    'WM/AlbumTitle': 'album',
+    'WM/AudioFileURL': 'website',
+    'WM/AudioSourceURL': 'website',
+    'WM/AuthorURL': 'website',
+    'WM/Composer': 'composer',
+    'WM/Genre': 'genre',
+    'WM/Track': 'tracknumber',
+    'WM/TrackNumber': 'tracknumber',
+    'WM/UserWebURL': 'website',
+    'WM/Year': 'date',
+
+    # other formats?
+}
+
 def do_copy_tags(from_f: Path,
                  to_f: Path,
                  quiet: bool = False) -> None:
@@ -346,8 +373,33 @@ def do_copy_tags(from_f: Path,
     possible. Makes no attept to avoid copying tags from "prohibited" frame types.
 
     "As well as possible" means "doing whatever can easily be done with easy=True
-    while using Mutagen to open files."
+    while using Mutagen to open files." There is also some mapping from one system
+    of key naming to another so that metadata from, e.g., .wma files, which has a
+    different nomenclatural system for what each bit of metadata is called.
     """
+    def value_of(what: Any) -> str:
+        """Returns a string extracted from WHAT, a data value being copied by key from
+        another type of data stream. These may just functionally be strings, or they
+        may be attribute lists. In any case, tries hard to get the "real value" of the
+        data.
+        """
+        if isinstance(what, str):
+            return what
+        elif isinstance(what, bytes):
+            return unicode_of(what)
+        elif isinstance(what, Iterable) and (len(what) > 0):
+            atom = what[0]
+            try:
+                return atom.value
+            except (AttributeError,):
+                if isinstance(atom, Iterable) and not isinstance(atom, (str, bytes)):
+                    return str(atom[0])
+            except Exception as errrr:
+                pass
+
+        # if all else fails ...
+        return str(what)
+
     assert isinstance(from_f, Path)
     assert isinstance(to_f, Path)
     assert from_f.exists()
@@ -363,10 +415,13 @@ def do_copy_tags(from_f: Path,
 
     for k, v in from_data.items():
         try:
-            to_data[k] = v
+            to_data[data_key_trans.get(k, k)] = value_of(v)
         except Exception as errr:
             if not quiet:
-                print(f"        ... unable to add value {v} for key {k} in {to_f.name}")
+                if k not in config['foreign ignore frames']:
+                    print(f"        ... unable to add value {v} for key {k} in {to_f.name}")
+                    if k != data_key_trans.get(k, k):
+                        print(f"          ... this key was translated as {data_key_trans.get(k, k)}")
 
     to_data.save()
 
