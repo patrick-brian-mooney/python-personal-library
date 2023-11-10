@@ -417,6 +417,9 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 ----------
 * `MusicOrganizer.py` now transcodes or otherwise converts Audible and iPod audiobooks to .m4a and and Monkey's Audio files to .mp3 before processing the folders containing tem. 
 
+9 Nov 2023
+----------
+* Moved the `unicode_of()` function, which does its best to turn `bytes` into Unicode text, from `MusicOrganizer.py` to `text_handling.py`, so that it's more generally available.
 
 KNOWN BUGS
 ==========

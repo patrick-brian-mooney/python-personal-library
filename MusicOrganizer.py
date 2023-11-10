@@ -268,39 +268,6 @@ def clean_name(suggested_name: Path,
     return new_full
 
 
-def unicode_of(what: Union[str, bytes]) -> str:
-    """Just force WHAT to be a Unicode string, as much as we can possibly automate
-    that. We start by using the system default, then trying UTF-8, and then, if
-    either or both is installed, tries UnicodeDammit and chardet. If all else fails,
-    decodes to Latin-1, which should always not fail although it may munge data. If
-    even *that* doesn't work or some unknown godawful reason, the error will
-    propagate upwards.
-
-    This comes in handy when interacting with external programs, which may just barf
-    up data without caring about encoding.
-    """
-    if isinstance(what, str):
-        return what
-
-    try:
-        what = what.decode()
-    except Exception:
-        try:
-            what = what.decode('utf-8')
-        except Exception:
-            try:
-                from bs4 import UnicodeDammit       # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
-                return UnicodeDammit(what).unicode_markup
-            except Exception:
-                try:
-                    import chardet
-                    char_info = chardet.detect(what)
-                    what = what.decode(char_info['encoding'])
-                except Exception:
-                    what = what.decode('latin-1')
-    return what
-
-
 # High-level utilities for handling tags in a format-agnostic way.
 def del_tags(data: Union[ID3, MP4Tags],
              key: str) -> None:
@@ -386,7 +353,7 @@ def do_copy_tags(from_f: Path,
         if isinstance(what, str):
             return what
         elif isinstance(what, bytes):
-            return unicode_of(what)
+            return th.unicode_of(what)
         elif isinstance(what, Iterable) and (len(what) > 0):
             atom = what[0]
             try:
@@ -498,7 +465,7 @@ def run_conversion(infile: Path,
         do_vbrfix(outfile, quiet)
     do_copy_tags(infile, outfile, quiet)
     if not quiet:
-        print('\n\n'.join([unicode_of(i) for i in out if i]).strip(), end="\n\n")
+        print('\n\n'.join([th.unicode_of(i) for i in out if i]).strip(), end="\n\n")
 
     return outfile
 
