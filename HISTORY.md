@@ -420,6 +420,7 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 9 Nov 2023
 ----------
 * Moved the `unicode_of()` function, which does its best to turn `bytes` into Unicode text, from `MusicOrganizer.py` to `text_handling.py`, so that it's more generally available.
+* Adding `wine64.py`, a convenience script to invoke 64-bit Wine on my system. 
 
 KNOWN BUGS
 ==========
