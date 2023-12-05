@@ -207,8 +207,13 @@ def do_copy_tags(from_f: Path,
             try:
                 return atom.value
             except (AttributeError,):
-                if isinstance(atom, Iterable) and not isinstance(atom, (str, bytes)):
-                    return str(atom[0])
+                if isinstance(atom, Iterable):
+                    if isinstance(atom, str):
+                        return str(atom)
+                    elif isinstance(atom, bytes):
+                        return th.unicode_of(atom)
+                    else:
+                        return str(atom[0])
             except Exception as errrr:
                 pass
 

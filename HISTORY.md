@@ -374,7 +374,7 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 
 13 May 2022
 -----------
-* Refactoring wordle_helper.py to prepare for more Wordle-referencing code.
+* Refactoring `wordle_helper.py` to prepare for more Wordle-referencing code.
 
 11 June 2022
 ------------
@@ -420,7 +420,13 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 9 Nov 2023
 ----------
 * Moved the `unicode_of()` function, which does its best to turn `bytes` into Unicode text, from `MusicOrganizer.py` to `text_handling.py`, so that it's more generally available.
-* Adding `wine64.py`, a convenience script to invoke 64-bit Wine on my system. 
+* Added `wine64.py`, a convenience script to invoke 64-bit Wine on my system.
+
+4 Dec 2023
+----------
+* Moved multiple functions from `MusicOrganizer.py` to `file_utils.py` and (new library) `music_file_handling.py`.
+* New convenience program `transcode_audio.py` to allow me to quickly transcode audio to .mp3 or .m4a on my system.
+
 
 KNOWN BUGS
 ==========
