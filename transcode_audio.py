@@ -68,7 +68,7 @@ def process_command_line(args: List[str]) -> None:
 if __name__ == "__main__":
     force_debugging = True
     if force_debugging:
-        process_command_line(['/home/patrick/Music/by Artist/Kelani Larethian/[1996] Firesprung/08 - Kelani Larethian - Terminal Armageddon.m4a'])
+        process_command_line(['/home/patrick/Music/by Artist/Frank Zappa/[1998] Cheap Thrills/The Torture Never Stops.m4a'])
         sys.exit()
 
     process_command_line(sys.argv[1:])
