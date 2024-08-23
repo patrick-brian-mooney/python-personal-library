@@ -427,6 +427,14 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 * Moved multiple functions from `MusicOrganizer.py` to `file_utils.py` and (new library) `music_file_handling.py`.
 * New convenience program `transcode_audio.py` to allow me to quickly transcode audio to .mp3 or .m4a on my system.
 
+22 Aug 2024
+-----------
+* New convenience script `MusicDownsampler.py` uses already existing code to downsample high-bitrate compressed audio and recover hard drive space for me.
+* `music_file_handling.py` now has a `bitrate_from()` function which tries fairly hard to detect an audio file's bitrate.
+* `music_file_handling.py`'s lower-level `run_conversion()` function now pipe the stderr streams for both running programs to /dev/null if the QUIET parameter is specified, so that there's not a bunch of status garbage thrown up onto the screen.
+* Other parts of the audio-processing code are more conscientious about honoring the QUIET parameters of various functions.
+* Small tweaks to `music_file_handling.py` to increase flexibility in ways needed by `MusicDownSampler.py`.
+* Small update to `flex_config.py`: additional sanity check. Small update to `multi_choice_menu.py`: better type annotation for `menu_choice()`.
 
 KNOWN BUGS
 ==========

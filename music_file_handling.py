@@ -4,8 +4,8 @@
 The kernel of this librarywas originally written to support MusicOrganizer;
 functions have been gathered here instead to make them more generally useful.
 
-This project and all associated code is copyright 2023 by Patrick Mooney. Code
-in this project is licensed under the GPL, either version 3 or (at your option)
+This project and all associated code is copyright 2023-24 by Patrick Mooney.
+Code in this project is licensed under the GPL, either version 3 or (at your option)
 any other version. See the file LICENSE.md for details.
 """
 
@@ -14,9 +14,10 @@ import collections
 import pprint
 import shutil
 import subprocess
+import sys
 
 from pathlib import Path
-from typing import Any, Generator, Iterable, List, Union
+from typing import Any, Generator, Iterable, List, TextIO, Union
 
 
 import mutagen                                  # https://mutagen.readthedocs.io/
@@ -427,7 +428,7 @@ def run_conversion(infile: Path,
                    vbrfix: bool = None,
                    ) -> Path:
     """Takes INFILE, a file to be processed, and processes it by starting two processes
-    modeled by two Popen instances. THe first is started using DEC_ARGS as the
+    modeled by two Popen instances. The first is started using DEC_ARGS as the
     command-line argument; the second is started using ENC_ARGS as the argument
     list. The stdout output from the decoder (first, started from DEC_ARGS) is fed
     into the stdin input for the encoder (second, started from ENC_ARGS).
@@ -446,7 +447,7 @@ def run_conversion(infile: Path,
     desired output file after that output filename has been generated. This requires
     that the command be constructed in such a way that it ends with the output
     filename. Specifying command-line options in the prefs files is pretty hacky in
-    general and it's easy for end-users to break by editing thoughtlessly.
+    general, and it's easy for end-users to break by editing thoughtlessly.
 
     ENC_ARGS and DEC_ARGS are passed directly to the underlying OS and therefore
     must begin with the name of a command.
@@ -458,23 +459,32 @@ def run_conversion(infile: Path,
     assert all([isinstance(o, str) for o in enc_args])
 
     if vbrfix is None:
-        vbrfix = (new_suffix.casefold().strip() == '.mp3')
+        vbrfix = (new_suffix.strip().casefold().endswith('.mp3'))
 
     outfile = clean_name(infile.with_suffix(new_suffix))
     enc_args.append(outfile)
 
-    p1 = subprocess.Popen(dec_args, stdout=subprocess.PIPE)
-    p2 = subprocess.Popen(enc_args, stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    old_stdout, old_stderr = sys.stdout, sys.stderr
+    try:
+        if quiet:
+            sys.stdout, sys.stderr = TextIO(), TextIO()
 
-    p1.stdout.close()       # Allow p1 to receive a SIGPIPE if p2 exits.
-    out = p2.communicate()
-    assert outfile.exists()
+        stderr = subprocess.DEVNULL if quiet else subprocess.PIPE
+        p1 = subprocess.Popen(dec_args, stdout=subprocess.PIPE, stderr=stderr)
+        p2 = subprocess.Popen(enc_args, stdin=p1.stdout, stdout=subprocess.PIPE, stderr=stderr)
 
-    if vbrfix:
-        do_vbrfix(outfile, quiet)
-    do_copy_tags(infile, outfile, quiet)
-    if not quiet:
-        print('\n\n'.join([th.unicode_of(i) for i in out if i]).strip(), end="\n\n")
+        p1.stdout.close()       # Allow p1 to receive a SIGPIPE if p2 exits.
+        out = p2.communicate()
+        assert outfile.exists()
+
+        if vbrfix:
+            do_vbrfix(outfile, quiet)
+        do_copy_tags(infile, outfile, quiet)
+        if not quiet:
+            print('\n\n'.join([th.unicode_of(i) for i in out if i]).strip(), end="\n\n")
+    finally:
+        sys.stdout, sys.stderr = old_stdout, old_stderr
+
 
     return outfile
 
@@ -539,7 +549,7 @@ def do_convert_audio(which_files: Iterable[Path]) -> None:
 # Lower-level functions handling getting info out of metadata for files.
 
 
-def easy_from(which_file: Path):  # FIXME: annotate returns types!
+def easy_from(which_file: Path) -> Union[EasyMP4Tags, EasyID3]:
     """Returns the Easy-style mutagen.File object, after validating that it has
     appropriate tags.
 
@@ -672,3 +682,21 @@ def year_from_easydata(data: Union[EasyID3, EasyMP4Tags],
                 return right_length[0]      # pick the first of the right length; best guess.
 
     return None
+
+
+def bitrate_from(which_file: Path) -> Union[float, None]:
+    """Return the bitrate (in kbps) used in encoding WHICH_FILE, which should be a
+    music file. If WHICH_FILE is not a music file, or we otherwise cannot determine
+    the bitrate, simply return None.
+    """
+    assert isinstance(which_file, Path)
+    assert which_file.exists()
+
+    try:
+        data = mutagen.File(which_file)
+        return data.info.bitrate / 1000
+    except (IOError, AttributeError, TypeError, mutagen.mp3.HeaderNotFoundError):
+        return None
+    except Exception as errrr:   # just a place for a breakpoint.
+        return None
+

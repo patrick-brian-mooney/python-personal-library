@@ -15,7 +15,7 @@ import text_handling        # https://github.com/patrick-brian-mooney/python-per
 import patrick_logger       # same
 
 
-def menu_choice(choice_menu: typing.Hashable,
+def menu_choice(choice_menu: typing.Mapping,
                 prompt: str) -> str:
     """Takes a menu description, passed in as CHOICE_MENU (see below for format),
      and asks the user to make a choice between the options. It then passes back

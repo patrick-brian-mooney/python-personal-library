@@ -92,6 +92,7 @@ class PrefsTracker(collections.abc.MutableMapping):
         immediate update of the data stored.
         """
         assert appname, "The APPNAME supplied at a PrefsTracker initialization cannot be blank!"
+        assert isinstance(appname, str)
         assert appname.strip(), "The APPNAME supplied at a PrefsTracker initialization cannot be only whitespace!"
         if not defaults:
             defaults = dict()
