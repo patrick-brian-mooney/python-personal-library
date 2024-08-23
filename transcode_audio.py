@@ -27,7 +27,7 @@ def convert_files(filename: List[Type[Path]],
         assert f.is_file()
 
         if (ext := f.suffix.strip().casefold()) == '.flac':
-            dec_args = mfh.executable_locations['flac'] + mfh.config['flac options'] + [str(f.resolve())]
+            dec_args = [mfh.executable_locations['flac']] + mfh.config['flac options'] + [str(f.resolve())]
         elif ext in ['.wav', '.wave']:
             dec_args = [mfh.executable_locations['cat'], str(mfh.which_file.resolve())]
         else:
@@ -66,9 +66,9 @@ def process_command_line(args: List[str]) -> None:
 
 
 if __name__ == "__main__":
-    force_debugging = True
+    force_debugging = False
     if force_debugging:
-        process_command_line(['/home/patrick/Music/by Artist/Frank Zappa/[1998] Cheap Thrills/The Torture Never Stops.m4a'])
+        process_command_line(['/home/patrick/Music/by Artist/Daniel Munkus/[2024] Oft Come Devil/Polka Dot Deli - Oft Come Devil - 01 Kings No More.flac'])
         sys.exit()
 
     process_command_line(sys.argv[1:])

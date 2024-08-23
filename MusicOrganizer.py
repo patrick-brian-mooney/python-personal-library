@@ -83,12 +83,6 @@ default_config = collections.ChainMap({
                          "USER", "WCOM", "WCOP", "WORS", "WPAY", "TSO2", "TXXX", "COMM", "TCOP", "PRIV",
                          "TCMP", "PCNT", "RVA2", "TDEN", "TSST", "POPM", 'purd', 'akID', 'SOAA', 'apID', 'sfID',
                          '----', '©too', 'cnID', 'plID', 'atID', 'flvr', 'cmID', 'soaa', 'rtng', 'soar',],
-    'foreign ignore frames': ['IsVBR', 'WM/UniqueFileIdentifier', 'DeviceConformanceTemplate', 'WMFSDKNeeded',
-                              'WM/MCDI', 'WM/Text', 'ID3/PRIV', 'WM/SharedUserRating', 'WM/Publisher', 'Rating',
-                              'Description', 'WMFSDKVersion', 'WM/Picture', 'WM/Provider', 'AverageLevel', 'PeakValue',
-                              'ID3/PCNT', 'ID3/WCOM', 'WM/EncodedBy', 'WM/OriginalArtist', 'DeviceConformanceTemplate',
-                              'encoder',
-                              ],
 }, mfh.default_config)
 
 

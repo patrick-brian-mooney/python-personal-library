@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Script to scan thorugh my music collection and attempt to downsample music
+"""Script to scan through my music collection and attempt to downsample music
 encoded with a high bitrate.
 
 This project and all associated code is copyright 2024 by Patrick Mooney. Code
@@ -31,7 +31,10 @@ default_config = dict(collections.ChainMap(mfh.default_config, {
 }))
 
 
+# Prune the "these files are uncompressible" list to remove files that have disappeared or changed size.
 mfh.config = fc.PrefsTracker(appname="Python MusicDownsampler", defaults=default_config)
+mfh.config['uncompressible'] = {k: v for k, v in mfh.config['uncompressible'].items() if Path(k).resolve().is_file()}
+mfh.config['uncompressible'] = {k: v for k, v in mfh.config['uncompressible'].items() if v == os.path.getsize(k)}
 
 
 def try_reduce_bitrate(which_file: Path,
@@ -52,7 +55,7 @@ def try_reduce_bitrate(which_file: Path,
 
     # first: check if we've unsuccessfully tried, on a previous run, to recompress this file
     old_size = os.path.getsize(which_file)
-    if str(which_file.resolve()) in  mfh.config['uncompressible']:  # if file is tracked as previously tried ...
+    if str(which_file.resolve()) in mfh.config['uncompressible']:   # if file is tracked as previously tried ...
         if mfh.config['uncompressible'][str(which_file.resolve())] == old_size: # and its file size hasn't changed ...
             return                                                  # don't try again
 
@@ -73,8 +76,8 @@ def try_reduce_bitrate(which_file: Path,
         else:
             raise RuntimeError(f"Extension for {which_file.name} is {old_suffix}, not .mp3 or .m4a!")
 
+        old_stdout, old_stderr = sys.stdout, sys.stderr
         try:
-            old_stdout, old_stderr = sys.stdout, sys.stderr
             if run_quiet:
                 sys.stdout, sys.stderr = TextIO(), TextIO()         # create dummy streams
             new_file = mfh.run_conversion(which_file, dec_args=dec_args, enc_args=enc_args, new_suffix=new_suffix,
@@ -144,4 +147,5 @@ def scan_dir(which_dir: Path,
 
 if __name__ == "__main__":
     scan_dir(mfh.config['music_root'])
-    print(f"\n\n\nShrunk {mfh.config['files_shrunk']} files, saving {mfh.config['bytes_saved']} total bytes!")
+    print(f"\n\n\nShrunk {mfh.config['files_shrunk']} files, saving {mfh.config['bytes_saved']} total bytes, or "
+          f"{mfh.config['bytes_saved'] / (1024 ** 3):.4f} GB!")

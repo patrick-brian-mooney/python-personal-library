@@ -40,6 +40,12 @@ default_config = {
 
     "ffmpeg pre-input options": ['-i', ],  # ffmpeg can often be used as a general decoder
     "ffmpeg post-input options": ['-f', 'wav', '-c:a', 'pcm_s16le', '-ar', '44100', 'pipe:1'],
+    'foreign ignore frames': ['IsVBR', 'WM/UniqueFileIdentifier', 'DeviceConformanceTemplate', 'WMFSDKNeeded',
+                              'WM/MCDI', 'WM/Text', 'ID3/PRIV', 'WM/SharedUserRating', 'WM/Publisher', 'Rating',
+                              'Description', 'WMFSDKVersion', 'WM/Picture', 'WM/Provider', 'AverageLevel', 'PeakValue',
+                              'ID3/PCNT', 'ID3/WCOM', 'WM/EncodedBy', 'WM/OriginalArtist', 'DeviceConformanceTemplate',
+                              'encoder',
+                              ],
 }
 
 

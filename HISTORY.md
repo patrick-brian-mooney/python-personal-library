@@ -436,6 +436,11 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 * Small tweaks to `music_file_handling.py` to increase flexibility in ways needed by `MusicDownSampler.py`.
 * Small update to `flex_config.py`: additional sanity check. Small update to `multi_choice_menu.py`: better type annotation for `menu_choice()`.
 
+23 Aug 2024
+-----------
+* Fixed a bug in `transcode_audio.py` that caused the script to crash during tag copying when `.flac` files are being transcoded.
+* Minor style-related coding improvements to `MusicDownsampler.py`.
+
 KNOWN BUGS
 ==========
 * No known bugs listed at the moment. However, check individual module files to be sure that I haven't just forgotten to list something here.
