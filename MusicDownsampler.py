@@ -19,10 +19,6 @@ import music_file_handling as mfh
 import flex_config as fc                        # https://github.com/patrick-brian-mooney/python-personal-library
 
 
-files_shrunk = 0
-bytes_saved = 0
-
-
 default_config = dict(collections.ChainMap(mfh.default_config, {
     'music_root': Path("/home/patrick/Music"),          # Where to start searching.
     'extensions_to_scan': {'.mp3', '.m4a', },           # Extensions for music files.
@@ -148,4 +144,4 @@ def scan_dir(which_dir: Path,
 
 if __name__ == "__main__":
     scan_dir(mfh.config['music_root'])
-    print(f'\n\n\nShrunk {files_shrunk} files, saving {bytes_saved} total bytes!')
+    print(f"\n\n\nShrunk {mfh.config['files_shrunk']} files, saving {mfh.config['bytes_saved']} total bytes!")
