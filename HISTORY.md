@@ -441,6 +441,10 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 * Fixed a bug in `transcode_audio.py` that caused the script to crash during tag copying when `.flac` files are being transcoded.
 * Minor style-related coding improvements to `MusicDownsampler.py`.
 
+18 Sept 2024
+------------
+* `git_committer.py` no longer uses `--aggressive` or `--prune=now` on any of its `git gc` commands, because that can make memory usage spike on repos with many many objects.
+
 KNOWN BUGS
 ==========
 * No known bugs listed at the moment. However, check individual module files to be sure that I haven't just forgotten to list something here.
