@@ -67,8 +67,11 @@ class PrefsTracker(collections.abc.MutableMapping):
     (by calling save_preferences()) when it's done making them. This object assumes
     that changes have already been written by the time it is destroyed.
     """
+    json_encoder = json.JSONEncoder
+
     def __init__(self, appname: str,
                  defaults: typing.Optional[typing.Dict[str, typing.Any]] = None,
+                 json_encoder: typing.Optional[typing.Type[json.JSONEncoder]] = None,
                  *args, **kwargs):
         """Go through the list of possible locations for preferences files, reading
         any that are found and assembling them into a ChainMap. Start the ChainMap with
@@ -80,12 +83,22 @@ class PrefsTracker(collections.abc.MutableMapping):
 
         DEFAULTS is a dictionary of application-supplied default settings; supplying
         this means that the default settings are the last-checked (i.e., lowest-
-        priority) dictionary when looking up preferences
+        priority) dictionary when looking up preferences.
+
+        JSON_ENCODER specifies a json.JSONEncoder subclass to pass to json.dump(s). If
+        None, uses the default JSON encoder from the json module.
+
+        *args and **kwargs can be passed, as to a dict constructor, to cause an
+        immediate update of the data stored.
         """
         assert appname, "The APPNAME supplied at a PrefsTracker initialization cannot be blank!"
+        assert isinstance(appname, str)
         assert appname.strip(), "The APPNAME supplied at a PrefsTracker initialization cannot be only whitespace!"
         if not defaults:
             defaults = dict()
+
+        if json_encoder:
+            self.json_encoder = json_encoder
 
         self.prefs_file_name = f"{appname} preferences"
         self.config_dirs = [  # directories in which we search for configuration files.
@@ -100,8 +113,10 @@ class PrefsTracker(collections.abc.MutableMapping):
             Path(os.environ['LOCALAPPDATA']) / appname if os.environ.get('LOCALAPPDATA') else None,  # Windoze
         ]
 
+        self.config_dirs = [i for i in self.config_dirs if i]       # eliminate anything that resolved to None.
+
         self.data = collections.ChainMap(defaults)  # The furthest-back map is the hardcoded application defaults.
-        for p in [loc for loc in self.config_dirs if loc]:  # Filter out any Nones from the list
+        for p in self.config_dirs :
             this_config = p / self.prefs_file_name
             if this_config.exists():
                 try:
@@ -127,15 +142,8 @@ class PrefsTracker(collections.abc.MutableMapping):
 
         self.writeable_prefs_dir = None             # Or a Path, once we discover one.
 
-        # Next, write some summary data to the backmost map in the chain, so it's not written out in a prefs file
-        # (and therefore -- intentionally -- has to be recalculated on every run).
-        all_known_types = self['known_video_types'] + self['known_audio_types']
-        all_processable_types = [i for i in all_known_types if not i in self['never_process_types']]
-        self.data.maps[-1].update({'all_processable_types': all_processable_types})
-
         # Finally, if we're passed any dict-type constructor arguments, update us.
         self.update(dict(*args, **kwargs))
-        self.validate_settings()
 
     def __getitem__(self, key: typing.Hashable) -> typing.Any:
         """Makes the object indexable by key so we don't have to keep referring to
@@ -156,6 +164,9 @@ class PrefsTracker(collections.abc.MutableMapping):
     def __len__(self) -> int:
         return len(self.data)
 
+    def __repr__(self) -> str:
+        return f"< {self.prefs_file_name} >"    # good enough for now, but #FIXME!
+
     def save_preferences(self) -> None:
         """Goes backwards through the list of CONFIG_DIRECTORIES, trying to create a
         preferences file in any existing directory that it finds. When it finds a
@@ -171,7 +182,7 @@ class PrefsTracker(collections.abc.MutableMapping):
             return
 
         saved = False
-        dirs_to_check = self.config_directories[::-1]
+        dirs_to_check = self.config_dirs[::-1]
         if self.writeable_prefs_dir:
             dirs_to_check = [self.writeable_prefs_dir] + dirs_to_check
 
@@ -195,7 +206,7 @@ class PrefsTracker(collections.abc.MutableMapping):
                     pass
             try:
                 data_to_write = dict(collections.ChainMap(self.changed_data, old_data))
-                p.write_text(jsonify(data_to_write, default=repr), encoding='utf-8')
+                p.write_text(jsonify(data_to_write, cls=self.json_encoder), encoding='utf-8')
                 saved = True
                 self.writeable_prefs_dir = dir      # Keep track of where we last saved prefs.
 
@@ -204,4 +215,8 @@ class PrefsTracker(collections.abc.MutableMapping):
 
         if not saved:
             warnings.warn('Unable to save preferences anywhere!')
+
+
+if __name__ == "__main__":
+    print("Sorry, no self-test code here!")
 

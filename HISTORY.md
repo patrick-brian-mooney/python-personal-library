@@ -374,7 +374,7 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 
 13 May 2022
 -----------
-* Refactoring wordle_helper.py to prepare for more Wordle-referencing code.
+* Refactoring `wordle_helper.py` to prepare for more Wordle-referencing code.
 
 11 June 2022
 ------------
@@ -395,7 +395,55 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 * added `flex_config.py`, a system for managing multiple JSON config files stored in different locations across a filesystem.
   * that one was imported from the VideoDataStore project.
 * Deleted `sample.py`, a three-line script that did nothing useful and that, I'm pretty sure, nothing else uses.
+* Micro-cleanup of code in many modules.
 
+19 July 2023
+------------
+* `file_utils.py` now has new functions `relative_to()` and `relative_to_with_name()` for computing relative paths with a bit more finesse than the system calls do.
+* `flex_config.py` now allows instances to specify a JSON encoder to use as the actual data serializer.  
+* `multi_choice_menu.py` now has an `easy_menu_choice()` function that auto-generates the user-selectable option strings that the user uses to respond to the prompt. 
+* added `MusicOrganizer.py`, a script to help organize a music collection.
+
+31 July 2023
+------------
+* `MusicOrganizer.py` now properly handles MP4 files as a valid type that is understood to belong in the library.
+
+
+2 Aug 2023
+----------
+* `MusicOrganizer.py` now transcodes .wav, .flac, and .wma files to .mp3 before processing the folders containing them.
+
+3 Aug 2023
+----------
+* `MusicOrganizer.py` now transcodes or otherwise converts Audible and iPod audiobooks to .m4a and and Monkey's Audio files to .mp3 before processing the folders containing tem. 
+
+9 Nov 2023
+----------
+* Moved the `unicode_of()` function, which does its best to turn `bytes` into Unicode text, from `MusicOrganizer.py` to `text_handling.py`, so that it's more generally available.
+* Added `wine64.py`, a convenience script to invoke 64-bit Wine on my system.
+
+4 Dec 2023
+----------
+* Moved multiple functions from `MusicOrganizer.py` to `file_utils.py` and (new library) `music_file_handling.py`.
+* New convenience program `transcode_audio.py` to allow me to quickly transcode audio to .mp3 or .m4a on my system.
+
+22 Aug 2024
+-----------
+* New convenience script `MusicDownsampler.py` uses already existing code to downsample high-bitrate compressed audio and recover hard drive space for me.
+* `music_file_handling.py` now has a `bitrate_from()` function which tries fairly hard to detect an audio file's bitrate.
+* `music_file_handling.py`'s lower-level `run_conversion()` function now pipe the stderr streams for both running programs to /dev/null if the QUIET parameter is specified, so that there's not a bunch of status garbage thrown up onto the screen.
+* Other parts of the audio-processing code are more conscientious about honoring the QUIET parameters of various functions.
+* Small tweaks to `music_file_handling.py` to increase flexibility in ways needed by `MusicDownSampler.py`.
+* Small update to `flex_config.py`: additional sanity check. Small update to `multi_choice_menu.py`: better type annotation for `menu_choice()`.
+
+23 Aug 2024
+-----------
+* Fixed a bug in `transcode_audio.py` that caused the script to crash during tag copying when `.flac` files are being transcoded.
+* Minor style-related coding improvements to `MusicDownsampler.py`.
+
+18 Sept 2024
+------------
+* `git_committer.py` no longer uses `--aggressive` or `--prune=now` on any of its `git gc` commands, because that can make memory usage spike on repos with many many objects.
 
 KNOWN BUGS
 ==========
