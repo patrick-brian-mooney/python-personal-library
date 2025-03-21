@@ -29,7 +29,7 @@ def convert_files(filename: List[Type[Path]],
         if (ext := f.suffix.strip().casefold()) == '.flac':
             dec_args = [mfh.executable_locations['flac']] + mfh.config['flac options'] + [str(f.resolve())]
         elif ext in ['.wav', '.wave']:
-            dec_args = [mfh.executable_locations['cat'], str(mfh.which_file.resolve())]
+            dec_args = [mfh.executable_locations['cat'], str(f.resolve())]
         else:
             dec_args = mfh.construct_ffmpeg_cmdline(f)
 
