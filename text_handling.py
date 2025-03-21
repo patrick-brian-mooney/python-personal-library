@@ -12,6 +12,7 @@ import sys
 import textwrap
 import shutil
 import re
+from typing import Union
 
 
 def multi_replace(text, substitutions):
@@ -217,6 +218,39 @@ def remove_prefix(line, prefix):
         return line[len(prefix):]
     else:
         return line
+
+
+def unicode_of(what: Union[str, bytes]) -> str:
+    """Just force WHAT to be a Unicode string, as much as we can possibly automate
+    that. We start by using the system default, then trying UTF-8, and then, if
+    either or both is installed, tries UnicodeDammit and chardet. If all else fails,
+    decodes to Latin-1, which should always not fail although it may munge data. If
+    even *that* doesn't work or some unknown godawful reason, the error will
+    propagate upwards.
+
+    This comes in handy when interacting with external programs, which may just barf
+    up data without caring about encoding.
+    """
+    if isinstance(what, str):
+        return what
+
+    try:
+        what = what.decode()
+    except Exception:
+        try:
+            what = what.decode('utf-8')
+        except Exception:
+            try:
+                from bs4 import UnicodeDammit       # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+                return UnicodeDammit(what).unicode_markup
+            except Exception:
+                try:
+                    import chardet
+                    char_info = chardet.detect(what)
+                    what = what.decode(char_info['encoding'])
+                except Exception:
+                    what = what.decode('latin-1')
+    return what
 
 
 if __name__ == "__main__":

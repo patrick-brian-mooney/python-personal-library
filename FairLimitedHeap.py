@@ -86,7 +86,7 @@ class FairLimitedHeap(collections.abc.Iterable):
         raise TypeError(f"Cannot directly set individual items in a {self.__class__.__name__}! Use .push() to add a value to the heap instead.")
 
     def push(self, item: typing.Any,
-              value: numbers.Number) -> None:
+             value: numbers.Number) -> None:
         heapq.heappush(self._data, (value, item))
         if len(self._data) <= self._soft_limit:
             return
