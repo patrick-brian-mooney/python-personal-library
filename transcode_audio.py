@@ -21,10 +21,14 @@ import music_file_handling as mfh
 def convert_files(filename: List[Type[Path]],
                   delete: bool,
                   mp4: bool,
-                  no_vbrfix: bool) -> None:
+                  no_vbrfix: bool,
+                  quiet: bool) -> None:
     for f in filename:
         assert isinstance(f, Path)
         assert f.is_file()
+
+        if not quiet:
+            print(f"Converting {f.name} ...")
 
         if (ext := f.suffix.strip().casefold()) == '.flac':
             dec_args = [mfh.executable_locations['flac']] + mfh.config['flac options'] + [str(f.resolve())]
@@ -40,15 +44,16 @@ def convert_files(filename: List[Type[Path]],
 
         # FIXME! mp4 -> mp3 tag conversion gives the literal Python string representation of 1-item lists of strings!
         new_f = mfh.run_conversion(f, dec_args=dec_args, enc_args=enc_args, new_suffix=('.m4a' if mp4 else '.mp3'),
-                                   quiet=False, vbrfix=(not no_vbrfix))
+                                   quiet=False, vbrfix=(not no_vbrfix), allow_tag_copy_to_fail=True)
 
         if new_f.exists() and delete:
             f.unlink()
 
 
 def process_command_line(args: List[str]) -> None:
-    parser = argparse.ArgumentParser(prog='transcode_audio', description=__doc__.strip().split('\n')[0],
-                                     epilog=__doc__.strip().split('\n')[-1])
+    parser = argparse.ArgumentParser(prog='transcode_audio',
+                                     description=__doc__.strip().split('\n\n')[0].replace('\n', ' '),
+                                     epilog=__doc__.strip().split('\n\n')[-1].replace('\n', ' '))
 
     parser.add_argument('filename', type=Path, nargs='+')       # positional argument
     parser.add_argument('-4', '--mp4', '--m4a', '--to-mp4', '--to-m4a', action='store_true',
@@ -57,6 +62,7 @@ def process_command_line(args: List[str]) -> None:
                         action='store_true', help="Delete originals after conversion.")
     parser.add_argument('-n', '--no-vbrfix', action='store_true',
                         help="Don't run VBRfix after conversion, even on .mp3 files.")
+    parser.add_argument('-q', '--quiet', action='store_true', help="Suppress unneeded jibber-jabber.")
 
     convert_files(**vars(parser.parse_args(args)))
 
@@ -68,7 +74,7 @@ def process_command_line(args: List[str]) -> None:
 if __name__ == "__main__":
     force_debugging = False
     if force_debugging:
-        process_command_line(['/home/patrick/Music/by Artist/Daniel Munkus/[2024] Oft Come Devil/Polka Dot Deli - Oft Come Devil - 01 Kings No More.flac'])
+        process_command_line(["/home/patrick/Music/by Artist/The The/[2000] NakedSelf/01 - The The - Boiling Point.mp4"])
         sys.exit()
 
     process_command_line(sys.argv[1:])

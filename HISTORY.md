@@ -445,6 +445,11 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 ------------
 * `git_committer.py` no longer uses `--aggressive` or `--prune=now` on any of its `git gc` commands, because that can make memory usage spike on repos with many many objects.
 
+14 Apr 2025
+-----------
+* `transcode_audio.py` now allows file processing to continue even when tag copying fails.
+* `transcode_audio.py` now has a `--quiet` command-line options to suppress some verbiage.
+
 KNOWN BUGS
 ==========
 * No known bugs listed at the moment. However, check individual module files to be sure that I haven't just forgotten to list something here.

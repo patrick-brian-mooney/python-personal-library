@@ -15,6 +15,7 @@ import pprint
 import shutil
 import subprocess
 import sys
+import warnings
 
 from pathlib import Path
 from typing import Any, Generator, Iterable, List, TextIO, Union
@@ -232,7 +233,8 @@ def do_copy_tags(from_f: Path,
     assert from_f.exists()
     assert to_f.exists()
 
-    from_data, to_data = mutagen.File(from_f, easy=True), mutagen.File(to_f, easy=True)
+    from_data = mutagen.File(from_f, easy=True)
+    to_data = mutagen.File(to_f, easy=True)
 
     for data, which_f in ((from_data, from_f), (to_data, to_f)):
         if not data:
@@ -432,6 +434,7 @@ def run_conversion(infile: Path,
                    new_suffix: str = '.mp3',
                    quiet: bool = False,
                    vbrfix: bool = None,
+                   allow_tag_copy_to_fail: bool = False,
                    ) -> Path:
     """Takes INFILE, a file to be processed, and processes it by starting two processes
     modeled by two Popen instances. The first is started using DEC_ARGS as the
@@ -448,6 +451,9 @@ def run_conversion(infile: Path,
     because it does not have the necessary information at the beginning of the
     single pass it makes.) If VBRFIX is None (the default), this VBR-fixing pass is
     performed iff the extension of the new file is (case-insensitive) ".mp3".
+
+    If ALLOW_TAG_COPY_TO_FAIL is True, issues a warning instead of failing when tags
+    can't be copied from the old to the new file.
 
     ENC_ARGS is modified before the process is started by appending the name of the
     desired output file after that output filename has been generated. This requires
@@ -468,7 +474,7 @@ def run_conversion(infile: Path,
         vbrfix = (new_suffix.strip().casefold().endswith('.mp3'))
 
     outfile = clean_name(infile.with_suffix(new_suffix))
-    enc_args.append(outfile)
+    enc_args.append(str(outfile))
 
     old_stdout, old_stderr = sys.stdout, sys.stderr
     try:
@@ -485,12 +491,19 @@ def run_conversion(infile: Path,
 
         if vbrfix:
             do_vbrfix(outfile, quiet)
-        do_copy_tags(infile, outfile, quiet)
+
+        try:
+            do_copy_tags(infile, outfile, quiet)
+        except Exception as errrr:
+            if allow_tag_copy_to_fail:
+                warnings.warn(f"Could not copy tags from {infile} to {outfile}! The system said: {errrr}")
+            else:
+                raise errrr
+
         if not quiet:
             print('\n\n'.join([th.unicode_of(i) for i in out if i]).strip(), end="\n\n")
     finally:
         sys.stdout, sys.stderr = old_stdout, old_stderr
-
 
     return outfile
 
