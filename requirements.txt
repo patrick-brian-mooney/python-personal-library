@@ -21,4 +21,4 @@ six==1.16.0
 soupsieve==2.3.2.post1
 tqdm==4.66.3
 tweepy==4.6.0
-urllib3==2.2.2
+urllib3==2.6.0
