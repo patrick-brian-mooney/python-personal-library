@@ -74,7 +74,7 @@ def process_command_line(args: List[str]) -> None:
 if __name__ == "__main__":
     force_debugging = False
     if force_debugging:
-        process_command_line(["/home/patrick/Music/by Artist/The The/[2000] NakedSelf/01 - The The - Boiling Point.mp4"])
+        process_command_line(["/home/patrick/Music/by Artist/Covenant/Covenant - Tour De Force.wma"])
         sys.exit()
 
     process_command_line(sys.argv[1:])
