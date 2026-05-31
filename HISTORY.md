@@ -450,6 +450,10 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 * `transcode_audio.py` now allows file processing to continue even when tag copying fails.
 * `transcode_audio.py` now has a `--quiet` command-line options to suppress some verbiage.
 
+30 May 2026
+-----------
+* Adding `popUpWindowTextRedirector.py`, a set of routines that provide a quick way for programs that write information to `stdout`/`stderr` to redirect those streams to a graphical window
+
 KNOWN BUGS
 ==========
 * No known bugs listed at the moment. However, check individual module files to be sure that I haven't just forgotten to list something here.
