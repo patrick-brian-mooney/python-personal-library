@@ -10,7 +10,7 @@ joblib==1.2.0
 mutagen==1.45.1
 nltk==3.9.4
 numpy==1.22.0
-oauthlib==3.2.2
+oauthlib==4.0.0
 pybeerxml==2.1.2
 python-tumblpy==1.1.4
 regex==2023.6.3
