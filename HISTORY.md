@@ -457,6 +457,8 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 21 Oct 2026
 -----------
 * Posting to Tumblr via the `tumblr_text_post()` routine in `social_media.py` is now more robust.
+* Updated `site_survey.py` to use more modern Python idioms (e.g., type annotations) and so archiving via the Internet Archive would be more resilient.
+  * Also tracks which pages have been recently cached on the Archive so interrupted and restarted surveys don't re-cache absolutely everything.
 
 
 KNOWN BUGS
