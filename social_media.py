@@ -11,8 +11,7 @@ This script is copyright 2017-18 by Patrick Mooney. It is licensed under the GNU
 GPL, either version 3 or (at your option) any later version. See the file
 LICENSE.md for details.
 """
-
-
+import time
 import typing
 
 
@@ -22,8 +21,9 @@ verbosity_level = 2
 def log_it(what, debug_level=1):
     """Convenience function to print optionally.
     """
-    if debug_level >= verbosity_level:
+    if verbosity_level >= debug_level:
         print(what)
+
 
 # Format for Tumblr clients is:
 # the_client = Tumblpy(
@@ -31,6 +31,7 @@ def log_it(what, debug_level=1):
 #    'a string',   # consumer_secret
 #    'a string',   # token_key
 #    'a string'    # token_secret       )
+
 
 def Tumblpy_from_dict(data: dict) -> 'Tumblpy':
     """Create a Tumblpy object from the authentication constants stored in a dictionary.
@@ -42,7 +43,11 @@ def Tumblpy_from_dict(data: dict) -> 'Tumblpy':
 def tumblr_text_post(the_client: 'TumblrAPI',
                      the_tags: typing.List[str],
                      the_title: str,
-                     the_content: str) -> typing.Tuple[dict, dict]:
+                     the_content: str,
+                     max_retries: int = 10,         # how many times to retry if posting fails
+                     initial_retry_delay = 20,      # how long (in secs.) to wait between retries
+                     retry_increase_factor = 1.5,   # how much to increase the wait after each retry
+                     ) -> typing.Tuple[dict, dict]:
     """Create a text post on Tumblr, using THE_CLIENT as an API object. THE_TAGS,
     THE_TITLE, and THE_CONTENT all describe what you'd expect them to describe, and
     they're all strings.
@@ -50,13 +55,31 @@ def tumblr_text_post(the_client: 'TumblrAPI',
     Returns two dictionaries: one contains a status code, the other contains more
     info.
     """
-    tumblr_data = the_client.post('user/info')
-    tumblog_url = tumblr_data['user']['blogs'][0]['url']
-    if tumblog_url.startswith('https://'):
-        tumblog_url = 'http://' + tumblog_url[8:]
-    the_status = the_client.post('post', blog_url=tumblog_url,
-                                 params={'type': 'text', 'tags': the_tags, 'title': the_title, 'body': the_content})
-    return the_status, tumblr_data
+    retry_delay = initial_retry_delay
+    tries, prev_errs = 0, list()
+
+    while True:
+        try:
+            tries += 1
+            tumblr_data = the_client.post('user/info')
+            tumblog_url = tumblr_data['user']['blogs'][0]['url']
+            if tumblog_url.startswith('https://'):
+                tumblog_url = 'http://' + tumblog_url[8:]
+            post_params = {'type': 'text', 'tags': the_tags, 'title': the_title, 'body': the_content}
+            the_status = the_client.post('post', blog_url=tumblog_url,params=post_params)
+            return the_status, tumblr_data
+
+        except (BaseException,) as errrr:
+            log_it(f"Unable to post! The system said: {errrr}")
+            if tries > max_retries:
+                log_it(f"That's more than {max_retries} retries! Giving up ...")
+                errrr.previous_errors = prev_errs
+                raise errrr
+
+            prev_errs.append(errrr)
+            log_it(f"Sleeping for {retry_delay} seconds before retrying ...")
+            time.sleep(retry_delay)
+            retry_delay *= retry_increase_factor
 
 
 # Format for Twitter clients is a dictionary:
@@ -66,6 +89,7 @@ def tumblr_text_post(the_client: 'TumblrAPI',
 #    'access_token'        : 'a string',
 #    'access_token_secret' : 'a string'
 #    }
+
 
 def get_new_twitter_API(client_credentials: dict) -> 'API':
     """Get an instance of the Tweepy API object to work with.

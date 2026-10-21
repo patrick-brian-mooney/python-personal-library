@@ -454,6 +454,11 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 -----------
 * Adding `popUpWindowTextRedirector.py`, a set of routines that provide a quick way for programs that write information to `stdout`/`stderr` to redirect those streams to a graphical window
 
+21 Oct 2026
+-----------
+* Posting to Tumblr via the `tumblr_text_post()` routine in `social_media.py` is now more robust.
+
+
 KNOWN BUGS
 ==========
 * No known bugs listed at the moment. However, check individual module files to be sure that I haven't just forgotten to list something here.
