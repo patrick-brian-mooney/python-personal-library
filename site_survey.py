@@ -59,7 +59,7 @@ def read_url_archived_dates_cache() -> typing.Dict[str, float]:
 def save_url_archived_dates_cache(cache: typing.Dict[str, float]) -> None:
     """Save the URL-cached dates to disk.
     """
-    print("  Saving URL archived-date data ...")
+    print("\n  Saving URL archived-date data ...")
     try:
         with bz2.open(URL_ARCHIVE_DATES_CACHE, mode='wt', encoding='utf-8') as cache_file:
             json.dump(cache, cache_file, sort_keys=True)
