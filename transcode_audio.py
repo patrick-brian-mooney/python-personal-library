@@ -23,7 +23,7 @@ def convert_files(filename: List[Type[Path]],
                   mp4: bool,
                   no_vbrfix: bool,
                   quiet: bool) -> None:
-    for f in filename:
+    for f in sorted(filename):
         assert isinstance(f, Path)
         assert f.is_file()
 
@@ -74,7 +74,9 @@ def process_command_line(args: List[str]) -> None:
 if __name__ == "__main__":
     force_debugging = False
     if force_debugging:
-        process_command_line(["/home/patrick/Music/by Artist/Covenant/Covenant - Tour De Force.wma"])
+        process_command_line([str(f.resolve()) for f in
+                              Path("""/home/patrick/Music/by Artist/Brianna Tam/""").rglob('*.webm')] +
+                             ["--delete"])
         sys.exit()
 
     process_command_line(sys.argv[1:])
