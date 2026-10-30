@@ -460,6 +460,11 @@ Accumulating several small changes to multiple scripts, mostly making default ex
 * Updated `site_survey.py` to use more modern Python idioms (e.g., type annotations) and so archiving via the Internet Archive would be more resilient.
   * Also tracks which pages have been recently cached on the Archive so interrupted and restarted surveys don't re-cache absolutely everything.
 
+29 Oct 2026
+-----------
+* Adding first version of `make_slideshow.py`, a script for changing .odp slideshows to Reveal.js HTML/Javascript presentations. 
+  * Documentation included in same folder.
+
 
 KNOWN BUGS
 ==========
