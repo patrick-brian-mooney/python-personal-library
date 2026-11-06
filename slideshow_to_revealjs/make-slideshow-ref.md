@@ -11,7 +11,13 @@ Basic usage: Run `make_slideshow.py` from the directory containing the .odp slid
 
 (#FIXME! This deserves expansion once the command-line paramters are working.)
 
-This reference manual provides structural specifications, HTML5 templates, and integration parameters for dropping visual assets and high-contrast typographic components into converted Reveal.js presentations. 
+Required external programs:
+
+  * HTML Tidy (this script was developed with HTML Tidy for Linux v. 5.6.0)
+  * Pandoc (this script was developed with Pandoc 2.9.2.1)
+  * LibreOffice 24.8 (this script depends heavily on the behavior of this specific version)
+
+This reference provides structural specifications, HTML5 templates, and integration parameters for dropping visual assets and high-contrast typographic components into converted Reveal.js presentations. 
 
 ---
 

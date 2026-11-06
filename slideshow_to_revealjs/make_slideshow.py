@@ -2,19 +2,21 @@
 """
 This script is designed to convert OpenOffice/LibreOffice Impress slideshows
 to JavaScript-based slideshows using Reveal.js. It is far from perfect but does
-manage to correctly extract more or less all of the text and to preserve the
+manage to correctly extract more or less all the text and to preserve the
 formatting using semantic-type tagging, which is a start. Much hand-editing of
 the results is required.
+
+This script was developed under Linux, but hopefully works on other systems. It
+requires LibreOffice 24.8, Pandoc, HTML Tidy, and BeautifulSoup4.
 
 This script is copyright 2026 by Patrick Mooney. It is licensed under the GNU
 GPL, either version 3 or (at your option) any later version. See the file
 LICENSE.md for details.
-
-System: Linux
-Dependencies: LibreOffice 24.8, Pandoc, HTML Tidy, BeautifulSoup4
 """
 
 
+import argparse
+import os
 import re
 import shutil
 import subprocess
@@ -22,15 +24,21 @@ import sys
 import zipfile
 
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, List, Literal, Optional, Set, Union
 
 from bs4 import BeautifulSoup, NavigableString, Tag     # https://beautiful-soup-4.readthedocs.io/en/latest/#
 
 
 # Constants
-SOFFICE_PATH: Path = Path("/home/patrick/bin/libreoffice24/program/soffice")
-PANDOC_PATH: Path = Path(shutil.which("pandoc"))
-TIDY_PATH: Path = Path(shutil.which("tidy"))
+
+# First, default paths to resources on this machine.
+SOFFICE_PATH: Path =    Path("/home/patrick/bin/libreoffice24/program/soffice")
+PANDOC_PATH: Path =     Path(shutil.which("pandoc"))
+TIDY_PATH: Path =       Path(shutil.which("tidy"))
+
+# Next, default paths that should be embedded in output slideshows.
+REVEALJS_PATH =         Path("/~patrick/res/revealjs/")
+CSS_PATH =              Path("/~patrick/css/reveal-custom.css")
 
 
 def sanitize_filename_string(filename: str) -> str:
@@ -313,7 +321,16 @@ def repair_and_section_html(html_path: Path) -> None:
     html_path.write_text(str(soup), encoding='utf-8')
 
 
-def process_single_presentation(source_doc: Path, local_dir: Path) -> None:
+def process_single_presentation(source_doc: Path,
+                                parent_dir: Path,
+                                pandoc_dump: bool,
+                                pandoc: Path,
+                                tidy: Path,
+                                libreoffice: Path,
+                                reveal: str,
+                                customcss: str,
+                                sourcetype: Union[str, None]
+                                ) -> None:
     """
     Executes the sequential compilation chain strictly within the local directory context,
     ensuring non-overlapping names protect production documents from automated unlinking.
@@ -322,55 +339,62 @@ def process_single_presentation(source_doc: Path, local_dir: Path) -> None:
     clean_base_name: str = sanitize_filename_string(raw_base_name)
 
     # Isolate intermediate stages cleanly using a distinct temporary extension suffix
-    libreoffice_output_html: Path = local_dir / f"{raw_base_name}.html"
-    intermediate_html: Path = local_dir / f"{clean_base_name}_intermediate_temp.html"
-    raw_slideshow: Path = local_dir / f"{clean_base_name}_raw_temp.html"
-    production_slideshow: Path = local_dir / f"{clean_base_name}.html"
+    raw_html_dump_name: Path = parent_dir / f"{raw_base_name}.html"      # never used if dumping with Pandoc
+    intermediate_html_name: Path = parent_dir / f"{clean_base_name}_intermediate_temp.html"
+    raw_slideshow_name: Path = parent_dir / f"{clean_base_name}_raw_temp.html"
+    output_slideshow_rename: Path = parent_dir / f"{clean_base_name}.html"
 
     print(f"[*] Starting processing for target file: {source_doc.name}")
 
     # Step 1: ODP image asset extraction        # FIXME: we're going to have to handle non-ODP formats differently
-    extract_odp_images(source_doc, clean_base_name, local_dir)
+    extract_odp_images(source_doc, clean_base_name, parent_dir)
 
     # Step 2: headless LibreOffice conversion
-    libreoffice_cmd: list[str] = [
-        str(SOFFICE_PATH),
-        "--headless",
-        "--convert-to", "html:impress_html_Export",
-        str(source_doc),
-        "--outdir", str(local_dir)
-    ]
-    print("    [2/5] Running isolated LibreOffice 24 compiler export...")
-    subprocess.run(libreoffice_cmd, check=True)
+    if pandoc_dump:
+        export_cmd = [str(pandoc), '-s',]
+        if sourcetype:
+            export_cmd += ['-f', sourcetype]
+        # export_cmd += ['-t', 'revealjs', str(source_doc),'-o', intermediate_html]
+        export_cmd += ['-t', 'revealjs', '--slide-level=2', str(source_doc),'-o', intermediate_html_name]
+        print("    [2/5] Running Pandoc compiler export...")
+        subprocess.run(export_cmd, check=True)
+    else:
+        export_cmd: list[str] = [
+            str(libreoffice),
+            "--headless",
+            "--convert-to", "html:impress_html_Export",
+            str(source_doc),
+            "--outdir", str(parent_dir)
+        ]
+        print("    [2/5] Running LibreOffice compiler export...")
+        subprocess.run(export_cmd, check=True)
+        raw_html_dump_name.rename(intermediate_html_name) # Can't believe LO doesn't let us specify output filename
 
-    # Rename LibreOffice's direct file creation to our protected intermediate tracking name
-    if libreoffice_output_html.exists():
-        libreoffice_output_html.rename(intermediate_html)
+    # Rename the exported file to our intermediate processing name
+    if not intermediate_html_name.exists():
+        print(f"    [!] Error: Expected intermediate file '{intermediate_html_name.name}' was not generated.")
+        return
 
     # Step 3: Programmatic DOM Structural Cleanup Pass
-    print("    [3/5] Executing BeautifulSoup4 structural DOM validation pass...")
-    if intermediate_html.exists():
-        repair_and_section_html(intermediate_html)
-    else:
-        print(f"    [!] Error: Expected intermediate file '{intermediate_html.name}' was not found.")
-        return
+    print("    [3/5] Validating DOM with BeautifulSoup4...")
+    repair_and_section_html(intermediate_html_name)
 
     # Step 4: Local Pandoc Presentation Compilation with Explicit Light Theme Injection
     pandoc_cmd: list[str] = [
-        str(PANDOC_PATH),
+        str(pandoc),
         "-f", "html",
         "-t", "revealjs",
-        str(intermediate_html),
-        "-o", str(raw_slideshow),
+        str(intermediate_html_name),
+        "-o", str(raw_slideshow_name),
         "-s",
         "--slide-level=1",
         "-V", "theme=light",        # Explicitly force light theme
-        "-V", "revealjs-url=/~patrick/res/revealjs/",
-        "-V", "css=/~patrick/css/reveal-custom.css",
+        "-V", f"revealjs-url={reveal}",
+        "-V", f"css={customcss}",
         "-V", "width=1050",
         "-V", "height=590"
     ]
-    print("    [4/5] Compiling responsive Reveal.js slideshow via Pandoc...")
+    print("    [4/5] Compiling Reveal.js slideshow via Pandoc...")
     subprocess.run(pandoc_cmd, check=True)
 
     # FIXME! We need another HTML-massaging pass in here, to consist of:
@@ -382,45 +406,116 @@ def process_single_presentation(source_doc: Path, local_dir: Path) -> None:
 
     # Step 5: Local HTML Tidy Code Unwrapping and Cleanup (Altered layout indentation spacing to 2)
     tidy_cmd: list[str] = [
-        str(TIDY_PATH),
+        str(tidy),
         "-indent",
         "-wrap", "0",
         "--indent-spaces", "2",
-        str(raw_slideshow)
+        str(raw_slideshow_name)
     ]
-    print("    [5/5] Beautifying and unwrapping final source lines with HTML Tidy...")
+    print("    [5/5] Beautifying final source lines with HTML Tidy...")
 
-    with open(production_slideshow, 'w', encoding='utf-8') as out_f:
+    with open(output_slideshow_rename, 'w', encoding='utf-8') as out_f:
         subprocess.run(tidy_cmd, stdout=out_f, stderr=subprocess.DEVNULL)
 
-    # Clean up temporary storage files safely without unlinking production_slideshow
-    if intermediate_html.exists():
-        intermediate_html.unlink()
-    if raw_slideshow.exists():
-        raw_slideshow.unlink()
+    # Clean up temporary storage files safely without unlinking output slideshow
+    if intermediate_html_name.exists():
+        intermediate_html_name.unlink()
+    if raw_slideshow_name.exists():
+        raw_slideshow_name.unlink()
 
-    print(f"[+] Successfully generated sanitized file locally: {production_slideshow.name}\n")
+    print(f"[+] Successfully generated sanitized file locally: {output_slideshow_rename.name}\n")
 
 
-def main() -> None:
-    local_dir: Path = Path(".")
-    odp_files: list[Path] = list(local_dir.glob("*.odp"))
+def process_files(filenames: List[Path],    # List of files to process.
+                  pandoc_dump: bool,        # use Pandoc to dump text instead of LibreOffice
+                  pandoc: Path,             # location of the Pandoc executable on this machine.
+                  tidy: Path,               # location of the HTML Tidy executable on this machine.
+                  libreoffice: Path,        # location of the LibreOffice 24 executable on this machine
+                  reveal: str,              # location of the Reveal.js resources to encode into the output.
+                  customcss: str,           # location of the CSS file the output should refer to
+                  sourcetype: Union[str, None] = None   # optional Pandoc input type specification.
+                  ) -> None:
+    """Given the parsed command line, process each individual file specified.
+    """
+    assert isinstance(filenames, list)
+    assert all([isinstance(f, Path) for f in filenames])
+    assert isinstance(pandoc, Path)
+    assert pandoc.is_file(), "ERROR! Specified location for Pandoc must be a regular file!"
+    assert isinstance(tidy, Path)
+    assert tidy.is_file(), "ERROR! Specified location for HTML Tidy must be a regular file!"
+    assert isinstance(libreoffice, Path)
+    assert libreoffice.is_file(), "ERROR! Specified location for LibreOffice must be a regular file!"
 
-    if not odp_files:
-        print(f"[-] No presentation files (*.odp) located in the active directory context.")
+    assert isinstance(reveal, str)      # we don't bother to check type or existsnce here because they may only exist
+    assert isinstance(customcss, str)   # on the server! The script itself doesn't need them, just inserts references.
+    if sourcetype is not None:
+        assert isinstance(sourcetype, str)
+        if not pandoc_dump:
+            raise ValueError("You can only specify --sourcetype when using --pandoc-dump!") #FIXME: also check sourcetype is valid against Pandoc's output
+
+    if not filenames:
+        print(f"[-] No files to process!.")
         sys.exit(0)
 
-    print(f"[+] Found {len(odp_files)} presentation files to convert inside the active directory context.\n")
+    print(f"[+] Processing {len(filenames)} input files.\n")
 
-    odp: Path
-    for odp in sorted(odp_files):
+    which_sshow: Path
+    for which_sshow in sorted(filenames):
+        old_dir: Path = Path(os.curdir).resolve()
         try:
-            process_single_presentation(odp, local_dir)
+            cur_dir: Path = which_sshow.parent
+            os.chdir(cur_dir)
+            process_single_presentation(source_doc=Path(which_sshow.name), parent_dir=cur_dir, pandoc_dump=pandoc_dump,
+                                        pandoc=pandoc, tidy=tidy, libreoffice=libreoffice, reveal=reveal,
+                                        customcss=customcss, sourcetype=sourcetype)
         except subprocess.CalledProcessError as err:
-            print(f"[!] Compilation failed on '{odp.name}': {err}")
+            print(f"[!] Compilation failed on '{which_sshow.name}': {err}")
         except Exception as err:
-            print(f"[!] Unexpected processing error occurred on '{odp.name}': {err}")
+            print(f"[!] Unexpected processing error occurred on '{which_sshow.name}': {err}")
+        finally:
+            os.chdir(old_dir)
+
+
+def main(args: List[str]) -> None:
+    parser = argparse.ArgumentParser(prog='make_slideshow',
+                                     description=__doc__.strip().split('\n\n')[0].replace('\n', ' '),
+                                     epilog=__doc__.strip().split('\n\n')[-1].replace('\n', ' '))
+
+    parser.add_argument('--pandoc', '--pandoc-loc', '--pandoc-location', '-p', type=Path,
+                        default = PANDOC_PATH, help='Location where Pandoc is installed in your system.')
+    parser.add_argument('--pandoc_dump', '--pandocdump', '--pandoc-dump', action="store_true",
+                        help="Perform the initial data-dumping step using Pandoc instead of LibreOffice 24. This is "
+                             "a bad idea if you are trying to convert a LibreOffice Impress file (and maybe other "
+                             "types of slideshows), but might be useful if you are trying to feed other types of "
+                             "data into this script. (If you do not also use --sourcetype or one of its aliases, "
+                             "Pandoc will try to determine the file type based on its file extension.)")
+    parser.add_argument('--sourcetype', '--source-type', '--source_type',
+                        '--inputtype', '--input-type', '--input_type',
+                        '--filetype', '--file-type', '--file_type',
+                        help="The name of the file format of the input file(s) that you are feeding into the script, "
+                             "as Pandoc understands that file format's name. This is only meaningful if you also "
+                             "specify --pandoc-dump. You can find a list of formats your version of Pandoc understands "
+                             "by running pandoc --list-input-formats in a terminal. (If you use --pandoc-dump and do "
+                             "not specify this option, Pandoc will guess your input file's type based on its "
+                             "file extension.)")
+    parser.add_argument('--tidy', '--tidy-loc', '--tidy-location', '-t', type=Path,
+                        default = TIDY_PATH, help='Location where HTML Tidy is installed in your system.')
+    parser.add_argument('--libreoffice', '--libreoffice-loc', '--libreoffice-location', '-l', type=Path,
+                        default = SOFFICE_PATH, help='Location where LibreOffice 24.8 is installed in your system.')
+    parser.add_argument('--reveal', '--revealjs', '--reveal-path', '-revealsjs-path', '-r', '--js',
+                        default = str(REVEALJS_PATH), help='Path to the Reveal.js assests that should be used for the '
+                                                           'generated slideshow.')
+    parser.add_argument('--customcss', '--custom-css', '--custom-css-path', '--css', '--css-path', '-c',
+                        default = str(CSS_PATH), help='Path to the CSS stylesheet that should be used for the '
+                                                      'generated slideshow.')
+    parser.add_argument('filenames', type=Path, nargs='+')       # positional argument
+
+    process_files(**vars(parser.parse_args(args)))
 
 
 if __name__ == "__main__":
-    main()
+    if False:            # quick test harness
+        main(['--pandoc_dump', '--sourcetype', 'html', """/~patrick/workshop-test/02-css-slideshow.html"""])
+        sys.exit()
+
+    main(sys.argv[1:])
